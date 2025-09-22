@@ -48,11 +48,17 @@ export const ListingGrid = () => {
 
       <div className="grid gap-6">
         {mockListings.map((listing) => (
-          <Card 
+          <a
             key={listing.id}
-            className="hover:shadow-moderate transition-shadow cursor-pointer"
-            onMouseEnter={() => handleCardHover(listing.id)}
+            href={`/room/${listing.title.toLowerCase().replace(/\s+/g, '-')}-${listing.id}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="block"
           >
+            <Card 
+              className="hover:shadow-moderate transition-shadow cursor-pointer"
+              onMouseEnter={() => handleCardHover(listing.id)}
+            >
             <CardContent className="p-0">
               <div className="flex flex-col md:flex-row">
                 <div className="md:w-1/3">
@@ -120,6 +126,7 @@ export const ListingGrid = () => {
               </div>
             </CardContent>
           </Card>
+          </a>
         ))}
       </div>
     </div>

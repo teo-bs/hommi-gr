@@ -14,6 +14,30 @@ export type Database = {
   }
   public: {
     Tables: {
+      amenities: {
+        Row: {
+          category: string
+          created_at: string | null
+          icon: string
+          id: string
+          name: string
+        }
+        Insert: {
+          category?: string
+          created_at?: string | null
+          icon: string
+          id?: string
+          name: string
+        }
+        Update: {
+          category?: string
+          created_at?: string | null
+          icon?: string
+          id?: string
+          name?: string
+        }
+        Relationships: []
+      }
       applications: {
         Row: {
           created_at: string | null
@@ -109,6 +133,33 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      listers: {
+        Row: {
+          badges: Json | null
+          created_at: string | null
+          id: string
+          profile_id: string
+          score: number | null
+          updated_at: string | null
+        }
+        Insert: {
+          badges?: Json | null
+          created_at?: string | null
+          id?: string
+          profile_id: string
+          score?: number | null
+          updated_at?: string | null
+        }
+        Update: {
+          badges?: Json | null
+          created_at?: string | null
+          id?: string
+          profile_id?: string
+          score?: number | null
+          updated_at?: string | null
+        }
+        Relationships: []
       }
       listings: {
         Row: {
@@ -351,6 +402,114 @@ export type Database = {
           },
         ]
       }
+      room_amenities: {
+        Row: {
+          amenity_id: string
+          room_id: string
+        }
+        Insert: {
+          amenity_id: string
+          room_id: string
+        }
+        Update: {
+          amenity_id?: string
+          room_id?: string
+        }
+        Relationships: []
+      }
+      room_photos: {
+        Row: {
+          alt_text: string | null
+          created_at: string | null
+          id: string
+          room_id: string
+          sort_order: number | null
+          url: string
+        }
+        Insert: {
+          alt_text?: string | null
+          created_at?: string | null
+          id?: string
+          room_id: string
+          sort_order?: number | null
+          url: string
+        }
+        Update: {
+          alt_text?: string | null
+          created_at?: string | null
+          id?: string
+          room_id?: string
+          sort_order?: number | null
+          url?: string
+        }
+        Relationships: []
+      }
+      room_stats: {
+        Row: {
+          created_at: string | null
+          id: string
+          last_viewed_at: string | null
+          request_count: number | null
+          room_id: string
+          updated_at: string | null
+          view_count: number | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          last_viewed_at?: string | null
+          request_count?: number | null
+          room_id: string
+          updated_at?: string | null
+          view_count?: number | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          last_viewed_at?: string | null
+          request_count?: number | null
+          room_id?: string
+          updated_at?: string | null
+          view_count?: number | null
+        }
+        Relationships: []
+      }
+      rooms: {
+        Row: {
+          created_at: string | null
+          has_bed: boolean | null
+          id: string
+          is_interior: boolean | null
+          listing_id: string
+          room_size_m2: number | null
+          room_type: string
+          slug: string
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          has_bed?: boolean | null
+          id?: string
+          is_interior?: boolean | null
+          listing_id: string
+          room_size_m2?: number | null
+          room_type?: string
+          slug: string
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          has_bed?: boolean | null
+          id?: string
+          is_interior?: boolean | null
+          listing_id?: string
+          room_size_m2?: number | null
+          room_type?: string
+          slug?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       threads: {
         Row: {
           created_at: string | null
@@ -447,7 +606,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      increment_room_views: {
+        Args: { rid: string }
+        Returns: undefined
+      }
     }
     Enums: {
       [_ in never]: never
