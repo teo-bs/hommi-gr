@@ -1,7 +1,8 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Home, User, MessageSquare, Plus, Globe, Menu, X } from "lucide-react";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { Home, User, MessageSquare, Plus, Globe, Menu, X, Settings, Search, Calendar, LogOut, UserCheck } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useListingFlow } from "@/hooks/useListingFlow";
 import { AuthModal } from "@/components/auth/AuthModal";
@@ -10,8 +11,9 @@ import { RoleSelectionScreen } from "@/components/listing/RoleSelectionScreen";
 import { ListingWizard } from "@/components/listing/ListingWizard";
 
 export const Header = () => {
-  const { user, profile } = useAuth();
+  const { user, profile, signOut } = useAuth();
   const listingFlow = useListingFlow();
+  const navigate = useNavigate();
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [language, setLanguage] = useState('el'); // Greek default
@@ -29,6 +31,19 @@ export const Header = () => {
   const toggleLanguage = () => {
     setLanguage(prev => prev === 'el' ? 'en' : 'el');
   };
+
+  const handleLogout = async () => {
+    await signOut();
+    navigate('/');
+  };
+
+  const handleRoleSwitch = (newRole: 'seeker' | 'lister') => {
+    // TODO: Update user profile with new role
+    console.log('Switching to role:', newRole);
+  };
+
+  // Determine user role - default to 'seeker' if not set
+  const userRole = profile?.role || 'seeker';
 
   const menuItems: any[] = [];
 
@@ -93,11 +108,46 @@ export const Header = () => {
                     </Button>
                   </Link>
 
-                  <Link to="/profile">
-                    <Button variant="ghost" size="sm" className="rounded-full w-10 h-10 p-0">
-                      <User className="h-5 w-5" />
-                    </Button>
-                  </Link>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="ghost" size="sm" className="rounded-full w-10 h-10 p-0">
+                        <User className="h-5 w-5" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end" className="w-56">
+                      <DropdownMenuItem onClick={() => navigate('/profile')}>
+                        <User className="h-4 w-4 mr-2" />
+                        {language === 'el' ? 'Το προφίλ μου' : 'My profile'}
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => navigate('/settings')}>
+                        <Settings className="h-4 w-4 mr-2" />
+                        {language === 'el' ? 'Ρυθμίσεις' : 'Settings'}
+                      </DropdownMenuItem>
+                      {userRole === 'seeker' ? (
+                        <DropdownMenuItem onClick={() => navigate('/search-preferences')}>
+                          <Search className="h-4 w-4 mr-2" />
+                          {language === 'el' ? 'Προτιμήσεις αναζήτησης' : 'Search preferences'}
+                        </DropdownMenuItem>
+                      ) : (
+                        <DropdownMenuItem onClick={() => navigate('/booking-settings')}>
+                          <Calendar className="h-4 w-4 mr-2" />
+                          {language === 'el' ? 'Ρυθμίσεις κρατήσεων' : 'Booking settings'}
+                        </DropdownMenuItem>
+                      )}
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem onClick={handleLogout}>
+                        <LogOut className="h-4 w-4 mr-2" />
+                        {language === 'el' ? 'Αποσύνδεση' : 'Log out'}
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => handleRoleSwitch(userRole === 'seeker' ? 'lister' : 'seeker')}>
+                        <UserCheck className="h-4 w-4 mr-2" />
+                        {userRole === 'seeker' 
+                          ? (language === 'el' ? 'Μετάβαση σε Lister' : 'Switch to Lister')
+                          : (language === 'el' ? 'Μετάβαση σε Tenant' : 'Switch to Tenant')
+                        }
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
                 </div>
               ) : (
                 <Button
@@ -177,9 +227,57 @@ export const Header = () => {
                     <Link to="/profile" onClick={() => setMobileMenuOpen(false)}>
                       <Button variant="ghost" size="sm" className="w-full justify-start">
                         <User className="h-4 w-4 mr-2" />
-                        {language === 'el' ? 'Προφίλ' : 'Profile'}
+                        {language === 'el' ? 'Το προφίλ μου' : 'My profile'}
                       </Button>
                     </Link>
+                    <Link to="/settings" onClick={() => setMobileMenuOpen(false)}>
+                      <Button variant="ghost" size="sm" className="w-full justify-start">
+                        <Settings className="h-4 w-4 mr-2" />
+                        {language === 'el' ? 'Ρυθμίσεις' : 'Settings'}
+                      </Button>
+                    </Link>
+                    {userRole === 'seeker' ? (
+                      <Link to="/search-preferences" onClick={() => setMobileMenuOpen(false)}>
+                        <Button variant="ghost" size="sm" className="w-full justify-start">
+                          <Search className="h-4 w-4 mr-2" />
+                          {language === 'el' ? 'Προτιμήσεις αναζήτησης' : 'Search preferences'}
+                        </Button>
+                      </Link>
+                    ) : (
+                      <Link to="/booking-settings" onClick={() => setMobileMenuOpen(false)}>
+                        <Button variant="ghost" size="sm" className="w-full justify-start">
+                          <Calendar className="h-4 w-4 mr-2" />
+                          {language === 'el' ? 'Ρυθμίσεις κρατήσεων' : 'Booking settings'}
+                        </Button>
+                      </Link>
+                    )}
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="w-full justify-start"
+                      onClick={() => {
+                        handleLogout();
+                        setMobileMenuOpen(false);
+                      }}
+                    >
+                      <LogOut className="h-4 w-4 mr-2" />
+                      {language === 'el' ? 'Αποσύνδεση' : 'Log out'}
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="w-full justify-start"
+                      onClick={() => {
+                        handleRoleSwitch(userRole === 'seeker' ? 'lister' : 'seeker');
+                        setMobileMenuOpen(false);
+                      }}
+                    >
+                      <UserCheck className="h-4 w-4 mr-2" />
+                      {userRole === 'seeker' 
+                        ? (language === 'el' ? 'Μετάβαση σε Lister' : 'Switch to Lister')
+                        : (language === 'el' ? 'Μετάβαση σε Tenant' : 'Switch to Tenant')
+                      }
+                    </Button>
                   </>
                 ) : (
                   <Button

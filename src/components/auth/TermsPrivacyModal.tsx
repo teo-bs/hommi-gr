@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -17,6 +17,32 @@ export const TermsPrivacyModal = ({ isOpen, onAccept }: TermsPrivacyModalProps) 
 
   const canContinue = acceptedTerms && acceptedPrivacy;
 
+  // Prevent background scrolling when modal is open
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = 'hidden';
+      return () => {
+        document.body.style.overflow = 'unset';
+      };
+    }
+  }, [isOpen]);
+
+  // Handle keyboard events
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        event.preventDefault(); // Prevent ESC from closing
+      }
+    };
+
+    if (isOpen) {
+      document.addEventListener('keydown', handleKeyDown);
+      return () => {
+        document.removeEventListener('keydown', handleKeyDown);
+      };
+    }
+  }, [isOpen]);
+
   const handleContinue = () => {
     if (canContinue) {
       onAccept(marketingEmails);
@@ -25,12 +51,14 @@ export const TermsPrivacyModal = ({ isOpen, onAccept }: TermsPrivacyModalProps) 
 
   return (
     <Dialog open={isOpen} onOpenChange={() => {}}>
-      <DialogContent className="sm:max-w-md [&>button]:hidden">
-        <DialogHeader>
-          <DialogTitle className="text-center text-xl font-semibold">
-            Όροι & Απόρρητο
-          </DialogTitle>
-        </DialogHeader>
+      <DialogContent className="fixed inset-0 z-50 max-w-none w-screen h-screen p-0 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 [&>button]:hidden">
+        <div className="flex items-center justify-center min-h-screen p-4">
+          <div className="w-full max-w-md bg-card rounded-lg p-6 shadow-elevated animate-in fade-in-0 zoom-in-95 duration-200">
+            <DialogHeader>
+              <DialogTitle className="text-center text-xl font-semibold">
+                Όροι & Απόρρητο
+              </DialogTitle>
+            </DialogHeader>
 
         <ScrollArea className="max-h-60 pr-4">
           <div className="space-y-4 text-sm text-muted-foreground">
@@ -87,14 +115,16 @@ export const TermsPrivacyModal = ({ isOpen, onAccept }: TermsPrivacyModalProps) 
           </div>
         </div>
 
-        <Button 
-          onClick={handleContinue}
-          disabled={!canContinue}
-          className="w-full"
-          variant="hero"
-        >
-          Συνέχεια
-        </Button>
+            <Button 
+              onClick={handleContinue}
+              disabled={!canContinue}
+              className="w-full"
+              variant="hero"
+            >
+              Συνέχεια
+            </Button>
+          </div>
+        </div>
       </DialogContent>
     </Dialog>
   );
