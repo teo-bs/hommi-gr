@@ -4,6 +4,10 @@ import { Helmet } from "react-helmet-async";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { AuthModal } from "@/components/auth/AuthModal";
+import { TermsPrivacyModal } from "@/components/auth/TermsPrivacyModal";
+import { MessageComposer } from "@/components/room/MessageComposer";
+import { ConversationView } from "@/components/room/ConversationView";
+import { useMessageFlow } from "@/hooks/useMessageFlow";
 import { Gallery } from "@/components/room/Gallery";
 import { PriceBox } from "@/components/room/PriceBox";
 import { CTAStack } from "@/components/room/CTAStack";
@@ -37,7 +41,9 @@ const RoomPage = () => {
   const { user } = useAuth();
   const [roomData, setRoomData] = useState<RoomData | null>(null);
   const [loading, setLoading] = useState(true);
-  const [authModalOpen, setAuthModalOpen] = useState(false);
+  
+  // Message flow management
+  const messageFlow = useMessageFlow(id || '');
 
   useEffect(() => {
     if (!id) {
@@ -140,12 +146,11 @@ const RoomPage = () => {
   }, [id, navigate]);
 
   const handleRequestChat = () => {
-    if (!user) {
-      setAuthModalOpen(true);
-      return;
-    }
-    // TODO: Implement chat request logic
-    console.log('request_to_chat', { roomId: id, timestamp: Date.now() });
+    messageFlow.initiateMessageFlow("Γεια σας! Ενδιαφέρομαι για το δωμάτιο. Μπορούμε να μιλήσουμε;");
+  };
+
+  const handleMessageSent = (message: string) => {
+    messageFlow.handleMessageSent(message);
   };
 
   if (loading) {
@@ -240,6 +245,13 @@ const RoomPage = () => {
               
               <CTAStack onRequestChat={handleRequestChat} />
               
+              <MessageComposer
+                roomId={id || ''}
+                listingTitle={listing.title}
+                onAuthRequired={() => messageFlow.initiateMessageFlow("", handleRequestChat)}
+                onMessageSent={handleMessageSent}
+              />
+              
               <QuickFacts 
                 room={room}
                 listing={listing}
@@ -252,9 +264,30 @@ const RoomPage = () => {
       </div>
 
       <AuthModal 
-        isOpen={authModalOpen} 
-        onClose={() => setAuthModalOpen(false)} 
+        isOpen={messageFlow.authModalOpen} 
+        onClose={messageFlow.closeAuth}
+        onSuccess={messageFlow.handleAuthSuccess}
       />
+      
+      <TermsPrivacyModal
+        isOpen={messageFlow.termsModalOpen}
+        onAccept={messageFlow.handleTermsAccepted}
+      />
+      
+      {messageFlow.conversationOpen && roomData && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="w-full max-w-md">
+            <ConversationView
+              roomId={id || ''}
+              listingTitle={roomData.listing.title}
+              listerName={roomData.profile?.display_name || 'Ιδιοκτήτης'}
+              listerAvatar={roomData.profile?.avatar_url}
+              initialMessage={messageFlow.messageToSend || undefined}
+              onClose={messageFlow.closeConversation}
+            />
+          </div>
+        </div>
+      )}
     </>
   );
 };

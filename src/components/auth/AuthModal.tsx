@@ -11,9 +11,10 @@ import { Chrome, Mail, Eye, EyeOff } from "lucide-react";
 interface AuthModalProps {
   isOpen: boolean;
   onClose: () => void;
+  onSuccess?: () => void;
 }
 
-export const AuthModal = ({ isOpen, onClose }: AuthModalProps) => {
+export const AuthModal = ({ isOpen, onClose, onSuccess }: AuthModalProps) => {
   const { signUp, signIn, signInWithGoogle } = useAuth();
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
@@ -82,6 +83,7 @@ export const AuthModal = ({ isOpen, onClose }: AuthModalProps) => {
         
         onClose();
         setFormData({ email: '', password: '', confirmPassword: '' });
+        onSuccess?.();
       }
     } catch (error) {
       toast({
@@ -114,6 +116,7 @@ export const AuthModal = ({ isOpen, onClose }: AuthModalProps) => {
         });
         
         onClose();
+        onSuccess?.();
       }
     } catch (error) {
       toast({
