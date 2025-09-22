@@ -105,7 +105,7 @@ export const ListingGrid = () => {
         {mockListings.map((listing) => (
           <a
             key={listing.id}
-            href={`/room/${listing.title.toLowerCase().replace(/\s+/g, '-')}-${listing.id}`}
+            href={`/room/${listing.title.toLowerCase().replace(/\s+/g, '-')}/${listing.id}`}
             target="_blank"
             rel="noopener noreferrer"
             className="block"
