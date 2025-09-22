@@ -47,7 +47,7 @@ const RoomPage = () => {
 
   useEffect(() => {
     if (!id) {
-      navigate('/');
+      navigate('/404');
       return;
     }
 

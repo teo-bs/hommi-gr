@@ -1,5 +1,6 @@
 import React from "react";
 import { useQuery } from "@tanstack/react-query";
+import { Link } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -76,8 +77,13 @@ export const ListingGrid = ({ filters }: ListingGridProps) => {
     console.log('card_hover_preview', { listingId, timestamp: Date.now() });
   };
 
+  const handleCardClick = (roomId: string) => {
+    console.log('card_clicked_navigate', { roomId, timestamp: Date.now() });
+  };
+
   const handleRequestChat = (listingId: string, event: React.MouseEvent) => {
-    event.preventDefault(); // Prevent link navigation
+    event.preventDefault();
+    event.stopPropagation(); // Prevent card click navigation
     console.log('request_to_chat_clicked', { listingId, timestamp: Date.now() });
   };
 
@@ -167,12 +173,11 @@ export const ListingGrid = ({ filters }: ListingGridProps) => {
 
       <div className="grid gap-6">
         {filteredAndSortedListings.map((listing) => (
-          <a
+          <Link
             key={listing.room_id}
-            href={`/room/${listing.room_id}`}
-            target="_blank"
-            rel="noopener noreferrer"
+            to={`/room/${listing.room_id}`}
             className="block"
+            onClick={() => handleCardClick(listing.room_id)}
           >
             <Card 
               className="hover:shadow-moderate transition-shadow cursor-pointer"
@@ -243,7 +248,7 @@ export const ListingGrid = ({ filters }: ListingGridProps) => {
               </div>
             </CardContent>
           </Card>
-          </a>
+          </Link>
         ))}
       </div>
     </div>
