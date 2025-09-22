@@ -101,13 +101,16 @@ const RoomPage = () => {
           .eq('room_id', room.id);
 
         // Process amenities safely  
-        const allAmenities = roomAmenities?.map(ra => ra.amenity).filter(Boolean) || [];
-        const propertyAmenities = allAmenities.filter(amenity => {
-          return amenity && typeof amenity === 'object' && 'category' in amenity && (amenity as any).category === 'property';
-        });
-        const roomAmenitiesFiltered = allAmenities.filter(amenity => {
-          return amenity && typeof amenity === 'object' && 'category' in amenity && (amenity as any).category === 'room';
-        });
+        const allAmenities = roomAmenities?.map(ra => ra.amenity) || [];
+        const validAmenities = allAmenities.filter((amenity): amenity is NonNullable<typeof amenity> => 
+          amenity !== null && amenity !== undefined && typeof amenity === 'object'
+        );
+        const propertyAmenities = validAmenities.filter(amenity => 
+          'category' in amenity && (amenity as any).category === 'property'
+        );
+        const roomAmenitiesFiltered = validAmenities.filter(amenity => 
+          'category' in amenity && (amenity as any).category === 'room'
+        );
 
         setRoomData({
           room,
