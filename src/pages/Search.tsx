@@ -6,27 +6,57 @@ import { ListingGrid } from "@/components/search/ListingGrid";
 import { Button } from "@/components/ui/button";
 import { Map, List, SlidersHorizontal } from "lucide-react";
 
+export interface FilterState {
+  budget: [number, number];
+  flatmates: string;
+  space: string;
+  couplesAccepted: boolean;
+  dateRange: { from?: Date; to?: Date };
+  sort: string;
+}
+
 const Search = () => {
-  const [searchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [viewMode, setViewMode] = useState<'list' | 'map' | 'split'>('split');
   const [showMobileMap, setShowMobileMap] = useState(false);
   const [showFilters, setShowFilters] = useState(false);
 
+  // Filter state management
+  const [filters, setFilters] = useState<FilterState>({
+    budget: [300, 800],
+    flatmates: "any",
+    space: "any", 
+    couplesAccepted: false,
+    dateRange: {},
+    sort: searchParams.get('sort') || 'featured'
+  });
+
   // Extract search parameters
   const city = searchParams.get('city') || '';
   const bbox = searchParams.get('bbox') || '';
-  const filters = searchParams.get('filters') || '';
+  const filtersParam = searchParams.get('filters') || '';
   const sort = searchParams.get('sort') || 'featured';
 
   useEffect(() => {
     // Track analytics
     console.log('search_page_viewed', {
       city,
-      filters,
+      filters: filtersParam,
       sort,
       timestamp: Date.now()
     });
-  }, [city, filters, sort]);
+  }, [city, filtersParam, sort]);
+
+  const handleFilterChange = (newFilters: Partial<FilterState>) => {
+    const updatedFilters = { ...filters, ...newFilters };
+    setFilters(updatedFilters);
+    
+    // Update URL with filter state (simplified for demo)
+    const params = new URLSearchParams(searchParams);
+    if (city) params.set('city', city);
+    if (updatedFilters.sort !== 'featured') params.set('sort', updatedFilters.sort);
+    setSearchParams(params);
+  };
 
   return (
     <div className="min-h-screen bg-background">
@@ -105,7 +135,7 @@ const Search = () => {
       {/* Mobile Filters */}
       {showFilters && (
         <div className="lg:hidden border-b border-border bg-surface-elevated p-4">
-          <SearchFilters />
+          <SearchFilters filters={filters} onFilterChange={handleFilterChange} />
         </div>
       )}
 
@@ -114,7 +144,7 @@ const Search = () => {
         {/* Desktop Sidebar Filters */}
         <div className="hidden lg:block w-80 border-r border-border bg-surface-elevated">
           <div className="p-6 h-full overflow-y-auto">
-            <SearchFilters />
+            <SearchFilters filters={filters} onFilterChange={handleFilterChange} />
           </div>
         </div>
 
@@ -128,7 +158,7 @@ const Search = () => {
               </div>
             ) : (
               <div className="p-4">
-                <ListingGrid />
+                <ListingGrid filters={filters} />
               </div>
             )}
           </div>
@@ -136,7 +166,7 @@ const Search = () => {
           {/* Desktop: List view */}
           {viewMode === 'list' && (
             <div className="hidden lg:block w-full p-6">
-              <ListingGrid />
+              <ListingGrid filters={filters} />
             </div>
           )}
 
@@ -144,7 +174,7 @@ const Search = () => {
           {viewMode === 'split' && (
             <>
               <div className="hidden lg:block w-1/2 p-6 overflow-y-auto">
-                <ListingGrid />
+                <ListingGrid filters={filters} />
               </div>
               <div className="hidden lg:block w-1/2 h-[calc(100vh-120px)] sticky top-[120px]">
                 <MapContainer />

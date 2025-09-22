@@ -1,7 +1,10 @@
+import React from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Link } from "react-router-dom";
 import { MapPin, Users, Heart, Star, MessageSquare } from "lucide-react";
+import { FilterState } from "@/pages/Search";
 
 // Mock data for demo
 const mockListings = [
@@ -84,30 +87,88 @@ const mockListings = [
   }
 ];
 
-export const ListingGrid = () => {
+interface ListingGridProps {
+  filters?: FilterState;
+}
+
+export const ListingGrid = ({ filters }: ListingGridProps) => {
   const handleCardHover = (listingId: string) => {
     console.log('card_hover_preview', { listingId, timestamp: Date.now() });
   };
 
-  const handleRequestChat = (listingId: string) => {
+  const handleRequestChat = (listingId: string, event: React.MouseEvent) => {
+    event.preventDefault(); // Prevent link navigation
     console.log('request_to_chat_clicked', { listingId, timestamp: Date.now() });
   };
+
+  // Filter and sort listings based on filters
+  const filteredAndSortedListings = React.useMemo(() => {
+    let filtered = [...mockListings];
+
+    if (filters) {
+      // Budget filter
+      if (filters.budget) {
+        filtered = filtered.filter(listing => 
+          listing.price >= filters.budget[0] && listing.price <= filters.budget[1]
+        );
+      }
+
+      // Flatmates filter
+      if (filters.flatmates && filters.flatmates !== "any") {
+        if (filters.flatmates === "4+") {
+          filtered = filtered.filter(listing => listing.flatmates >= 4);
+        } else {
+          filtered = filtered.filter(listing => listing.flatmates === parseInt(filters.flatmates));
+        }
+      }
+
+      // Space filter (for this demo, we'll treat all listings as rooms)
+      if (filters.space && filters.space !== "any") {
+        if (filters.space === "whole") {
+          filtered = filtered.filter(listing => listing.flatmates === 0);
+        }
+      }
+
+      // Couples filter
+      if (filters.couplesAccepted) {
+        filtered = filtered.filter(listing => listing.couples);
+      }
+    }
+
+    // Sort listings
+    const sortType = filters?.sort || 'featured';
+    switch (sortType) {
+      case 'newest':
+        // For demo, keep original order
+        break;
+      case 'price-low':
+        filtered.sort((a, b) => a.price - b.price);
+        break;
+      case 'price-high':
+        filtered.sort((a, b) => b.price - a.price);
+        break;
+      case 'featured':
+      default:
+        filtered.sort((a, b) => b.matchScore - a.matchScore);
+        break;
+    }
+
+    return filtered;
+  }, [filters]);
 
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <p className="text-sm text-muted-foreground">
-          {mockListings.length} καταχωρήσεις βρέθηκαν
+          {filteredAndSortedListings.length} καταχωρήσεις βρέθηκαν
         </p>
       </div>
 
       <div className="grid gap-6">
-        {mockListings.map((listing) => (
-          <a
+        {filteredAndSortedListings.map((listing) => (
+          <Link
             key={listing.id}
-            href={`/room/${listing.title.toLowerCase().replace(/\s+/g, '-')}/${listing.id}`}
-            target="_blank"
-            rel="noopener noreferrer"
+            to={`/room/${listing.title.toLowerCase().replace(/\s+/g, '-')}/${listing.id}`}
             className="block"
           >
             <Card 
@@ -171,7 +232,7 @@ export const ListingGrid = () => {
                     <Button 
                       variant="hero" 
                       size="sm"
-                      onClick={() => handleRequestChat(listing.id)}
+                      onClick={(e) => handleRequestChat(listing.id, e)}
                     >
                       <MessageSquare className="h-4 w-4 mr-2" />
                       Request to chat
@@ -181,7 +242,7 @@ export const ListingGrid = () => {
               </div>
             </CardContent>
           </Card>
-          </a>
+          </Link>
         ))}
       </div>
     </div>

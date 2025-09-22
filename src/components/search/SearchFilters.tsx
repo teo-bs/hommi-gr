@@ -1,4 +1,4 @@
-import { useState } from "react";
+import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
@@ -16,13 +16,14 @@ import {
   Home,
   X 
 } from "lucide-react";
+import { FilterState } from "@/pages/Search";
 
-export const SearchFilters = () => {
-  const [budget, setBudget] = useState([300, 800]);
-  const [dateRange, setDateRange] = useState<{ from?: Date; to?: Date }>({});
-  const [flatmates, setFlatmates] = useState("any");
-  const [space, setSpace] = useState("any");
-  const [couplesAccepted, setCouplesAccepted] = useState(false);
+interface SearchFiltersProps {
+  filters: FilterState;
+  onFilterChange: (filters: Partial<FilterState>) => void;
+}
+
+export const SearchFilters = ({ filters, onFilterChange }: SearchFiltersProps) => {
   const [activeFilters, setActiveFilters] = useState<string[]>([]);
 
   const handleFilterChange = (filterType: string, value: any) => {
@@ -33,10 +34,13 @@ export const SearchFilters = () => {
       timestamp: Date.now()
     });
 
+    // Update parent component's filter state
+    onFilterChange({ [filterType]: value });
+
     // Update active filters for display
     const filterName = `${filterType}:${value}`;
     if (!activeFilters.includes(filterName)) {
-      setActiveFilters(prev => [...prev, filterName]);
+      setActiveFilters(prev => [...prev.filter(f => !f.startsWith(`${filterType}:`)), filterName]);
     }
   };
 
@@ -47,6 +51,20 @@ export const SearchFilters = () => {
     });
     
     setActiveFilters(prev => prev.filter(f => f !== filter));
+    
+    // Reset the filter value
+    const [filterType] = filter.split(':');
+    const defaultValues: any = {
+      budget: [300, 800],
+      flatmates: "any",
+      space: "any",
+      couplesAccepted: false,
+      sort: "featured"
+    };
+    
+    if (defaultValues[filterType] !== undefined) {
+      onFilterChange({ [filterType]: defaultValues[filterType] });
+    }
   };
 
   const clearAllFilters = () => {
@@ -54,11 +72,14 @@ export const SearchFilters = () => {
       timestamp: Date.now()
     });
     
-    setBudget([300, 800]);
-    setDateRange({});
-    setFlatmates("any");
-    setSpace("any");
-    setCouplesAccepted(false);
+    onFilterChange({
+      budget: [300, 800],
+      flatmates: "any",
+      space: "any",
+      couplesAccepted: false,
+      dateRange: {},
+      sort: "featured"
+    });
     setActiveFilters([]);
   };
 
@@ -115,10 +136,9 @@ export const SearchFilters = () => {
         <CardContent>
           <div className="space-y-4">
             <Slider
-              value={budget}
+              value={filters.budget}
               onValueChange={(value) => {
-                setBudget(value);
-                handleFilterChange('budget', `${value[0]}-${value[1]}€`);
+                handleFilterChange('budget', value);
               }}
               max={2000}
               min={200}
@@ -126,8 +146,8 @@ export const SearchFilters = () => {
               className="w-full"
             />
             <div className="flex justify-between text-sm text-muted-foreground">
-              <span>{budget[0]}€</span>
-              <span>{budget[1]}€</span>
+              <span>{filters.budget[0]}€</span>
+              <span>{filters.budget[1]}€</span>
             </div>
           </div>
         </CardContent>
@@ -146,11 +166,11 @@ export const SearchFilters = () => {
             <PopoverTrigger asChild>
               <Button variant="outline" className="w-full justify-start">
                 <CalendarIcon className="h-4 w-4 mr-2" />
-                {dateRange.from ? (
-                  dateRange.to ? (
-                    `${dateRange.from.toLocaleDateString()} - ${dateRange.to.toLocaleDateString()}`
+                {filters.dateRange.from ? (
+                  filters.dateRange.to ? (
+                    `${filters.dateRange.from.toLocaleDateString()} - ${filters.dateRange.to.toLocaleDateString()}`
                   ) : (
-                    dateRange.from.toLocaleDateString()
+                    filters.dateRange.from.toLocaleDateString()
                   )
                 ) : (
                   "Επιλέξτε ημερομηνίες"
@@ -160,12 +180,9 @@ export const SearchFilters = () => {
             <PopoverContent className="w-auto p-0" align="start">
               <Calendar
                 mode="range"
-                selected={dateRange.from ? { from: dateRange.from, to: dateRange.to } : undefined}
+                selected={filters.dateRange.from ? { from: filters.dateRange.from, to: filters.dateRange.to } : undefined}
                 onSelect={(range) => {
-                  setDateRange(range || {});
-                  if (range?.from) {
-                    handleFilterChange('availability', range.from.toISOString().split('T')[0]);
-                  }
+                  handleFilterChange('dateRange', range || {});
                 }}
                 numberOfMonths={2}
               />
@@ -184,9 +201,8 @@ export const SearchFilters = () => {
         </CardHeader>
         <CardContent>
           <Select
-            value={flatmates}
+            value={filters.flatmates}
             onValueChange={(value) => {
-              setFlatmates(value);
               handleFilterChange('flatmates', value);
             }}
           >
@@ -215,9 +231,8 @@ export const SearchFilters = () => {
         </CardHeader>
         <CardContent>
           <Select
-            value={space}
+            value={filters.space}
             onValueChange={(value) => {
-              setSpace(value);
               handleFilterChange('space', value);
             }}
           >
@@ -243,12 +258,9 @@ export const SearchFilters = () => {
             <div className="flex items-center space-x-2">
               <Checkbox
                 id="couples"
-                checked={couplesAccepted}
+                checked={filters.couplesAccepted}
                 onCheckedChange={(checked) => {
-                  setCouplesAccepted(checked as boolean);
-                  if (checked) {
-                    handleFilterChange('couples', 'accepted');
-                  }
+                  handleFilterChange('couplesAccepted', checked as boolean);
                 }}
               />
               <Label
@@ -268,7 +280,10 @@ export const SearchFilters = () => {
           <CardTitle className="text-base">Ταξινόμηση</CardTitle>
         </CardHeader>
         <CardContent>
-          <Select defaultValue="featured">
+          <Select 
+            value={filters.sort} 
+            onValueChange={(value) => handleFilterChange('sort', value)}
+          >
             <SelectTrigger>
               <SelectValue />
             </SelectTrigger>
