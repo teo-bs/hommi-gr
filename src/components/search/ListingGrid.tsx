@@ -2,7 +2,7 @@ import React from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Link } from "react-router-dom";
+
 import { MapPin, Users, Heart, Star, MessageSquare } from "lucide-react";
 import { FilterState } from "@/pages/Search";
 
@@ -166,9 +166,11 @@ export const ListingGrid = ({ filters }: ListingGridProps) => {
 
       <div className="grid gap-6">
         {filteredAndSortedListings.map((listing) => (
-          <Link
+          <a
             key={listing.id}
-            to={`/room/${listing.title.toLowerCase().replace(/\s+/g, '-')}/${listing.id}`}
+            href={`/room/${listing.title.toLowerCase().replace(/\s+/g, '-')}/${listing.id}`}
+            target="_blank"
+            rel="noopener noreferrer"
             className="block"
           >
             <Card 
@@ -242,7 +244,7 @@ export const ListingGrid = ({ filters }: ListingGridProps) => {
               </div>
             </CardContent>
           </Card>
-          </Link>
+          </a>
         ))}
       </div>
     </div>
