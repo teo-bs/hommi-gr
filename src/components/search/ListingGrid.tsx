@@ -1,97 +1,77 @@
 import React from "react";
+import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-
+import { supabase } from "@/integrations/supabase/client";
 import { MapPin, Users, Heart, Star, MessageSquare } from "lucide-react";
 import { FilterState } from "@/pages/Search";
 
-// Mock data for demo
-const mockListings = [
-  {
-    id: "cozy-koukaki-room-1",
-    title: "Cozy room in trendy Koukaki",
-    price: 520,
-    neighborhood: "Κουκάκι",
-    flatmates: 2,
-    matchScore: 92,
-    photos: ["/placeholder.svg"],
-    couples: true,
-    verified: true
-  },
-  {
-    id: "acropolis-museum-room-1", 
-    title: "Spacious room near Acropolis Museum",
-    price: 680,
-    neighborhood: "Μακρυγιάννη",
-    flatmates: 1,
-    matchScore: 88,
-    photos: ["/placeholder.svg"],
-    couples: false,
-    verified: true
-  },
-  {
-    id: "bohemian-exarchia-room-1",
-    title: "Bohemian flat in Exarchia", 
-    price: 450,
-    neighborhood: "Εξάρχεια",
-    flatmates: 3,
-    matchScore: 85,
-    photos: ["/placeholder.svg"],
-    couples: true,
-    verified: true
-  },
-  {
-    id: "quiet-pangrati-room-1",
-    title: "Quiet room in Pangrati",
-    price: 480,
-    neighborhood: "Παγκράτι", 
-    flatmates: 2,
-    matchScore: 78,
-    photos: ["/placeholder.svg"],
-    couples: false,
-    verified: true
-  },
-  {
-    id: "luxury-kolonaki-room-1",
-    title: "Luxury apartment in Kolonaki",
-    price: 750,
-    neighborhood: "Κολωνάκι",
-    flatmates: 1,
-    matchScore: 95,
-    photos: ["/placeholder.svg"],
-    couples: true,
-    verified: true
-  },
-  {
-    id: "modern-ambelokipi-studio-1",
-    title: "Modern studio near Metro",
-    price: 550,
-    neighborhood: "Αμπελόκηποι",
-    flatmates: 0,
-    matchScore: 89,
-    photos: ["/placeholder.svg"],
-    couples: false,
-    verified: true
-  },
-  {
-    id: "traditional-plaka-room-1",
-    title: "Traditional flat in Plaka",
-    price: 620,
-    neighborhood: "Πλάκα",
-    flatmates: 2,
-    matchScore: 91,
-    photos: ["/placeholder.svg"],
-    couples: true,
-    verified: true
-  }
-];
+interface ListingWithRoom {
+  id: string;
+  title: string;
+  price_month: number;
+  neighborhood: string;
+  city: string;
+  flatmates_count: number;
+  couples_accepted: boolean;
+  photos: string[];
+  room_id: string;
+}
 
 interface ListingGridProps {
   filters?: FilterState;
 }
 
 export const ListingGrid = ({ filters }: ListingGridProps) => {
+  // Fetch listings with rooms from Supabase
+  // Fetch listings from Supabase
+  const { data: listings, isLoading } = useQuery({
+    queryKey: ['listings', filters],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('listings')
+        .select(`
+          id,
+          title,
+          price_month,
+          neighborhood,
+          city,
+          flatmates_count,
+          couples_accepted,
+          photos
+        `)
+        .eq('status', 'published')
+        .order('created_at', { ascending: false });
+      
+      if (error) throw error;
+      
+      // Get room IDs for each listing
+      const listingIds = data?.map(listing => listing.id) || [];
+      const { data: rooms } = await supabase
+        .from('rooms')
+        .select('id, listing_id')
+        .in('listing_id', listingIds);
+      
+      const roomMap = rooms?.reduce((acc, room) => {
+        acc[room.listing_id] = room.id;
+        return acc;
+      }, {} as Record<string, string>) || {};
+      
+      return (data || []).map(listing => ({
+        id: listing.id,
+        title: listing.title,
+        price_month: listing.price_month,
+        neighborhood: listing.neighborhood || '',
+        city: listing.city,
+        flatmates_count: listing.flatmates_count,
+        couples_accepted: listing.couples_accepted,
+        photos: Array.isArray(listing.photos) ? listing.photos : ['/placeholder.svg'],
+        room_id: roomMap[listing.id] || listing.id
+      })) as ListingWithRoom[];
+    }
+  });
+
   const handleCardHover = (listingId: string) => {
     console.log('card_hover_preview', { listingId, timestamp: Date.now() });
   };
@@ -103,58 +83,79 @@ export const ListingGrid = ({ filters }: ListingGridProps) => {
 
   // Filter and sort listings based on filters
   const filteredAndSortedListings = React.useMemo(() => {
-    let filtered = [...mockListings];
+    if (!listings) return [];
+    
+    let filtered = [...listings];
 
     if (filters) {
       // Budget filter
       if (filters.budget) {
         filtered = filtered.filter(listing => 
-          listing.price >= filters.budget[0] && listing.price <= filters.budget[1]
+          listing.price_month >= filters.budget[0] && listing.price_month <= filters.budget[1]
         );
       }
 
       // Flatmates filter
       if (filters.flatmates && filters.flatmates !== "any") {
         if (filters.flatmates === "4+") {
-          filtered = filtered.filter(listing => listing.flatmates >= 4);
+          filtered = filtered.filter(listing => listing.flatmates_count >= 4);
         } else {
-          filtered = filtered.filter(listing => listing.flatmates === parseInt(filters.flatmates));
+          filtered = filtered.filter(listing => listing.flatmates_count === parseInt(filters.flatmates));
         }
       }
 
       // Space filter (for this demo, we'll treat all listings as rooms)
       if (filters.space && filters.space !== "any") {
         if (filters.space === "whole") {
-          filtered = filtered.filter(listing => listing.flatmates === 0);
+          filtered = filtered.filter(listing => listing.flatmates_count === 0);
         }
       }
 
       // Couples filter
       if (filters.couplesAccepted) {
-        filtered = filtered.filter(listing => listing.couples);
+        filtered = filtered.filter(listing => listing.couples_accepted);
       }
     }
 
     // Sort listings
-    const sortType = filters?.sort || 'featured';
+    const sortType = filters?.sort || 'newest';
     switch (sortType) {
       case 'newest':
-        // For demo, keep original order
+        // Keep original order (already sorted by created_at desc)
         break;
       case 'price-low':
-        filtered.sort((a, b) => a.price - b.price);
+        filtered.sort((a, b) => a.price_month - b.price_month);
         break;
       case 'price-high':
-        filtered.sort((a, b) => b.price - a.price);
+        filtered.sort((a, b) => b.price_month - a.price_month);
         break;
       case 'featured':
       default:
-        filtered.sort((a, b) => b.matchScore - a.matchScore);
+        // Keep original order for now
         break;
     }
 
     return filtered;
-  }, [filters]);
+  }, [listings, filters]);
+
+  if (isLoading) {
+    return (
+      <div className="space-y-4">
+        <div className="flex items-center justify-between">
+          <p className="text-sm text-muted-foreground">
+            Φόρτωση καταχωρήσεων...
+          </p>
+        </div>
+        <div className="grid gap-6">
+          {Array.from({ length: 3 }, (_, i) => (
+            <div key={i} className="animate-pulse">
+              <div className="h-48 bg-muted rounded-lg"></div>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-4">
@@ -167,15 +168,15 @@ export const ListingGrid = ({ filters }: ListingGridProps) => {
       <div className="grid gap-6">
         {filteredAndSortedListings.map((listing) => (
           <a
-            key={listing.id}
-            href={`/room/${listing.title.toLowerCase().replace(/\s+/g, '-')}/${listing.id}`}
+            key={listing.room_id}
+            href={`/room/${listing.room_id}`}
             target="_blank"
             rel="noopener noreferrer"
             className="block"
           >
             <Card 
               className="hover:shadow-moderate transition-shadow cursor-pointer"
-              onMouseEnter={() => handleCardHover(listing.id)}
+              onMouseEnter={() => handleCardHover(listing.room_id)}
             >
             <CardContent className="p-0">
               <div className="flex flex-col md:flex-row">
@@ -198,7 +199,7 @@ export const ListingGrid = ({ filters }: ListingGridProps) => {
                     </div>
                     
                     <div className="text-right">
-                      <div className="text-2xl font-bold">{listing.price}€</div>
+                      <div className="text-2xl font-bold">{listing.price_month}€</div>
                       <div className="text-sm text-muted-foreground">+ λογαριασμοί</div>
                     </div>
                   </div>
@@ -206,35 +207,33 @@ export const ListingGrid = ({ filters }: ListingGridProps) => {
                   <div className="flex items-center space-x-4 mb-4">
                     <div className="flex items-center">
                       <Users className="h-4 w-4 mr-1 text-muted-foreground" />
-                      <span className="text-sm">{listing.flatmates} συγκάτοικοι</span>
+                      <span className="text-sm">{listing.flatmates_count} συγκάτοικοι</span>
                     </div>
                     
-                    {listing.couples && (
+                    {listing.couples_accepted && (
                       <Badge variant="secondary" className="text-xs">
                         <Heart className="h-3 w-3 mr-1" />
                         Couples OK
                       </Badge>
                     )}
                     
-                    {listing.verified && (
-                      <Badge variant="secondary" className="text-xs text-success">
-                        <Star className="h-3 w-3 mr-1" />
-                        Verified
-                      </Badge>
-                    )}
+                    <Badge variant="secondary" className="text-xs text-success">
+                      <Star className="h-3 w-3 mr-1" />
+                      Verified
+                    </Badge>
                   </div>
 
                   <div className="flex items-center justify-between">
                     <div className="flex items-center">
                       <div className="text-sm font-medium text-primary">
-                        {listing.matchScore}% match
+                        New listing
                       </div>
                     </div>
                     
                     <Button 
                       variant="hero" 
                       size="sm"
-                      onClick={(e) => handleRequestChat(listing.id, e)}
+                      onClick={(e) => handleRequestChat(listing.room_id, e)}
                     >
                       <MessageSquare className="h-4 w-4 mr-2" />
                       Request to chat

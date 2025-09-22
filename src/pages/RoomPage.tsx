@@ -36,7 +36,7 @@ interface RoomData {
 }
 
 const RoomPage = () => {
-  const { slug, id } = useParams();
+  const { id } = useParams();
   const navigate = useNavigate();
   const { user } = useAuth();
   const [roomData, setRoomData] = useState<RoomData | null>(null);
@@ -61,7 +61,8 @@ const RoomPage = () => {
           .single();
 
         if (roomError || !room) {
-          navigate('/');
+          console.error('Room not found:', id);
+          navigate('/404');
           return;
         }
 
@@ -73,7 +74,8 @@ const RoomPage = () => {
           .single();
 
         if (!listing) {
-          navigate('/');
+          console.error('Listing not found for room:', id);
+          navigate('/404');
           return;
         }
 
@@ -136,7 +138,7 @@ const RoomPage = () => {
 
       } catch (error) {
         console.error('Error fetching room:', error);
-        navigate('/');
+        navigate('/404');
       } finally {
         setLoading(false);
       }
