@@ -6,27 +6,82 @@ import { MapPin, Users, Heart, Star, MessageSquare } from "lucide-react";
 // Mock data for demo
 const mockListings = [
   {
-    id: "1",
-    title: "Όμορφο δωμάτιο στο Κουκάκι",
-    price: 450,
+    id: "cozy-koukaki-room-1",
+    title: "Cozy room in trendy Koukaki",
+    price: 520,
     neighborhood: "Κουκάκι",
     flatmates: 2,
-    matchScore: 85,
-    photos: ["/api/placeholder/400/300"],
+    matchScore: 92,
+    photos: ["/placeholder.svg"],
     couples: true,
-    verified: true,
+    verified: true
   },
   {
-    id: "2", 
-    title: "Σύγχρονο διαμέρισμα Εξάρχεια",
-    price: 650,
-    neighborhood: "Εξάρχεια",
+    id: "acropolis-museum-room-1", 
+    title: "Spacious room near Acropolis Museum",
+    price: 680,
+    neighborhood: "Μακρυγιάννη",
     flatmates: 1,
-    matchScore: 92,
-    photos: ["/api/placeholder/400/300"],
+    matchScore: 88,
+    photos: ["/placeholder.svg"],
     couples: false,
-    verified: true,
+    verified: true
   },
+  {
+    id: "bohemian-exarchia-room-1",
+    title: "Bohemian flat in Exarchia", 
+    price: 450,
+    neighborhood: "Εξάρχεια",
+    flatmates: 3,
+    matchScore: 85,
+    photos: ["/placeholder.svg"],
+    couples: true,
+    verified: true
+  },
+  {
+    id: "quiet-pangrati-room-1",
+    title: "Quiet room in Pangrati",
+    price: 480,
+    neighborhood: "Παγκράτι", 
+    flatmates: 2,
+    matchScore: 78,
+    photos: ["/placeholder.svg"],
+    couples: false,
+    verified: true
+  },
+  {
+    id: "luxury-kolonaki-room-1",
+    title: "Luxury apartment in Kolonaki",
+    price: 750,
+    neighborhood: "Κολωνάκι",
+    flatmates: 1,
+    matchScore: 95,
+    photos: ["/placeholder.svg"],
+    couples: true,
+    verified: true
+  },
+  {
+    id: "modern-ambelokipi-studio-1",
+    title: "Modern studio near Metro",
+    price: 550,
+    neighborhood: "Αμπελόκηποι",
+    flatmates: 0,
+    matchScore: 89,
+    photos: ["/placeholder.svg"],
+    couples: false,
+    verified: true
+  },
+  {
+    id: "traditional-plaka-room-1",
+    title: "Traditional flat in Plaka",
+    price: 620,
+    neighborhood: "Πλάκα",
+    flatmates: 2,
+    matchScore: 91,
+    photos: ["/placeholder.svg"],
+    couples: true,
+    verified: true
+  }
 ];
 
 export const ListingGrid = () => {
