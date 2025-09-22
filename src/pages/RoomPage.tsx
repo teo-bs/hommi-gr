@@ -53,25 +53,43 @@ const RoomPage = () => {
 
     const fetchRoom = async () => {
       try {
+        console.log('Fetching room data for ID:', id);
+        
         // Fetch room with listing data
         const { data: room, error: roomError } = await supabase
           .from('rooms')
           .select('*')
           .eq('id', id)
-          .single();
+          .maybeSingle();
 
-        if (roomError || !room) {
+        console.log('Room fetch result:', { room, roomError });
+
+        if (roomError) {
+          console.error('Room fetch error:', roomError);
+          navigate('/404');
+          return;
+        }
+
+        if (!room) {
           console.error('Room not found:', id);
           navigate('/404');
           return;
         }
 
         // Fetch listing data
-        const { data: listing } = await supabase
+        const { data: listing, error: listingError } = await supabase
           .from('listings')
           .select('*')
           .eq('id', room.listing_id)
-          .single();
+          .maybeSingle();
+
+        console.log('Listing fetch result:', { listing, listingError });
+
+        if (listingError) {
+          console.error('Listing fetch error:', listingError);
+          navigate('/404');
+          return;
+        }
 
         if (!listing) {
           console.error('Listing not found for room:', id);
@@ -80,33 +98,41 @@ const RoomPage = () => {
         }
 
         // Fetch photos
-        const { data: photos } = await supabase
+        const { data: photos, error: photosError } = await supabase
           .from('room_photos')
           .select('*')
           .eq('room_id', room.id)
           .order('sort_order');
 
+        console.log('Photos fetch result:', { photos, photosError });
+
         // Fetch stats
-        const { data: stats } = await supabase
+        const { data: stats, error: statsError } = await supabase
           .from('room_stats')
           .select('*')
           .eq('room_id', room.id)
-          .single();
+          .maybeSingle();
+
+        console.log('Stats fetch result:', { stats, statsError });
 
         // Fetch lister data
-        const { data: lister } = await supabase
+        const { data: lister, error: listerError } = await supabase
           .from('listers')
           .select('*, profile:profiles(*)')
           .eq('profile_id', listing.owner_id)
-          .single();
+          .maybeSingle();
+
+        console.log('Lister fetch result:', { lister, listerError });
 
         // Fetch amenities
-        const { data: roomAmenities } = await supabase
+        const { data: roomAmenities, error: amenitiesError } = await supabase
           .from('room_amenities')
           .select(`
             amenity:amenities(*)
           `)
           .eq('room_id', room.id);
+
+        console.log('Amenities fetch result:', { roomAmenities, amenitiesError });
 
         // Process amenities safely  
         const allAmenities = roomAmenities?.map(ra => ra.amenity) || [];
@@ -120,7 +146,7 @@ const RoomPage = () => {
           'category' in amenity && (amenity as any).category === 'room'
         );
 
-        setRoomData({
+        const roomData = {
           room,
           listing,
           lister,
@@ -131,10 +157,18 @@ const RoomPage = () => {
             room: roomAmenitiesFiltered
           },
           stats
-        });
+        };
+
+        console.log('Setting room data:', roomData);
+        setRoomData(roomData);
 
         // Increment view count
-        await supabase.rpc('increment_room_views', { rid: room.id });
+        try {
+          await supabase.rpc('increment_room_views', { rid: room.id });
+          console.log('View count incremented for room:', room.id);
+        } catch (viewError) {
+          console.error('Error incrementing view count:', viewError);
+        }
 
       } catch (error) {
         console.error('Error fetching room:', error);
