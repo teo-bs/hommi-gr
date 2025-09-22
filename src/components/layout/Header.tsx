@@ -3,10 +3,15 @@ import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Home, User, MessageSquare, Plus, Globe, Menu, X } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
+import { useListingFlow } from "@/hooks/useListingFlow";
 import { AuthModal } from "@/components/auth/AuthModal";
+import { TermsPrivacyModal } from "@/components/auth/TermsPrivacyModal";
+import { RoleSelectionScreen } from "@/components/listing/RoleSelectionScreen";
+import { ListingWizard } from "@/components/listing/ListingWizard";
 
 export const Header = () => {
   const { user, profile } = useAuth();
+  const listingFlow = useListingFlow();
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [language, setLanguage] = useState('el'); // Greek default
@@ -15,6 +20,10 @@ export const Header = () => {
     if (!user) {
       setShowAuthModal(true);
     }
+  };
+
+  const handlePublishListing = () => {
+    listingFlow.initiateListingFlow();
   };
 
   const toggleLanguage = () => {
@@ -65,11 +74,15 @@ export const Header = () => {
                 </span>
               </Button>
 
-              <Link to="/create-listing">
-                <Button variant="outline" size="sm" className="border-foreground/20">
-                  {language === 'el' ? 'Δημοσίευσε αγγελία' : 'List Property'}
-                </Button>
-              </Link>
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className="border-foreground/20"
+                onClick={handlePublishListing}
+              >
+                <Plus className="h-4 w-4 mr-2" />
+                {language === 'el' ? 'Δημοσίευσε αγγελία' : 'List Property'}
+              </Button>
 
               {user ? (
                 <div className="flex items-center space-x-2">
@@ -140,12 +153,18 @@ export const Header = () => {
                   {language === 'el' ? 'English' : 'Ελληνικά'}
                 </Button>
                 
-                <Link to="/create-listing" onClick={() => setMobileMenuOpen(false)}>
-                  <Button variant="outline" size="sm" className="w-full justify-start border-foreground/20">
-                    <Plus className="h-4 w-4 mr-2" />
-                    {language === 'el' ? 'Δημοσίευσε αγγελία' : 'List Property'}
-                  </Button>
-                </Link>
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  className="w-full justify-start border-foreground/20"
+                  onClick={() => {
+                    handlePublishListing();
+                    setMobileMenuOpen(false);
+                  }}
+                >
+                  <Plus className="h-4 w-4 mr-2" />
+                  {language === 'el' ? 'Δημοσίευσε αγγελία' : 'List Property'}
+                </Button>
 
                 {user ? (
                   <>
@@ -186,6 +205,42 @@ export const Header = () => {
         isOpen={showAuthModal} 
         onClose={() => setShowAuthModal(false)} 
       />
+      
+      <AuthModal 
+        isOpen={listingFlow.authModalOpen} 
+        onClose={listingFlow.closeAuth}
+        onSuccess={listingFlow.handleAuthSuccess}
+      />
+      
+      <TermsPrivacyModal
+        isOpen={listingFlow.termsModalOpen}
+        onAccept={listingFlow.handleTermsAccepted}
+      />
+      
+      {listingFlow.roleSelectionOpen && (
+        <div className="fixed inset-0 bg-background z-50 overflow-auto">
+          <div className="min-h-screen">
+            <RoleSelectionScreen
+              onRoleSelected={listingFlow.handleRoleSelected}
+              selectedRole={listingFlow.selectedRole || undefined}
+            />
+          </div>
+        </div>
+      )}
+      
+      {listingFlow.wizardOpen && listingFlow.selectedRole && (
+        <div className="fixed inset-0 bg-background z-50 overflow-auto">
+          <div className="min-h-screen">
+            <ListingWizard
+              role={listingFlow.selectedRole}
+              initialDraft={listingFlow.currentDraft || undefined}
+              onSave={listingFlow.handleDraftSaved}
+              onPublish={listingFlow.handleListingPublished}
+              onBack={listingFlow.closeWizard}
+            />
+          </div>
+        </div>
+      )}
     </>
   );
 };

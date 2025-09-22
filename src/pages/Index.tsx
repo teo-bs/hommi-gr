@@ -6,6 +6,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { DatePicker } from "@/components/search/DatePicker";
 import { DurationSelector } from "@/components/search/DurationSelector";
+import { useListingFlow } from "@/hooks/useListingFlow";
 import { 
   Search, 
   Users, 
@@ -15,12 +16,14 @@ import {
   MapPin,
   CheckCircle,
   Star,
-  ArrowRight
+  ArrowRight,
+  Plus
 } from "lucide-react";
 import heroImage from "@/assets/hero-image.jpg";
 
 const Index = () => {
   const navigate = useNavigate();
+  const listingFlow = useListingFlow();
   const [searchQuery, setSearchQuery] = useState("");
   const [moveInDate, setMoveInDate] = useState<Date | undefined>();
   const [duration, setDuration] = useState("");
@@ -57,6 +60,10 @@ const Index = () => {
     });
 
     navigate(`/search?filters=${encodeURIComponent(shortcut)}`);
+  };
+
+  const handlePublishListing = () => {
+    listingFlow.initiateListingFlow();
   };
 
   return (
@@ -249,11 +256,21 @@ const Index = () => {
               <Button
                 variant="hero"
                 size="lg"
-                className="mt-8"
+                className="mt-8 mr-4"
                 onClick={() => navigate('/search')}
               >
                 Ξεκίνα την αναζήτηση
                 <ArrowRight className="h-4 w-4 ml-2" />
+              </Button>
+              
+              <Button
+                variant="outline"
+                size="lg"
+                className="mt-8"
+                onClick={handlePublishListing}
+              >
+                <Plus className="h-4 w-4 mr-2" />
+                Δημοσίευσε αγγελία
               </Button>
             </div>
 
