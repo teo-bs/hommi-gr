@@ -21,18 +21,7 @@ export const Header = () => {
     setLanguage(prev => prev === 'el' ? 'en' : 'el');
   };
 
-  const menuItems = [
-    { 
-      label: language === 'el' ? 'Αρχική' : 'Home', 
-      href: '/', 
-      icon: Home 
-    },
-    { 
-      label: language === 'el' ? 'Αναζήτηση' : 'Search', 
-      href: '/search', 
-      icon: Home 
-    },
-  ];
+  const menuItems: any[] = [];
 
   return (
     <>
@@ -76,6 +65,12 @@ export const Header = () => {
                 </span>
               </Button>
 
+              <Link to="/create-listing">
+                <Button variant="outline" size="sm" className="border-foreground/20">
+                  {language === 'el' ? 'Δημοσίευσε αγγελία' : 'List Property'}
+                </Button>
+              </Link>
+
               {user ? (
                 <div className="flex items-center space-x-2">
                   <Link to="/inbox">
@@ -84,40 +79,22 @@ export const Header = () => {
                       {language === 'el' ? 'Μηνύματα' : 'Messages'}
                     </Button>
                   </Link>
-                  
-                  <Link to="/create-listing">
-                    <Button variant="hero" size="sm">
-                      <Plus className="h-4 w-4 mr-2" />
-                      {profile?.role === 'seeker' 
-                        ? (language === 'el' ? 'Δημοσίευση' : 'List Space')
-                        : (language === 'el' ? 'Νέα Καταχώρηση' : 'New Listing')
-                      }
-                    </Button>
-                  </Link>
 
                   <Link to="/profile">
-                    <Button variant="ghost" size="sm">
-                      <User className="h-4 w-4" />
+                    <Button variant="ghost" size="sm" className="rounded-full w-10 h-10 p-0">
+                      <User className="h-5 w-5" />
                     </Button>
                   </Link>
                 </div>
               ) : (
-                <div className="flex items-center space-x-2">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => handleAuthAction('login')}
-                  >
-                    {language === 'el' ? 'Σύνδεση' : 'Log In'}
-                  </Button>
-                  <Button
-                    variant="hero"
-                    size="sm"
-                    onClick={() => handleAuthAction('signup')}
-                  >
-                    {language === 'el' ? 'Εγγραφή' : 'Sign Up'}
-                  </Button>
-                </div>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => handleAuthAction('login')}
+                  className="rounded-full w-10 h-10 p-0"
+                >
+                  <User className="h-5 w-5" />
+                </Button>
               )}
             </div>
 
@@ -163,6 +140,13 @@ export const Header = () => {
                   {language === 'el' ? 'English' : 'Ελληνικά'}
                 </Button>
                 
+                <Link to="/create-listing" onClick={() => setMobileMenuOpen(false)}>
+                  <Button variant="outline" size="sm" className="w-full justify-start border-foreground/20">
+                    <Plus className="h-4 w-4 mr-2" />
+                    {language === 'el' ? 'Δημοσίευσε αγγελία' : 'List Property'}
+                  </Button>
+                </Link>
+
                 {user ? (
                   <>
                     <Link to="/inbox" onClick={() => setMobileMenuOpen(false)}>
@@ -171,38 +155,26 @@ export const Header = () => {
                         {language === 'el' ? 'Μηνύματα' : 'Messages'}
                       </Button>
                     </Link>
-                    <Link to="/create-listing" onClick={() => setMobileMenuOpen(false)}>
-                      <Button variant="hero" size="sm" className="w-full justify-start">
-                        <Plus className="h-4 w-4 mr-2" />
-                        {language === 'el' ? 'Δημοσίευση' : 'List Space'}
+                    <Link to="/profile" onClick={() => setMobileMenuOpen(false)}>
+                      <Button variant="ghost" size="sm" className="w-full justify-start">
+                        <User className="h-4 w-4 mr-2" />
+                        {language === 'el' ? 'Προφίλ' : 'Profile'}
                       </Button>
                     </Link>
                   </>
                 ) : (
-                  <>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="w-full justify-start"
-                      onClick={() => {
-                        handleAuthAction('login');
-                        setMobileMenuOpen(false);
-                      }}
-                    >
-                      {language === 'el' ? 'Σύνδεση' : 'Log In'}
-                    </Button>
-                    <Button
-                      variant="hero"
-                      size="sm"
-                      className="w-full justify-start"
-                      onClick={() => {
-                        handleAuthAction('signup');
-                        setMobileMenuOpen(false);
-                      }}
-                    >
-                      {language === 'el' ? 'Εγγραφή' : 'Sign Up'}
-                    </Button>
-                  </>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="w-full justify-start"
+                    onClick={() => {
+                      handleAuthAction('login');
+                      setMobileMenuOpen(false);
+                    }}
+                  >
+                    <User className="h-4 w-4 mr-2" />
+                    {language === 'el' ? 'Σύνδεση / Εγγραφή' : 'Login / Sign Up'}
+                  </Button>
                 )}
               </div>
             </div>

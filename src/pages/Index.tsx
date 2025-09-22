@@ -4,15 +4,15 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { DatePicker } from "@/components/search/DatePicker";
+import { DurationSelector } from "@/components/search/DurationSelector";
 import { 
   Search, 
   Users, 
   Shield, 
   Heart, 
   Home, 
-  MapPin, 
-  Calendar,
-  Timer,
+  MapPin,
   CheckCircle,
   Star,
   ArrowRight
@@ -22,14 +22,14 @@ import heroImage from "@/assets/hero-image.jpg";
 const Index = () => {
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState("");
-  const [moveInDate, setMoveInDate] = useState("");
+  const [moveInDate, setMoveInDate] = useState<Date | undefined>();
   const [duration, setDuration] = useState("");
 
   const handleSearch = () => {
     // Track analytics
     console.log('search_triggered', {
       query: searchQuery,
-      moveInDate,
+      moveInDate: moveInDate?.toISOString(),
       duration,
       timestamp: Date.now()
     });
@@ -37,7 +37,7 @@ const Index = () => {
     // Navigate to search with params
     const params = new URLSearchParams();
     if (searchQuery) params.set('city', searchQuery);
-    if (moveInDate) params.set('moveIn', moveInDate);
+    if (moveInDate) params.set('moveIn', moveInDate.toISOString());
     if (duration) params.set('duration', duration);
     
     navigate(`/search?${params.toString()}`);
@@ -80,52 +80,46 @@ const Index = () => {
               </p>
 
               {/* Search Bar */}
-              <Card className="max-w-4xl mx-auto bg-white/95 backdrop-blur shadow-elevated">
-                <CardContent className="p-6">
-                  <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                    <div className="md:col-span-1">
+              <Card className="max-w-4xl mx-auto bg-white/95 backdrop-blur shadow-elevated rounded-2xl">
+                <CardContent className="p-2">
+                  <div className="grid grid-cols-1 md:grid-cols-4 gap-0 bg-white rounded-xl shadow-sm">
+                    <div className="md:col-span-1 p-4 border-r border-border/10">
                       <div className="relative">
-                        <MapPin className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                        <Input
-                          placeholder="Περιοχή, γειτονιά..."
-                          value={searchQuery}
-                          onChange={(e) => setSearchQuery(e.target.value)}
-                          className="pl-10"
-                        />
+                        <MapPin className="absolute left-0 top-6 h-4 w-4 text-muted-foreground" />
+                        <div className="flex flex-col pl-6">
+                          <span className="text-xs font-medium text-foreground mb-1">
+                            Τοποθεσία
+                          </span>
+                          <Input
+                            placeholder="Περιοχή, γειτονιά..."
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                            className="border-0 bg-transparent p-0 h-auto text-sm focus-visible:ring-0"
+                          />
+                        </div>
                       </div>
                     </div>
-                    <div className="md:col-span-1">
-                      <div className="relative">
-                        <Calendar className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                        <Input
-                          type="date"
-                          placeholder="Ημ/νία μετακόμισης"
-                          value={moveInDate}
-                          onChange={(e) => setMoveInDate(e.target.value)}
-                          className="pl-10"
-                        />
-                      </div>
+                    <div className="md:col-span-1 p-4 border-r border-border/10">
+                      <DatePicker
+                        date={moveInDate}
+                        onDateChange={setMoveInDate}
+                        placeholder="Ημ/νία μετακόμισης"
+                      />
                     </div>
-                    <div className="md:col-span-1">
-                      <div className="relative">
-                        <Timer className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                        <Input
-                          placeholder="Διάρκεια (μήνες)"
-                          value={duration}
-                          onChange={(e) => setDuration(e.target.value)}
-                          className="pl-10"
-                        />
-                      </div>
+                    <div className="md:col-span-1 p-4 border-r border-border/10">
+                      <DurationSelector
+                        value={duration}
+                        onValueChange={setDuration}
+                      />
                     </div>
-                    <div className="md:col-span-1">
+                    <div className="md:col-span-1 p-4 flex items-center justify-center">
                       <Button 
                         onClick={handleSearch}
-                        className="w-full h-11"
+                        className="w-12 h-12 rounded-full"
                         variant="hero"
                         size="lg"
                       >
-                        <Search className="h-4 w-4 mr-2" />
-                        Αναζήτηση
+                        <Search className="h-5 w-5" />
                       </Button>
                     </div>
                   </div>
