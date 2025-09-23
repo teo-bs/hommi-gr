@@ -219,10 +219,10 @@ const RoomPage = () => {
   return (
     <>
       <Helmet>
-        <title>{listing.title} - €{listing.price_month}/month - Hommi</title>
+        <title>{`${listing?.title || 'Room'} - €${listing?.price_month || '0'}/month - Hommi`}</title>
         <meta 
           name="description" 
-          content={`${listing.title} in ${listing.neighborhood}, ${listing.city}. €${listing.price_month}/month. Find your perfect co-living space on Hommi.`} 
+          content={`${listing?.title || 'Room'} in ${listing?.neighborhood || 'Athens'}, ${listing?.city || 'Greece'}. €${listing?.price_month || '0'}/month. Find your perfect co-living space on Hommi.`} 
         />
       </Helmet>
 
