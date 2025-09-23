@@ -20,6 +20,9 @@ const Search = () => {
   const [viewMode, setViewMode] = useState<'list' | 'map' | 'split'>('split');
   const [showMobileMap, setShowMobileMap] = useState(false);
   const [showFilters, setShowFilters] = useState(false);
+  const [hoveredListingId, setHoveredListingId] = useState<string | null>(null);
+  const [selectedListingId, setSelectedListingId] = useState<string | null>(null);
+  const [listings, setListings] = useState<any[]>([]);
 
   // Filter state management
   const [filters, setFilters] = useState<FilterState>({
@@ -45,6 +48,27 @@ const Search = () => {
       sort,
       timestamp: Date.now()
     });
+
+    // Listen for map bounds changes
+    const handleMapBoundsChanged = (event: CustomEvent) => {
+      console.log('Map bounds changed, refreshing results:', event.detail);
+      // This would trigger a refresh of the listing data based on new bounds
+      // For now, we'll just log it
+    };
+
+    // Listen for listings updates from ListingGrid
+    const handleListingsUpdated = (event: CustomEvent) => {
+      console.log('Listings updated:', event.detail.listings.length);
+      setListings(event.detail.listings);
+    };
+
+    window.addEventListener('mapBoundsChanged', handleMapBoundsChanged as EventListener);
+    window.addEventListener('listingsUpdated', handleListingsUpdated as EventListener);
+    
+    return () => {
+      window.removeEventListener('mapBoundsChanged', handleMapBoundsChanged as EventListener);
+      window.removeEventListener('listingsUpdated', handleListingsUpdated as EventListener);
+    };
   }, [city, filtersParam, sort]);
 
   const handleFilterChange = (newFilters: Partial<FilterState>) => {
@@ -154,11 +178,23 @@ const Search = () => {
           <div className="lg:hidden w-full">
             {showMobileMap ? (
               <div className="h-[calc(100vh-140px)]">
-                <MapContainer />
+                <MapContainer 
+                  listings={listings}
+                  onListingHover={setHoveredListingId}
+                  onListingClick={setSelectedListingId}
+                  hoveredListingId={hoveredListingId}
+                  selectedListingId={selectedListingId}
+                />
               </div>
             ) : (
               <div className="p-4">
-                <ListingGrid filters={filters} />
+                <ListingGrid 
+                  filters={filters} 
+                  onListingHover={setHoveredListingId}
+                  onListingClick={setSelectedListingId}
+                  hoveredListingId={hoveredListingId}
+                  selectedListingId={selectedListingId}
+                />
               </div>
             )}
           </div>
@@ -166,7 +202,13 @@ const Search = () => {
           {/* Desktop: List view */}
           {viewMode === 'list' && (
             <div className="hidden lg:block w-full p-6">
-              <ListingGrid filters={filters} />
+              <ListingGrid 
+                filters={filters} 
+                onListingHover={setHoveredListingId}
+                onListingClick={setSelectedListingId}
+                hoveredListingId={hoveredListingId}
+                selectedListingId={selectedListingId}
+              />
             </div>
           )}
 
@@ -174,10 +216,22 @@ const Search = () => {
           {viewMode === 'split' && (
             <>
               <div className="hidden lg:block w-1/2 p-6 overflow-y-auto">
-                <ListingGrid filters={filters} />
+                <ListingGrid 
+                  filters={filters} 
+                  onListingHover={setHoveredListingId}
+                  onListingClick={setSelectedListingId}
+                  hoveredListingId={hoveredListingId}
+                  selectedListingId={selectedListingId}
+                />
               </div>
               <div className="hidden lg:block w-1/2 h-[calc(100vh-120px)] sticky top-[120px]">
-                <MapContainer />
+                <MapContainer 
+                  listings={listings}
+                  onListingHover={setHoveredListingId}
+                  onListingClick={setSelectedListingId}
+                  hoveredListingId={hoveredListingId}
+                  selectedListingId={selectedListingId}
+                />
               </div>
             </>
           )}
@@ -185,7 +239,13 @@ const Search = () => {
           {/* Desktop: Map view */}
           {viewMode === 'map' && (
             <div className="hidden lg:block w-full h-[calc(100vh-120px)]">
-              <MapContainer />
+              <MapContainer 
+                listings={listings}
+                onListingHover={setHoveredListingId}
+                onListingClick={setSelectedListingId}
+                hoveredListingId={hoveredListingId}
+                selectedListingId={selectedListingId}
+              />
             </div>
           )}
         </div>
