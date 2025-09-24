@@ -1,5 +1,6 @@
 import { useState, useCallback } from "react";
 import { useAuth } from "@/hooks/useAuth";
+import { useChatRequests } from "@/hooks/useChatRequests";
 
 interface MessageFlowState {
   // Auth flow
@@ -11,18 +12,27 @@ interface MessageFlowState {
   conversationOpen: boolean;
   messageToSend: string | null;
   
+  // Request flow
+  requestSent: boolean;
+  requestStatus: 'none' | 'pending' | 'accepted' | 'declined';
+  threadId: string | null;
+  
   // Return context
   returnAction: (() => void) | null;
 }
 
 export const useMessageFlow = (roomId: string) => {
   const { user, profile, acceptTerms } = useAuth();
+  const { createChatRequest, loading: requestLoading } = useChatRequests();
   const [state, setState] = useState<MessageFlowState>({
     authModalOpen: false,
     termsModalOpen: false,
     awaitingTermsAcceptance: false,
     conversationOpen: false,
     messageToSend: null,
+    requestSent: false,
+    requestStatus: 'none',
+    threadId: null,
     returnAction: null,
   });
 
@@ -32,7 +42,12 @@ export const useMessageFlow = (roomId: string) => {
     return !profile.terms_accepted_at;
   }, [user, profile]);
 
-  const initiateMessageFlow = useCallback((message: string, returnAction?: () => void) => {
+  const initiateMessageFlow = useCallback(async (
+    message: string, 
+    listingId?: string, 
+    hostProfileId?: string,
+    returnAction?: () => void
+  ) => {
     if (!user) {
       // User not logged in - save message and show auth modal
       setState(prev => ({
@@ -56,9 +71,28 @@ export const useMessageFlow = (roomId: string) => {
       return;
     }
 
-    // User authenticated and terms accepted - proceed with message
-    proceedWithMessage(message);
-  }, [user, needsTermsAcceptance]);
+    // User authenticated and terms accepted - proceed with chat request
+    if (listingId && hostProfileId) {
+      const result = await createChatRequest(listingId, hostProfileId, message);
+      
+      if (result.success) {
+        setState(prev => ({
+          ...prev,
+          requestSent: true,
+          requestStatus: result.threadId ? 'accepted' : 'pending',
+          threadId: result.threadId || null,
+          conversationOpen: !!result.threadId, // Open conversation if accepted
+          messageToSend: result.threadId ? message : null
+        }));
+      } else {
+        // Handle error case - could show error modal or toast
+        console.error('Failed to create chat request:', result.error);
+      }
+    } else {
+      // Fallback to old behavior for backward compatibility
+      proceedWithMessage(message);
+    }
+  }, [user, needsTermsAcceptance, createChatRequest]);
 
   const proceedWithMessage = useCallback((message: string) => {
     setState(prev => ({
@@ -150,6 +184,9 @@ export const useMessageFlow = (roomId: string) => {
       awaitingTermsAcceptance: false,
       conversationOpen: false,
       messageToSend: null,
+      requestSent: false,
+      requestStatus: 'none',
+      threadId: null,
       returnAction: null,
     });
   }, []);
@@ -170,5 +207,6 @@ export const useMessageFlow = (roomId: string) => {
     // Helpers
     isAuthenticated: !!user,
     needsTermsAcceptance: needsTermsAcceptance(),
+    loading: requestLoading,
   };
 };

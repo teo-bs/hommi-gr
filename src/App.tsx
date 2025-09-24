@@ -35,7 +35,8 @@ const App = () => (
               <Routes>
                 <Route path="/" element={<Index />} />
                 <Route path="/search" element={<Search />} />
-                <Route path="/room/:id" element={<RoomPage />} />
+                <Route path="/listing/:slug" element={<RoomPage />} />
+                <Route path="/room/:id" element={<RoomPage />} /> {/* Legacy redirect */}
                 <Route path="/favourites" element={<Favourites />} />
                 <Route path="/overview" element={<Overview />} />
                 <Route path="/my-listings" element={<MyListings />} />

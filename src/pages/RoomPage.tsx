@@ -11,6 +11,7 @@ import { useMessageFlow } from "@/hooks/useMessageFlow";
 import { Gallery } from "@/components/room/Gallery";
 import { PriceBox } from "@/components/room/PriceBox";
 import { CTAStack } from "@/components/room/CTAStack";
+import { RequestStatus } from "@/components/room/RequestStatus";
 import { QuickFacts } from "@/components/room/QuickFacts";
 import { StatsBar } from "@/components/room/StatsBar";
 import { Description } from "@/components/room/Description";
@@ -36,31 +37,37 @@ interface RoomData {
 }
 
 const RoomPage = () => {
-  const { id } = useParams();
+  const { slug, id } = useParams(); // Support both slug and legacy id
   const navigate = useNavigate();
   const { user } = useAuth();
   const [roomData, setRoomData] = useState<RoomData | null>(null);
   const [loading, setLoading] = useState(true);
   
-  // Message flow management
-  const messageFlow = useMessageFlow(id || '');
+  // Message flow management - use slug or id as identifier
+  const roomIdentifier = slug || id || '';
+  const messageFlow = useMessageFlow(roomIdentifier);
 
   useEffect(() => {
-    if (!id) {
+    if (!slug && !id) {
       navigate('/404');
       return;
     }
 
     const fetchRoom = async () => {
       try {
-        console.log('Fetching room data for ID:', id);
+        const searchParam = slug || id;
+        console.log('Fetching room data for:', { slug, id, searchParam });
         
-        // Fetch room with listing data
-        const { data: room, error: roomError } = await supabase
-          .from('rooms')
-          .select('*')
-          .eq('id', id)
-          .maybeSingle();
+        // Fetch room by slug or id
+        let roomQuery = supabase.from('rooms').select('*');
+        
+        if (slug) {
+          roomQuery = roomQuery.eq('slug', slug);
+        } else {
+          roomQuery = roomQuery.eq('id', id);
+        }
+        
+        const { data: room, error: roomError } = await roomQuery.maybeSingle();
 
         console.log('Room fetch result:', { room, roomError });
 
@@ -71,8 +78,14 @@ const RoomPage = () => {
         }
 
         if (!room) {
-          console.error('Room not found:', id);
+          console.error('Room not found:', searchParam);
           navigate('/404');
+          return;
+        }
+
+        // If accessed by ID, redirect to slug URL for SEO
+        if (id && !slug && room.slug) {
+          navigate(`/listing/${room.slug}`, { replace: true });
           return;
         }
 
@@ -92,7 +105,7 @@ const RoomPage = () => {
         }
 
         if (!listing) {
-          console.error('Listing not found for room:', id);
+          console.error('Listing not found for room:', searchParam);
           navigate('/404');
           return;
         }
@@ -179,10 +192,17 @@ const RoomPage = () => {
     };
 
     fetchRoom();
-  }, [id, navigate]);
+  }, [slug, id, navigate]);
 
-  const handleRequestChat = () => {
-    messageFlow.initiateMessageFlow("Γεια σας! Ενδιαφέρομαι για το δωμάτιο. Μπορούμε να μιλήσουμε;");
+  const handleRequestChat = async () => {
+    if (!roomData) return;
+    
+    // Use the new chat request flow
+    await messageFlow.initiateMessageFlow(
+      "Γεια σας! Ενδιαφέρομαι για το δωμάτιο. Μπορούμε να μιλήσουμε;",
+      roomData.listing.id,
+      roomData.listing.owner_id
+    );
   };
 
   const handleMessageSent = (message: string) => {
@@ -279,12 +299,25 @@ const RoomPage = () => {
                 billsIncluded={true}
               />
               
-              <CTAStack onRequestChat={handleRequestChat} />
+              {/* Show request status if request was sent */}
+              <RequestStatus 
+                status={messageFlow.requestStatus}
+                onOpenConversation={() => {
+                  // Open the conversation by setting the state directly
+                  messageFlow.handleMessageSent(messageFlow.messageToSend || "");
+                }}
+                onRequestAgain={() => handleRequestChat()}
+              />
+              
+              {/* Show CTA buttons only if no request sent yet */}
+              {messageFlow.requestStatus === 'none' && (
+                <CTAStack onRequestChat={handleRequestChat} />
+              )}
               
               <MessageComposer
-                roomId={id || ''}
+                roomId={roomIdentifier}
                 listingTitle={listing.title}
-                onAuthRequired={() => messageFlow.initiateMessageFlow("", handleRequestChat)}
+                onAuthRequired={() => messageFlow.initiateMessageFlow("", undefined, undefined, handleRequestChat)}
                 onMessageSent={handleMessageSent}
               />
               
@@ -314,7 +347,7 @@ const RoomPage = () => {
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <div className="w-full max-w-md">
             <ConversationView
-              roomId={id || ''}
+              roomId={roomIdentifier}
               listingTitle={roomData.listing.title}
               listerName={roomData.profile?.display_name || 'Ιδιοκτήτης'}
               listerAvatar={roomData.profile?.avatar_url}

@@ -18,6 +18,7 @@ interface ListingWithRoom {
   couples_accepted: boolean;
   photos: string[];
   room_id: string;
+  room_slug?: string; // Add slug field
   geo?: {
     lat: number;
     lng: number;
@@ -65,13 +66,13 @@ export const ListingGrid = ({
       const listingIds = data?.map(listing => listing.id) || [];
       const { data: rooms } = await supabase
         .from('rooms')
-        .select('id, listing_id')
+        .select('id, slug, listing_id')
         .in('listing_id', listingIds);
       
       const roomMap = rooms?.reduce((acc, room) => {
-        acc[room.listing_id] = room.id;
+        acc[room.listing_id] = { id: room.id, slug: room.slug };
         return acc;
-      }, {} as Record<string, string>) || {};
+      }, {} as Record<string, { id: string; slug?: string }>) || {};
       
       return (data || []).map((listing, index) => {
         // Mock geo coordinates for Athens area until real data is available
@@ -95,7 +96,8 @@ export const ListingGrid = ({
           flatmates_count: listing.flatmates_count,
           couples_accepted: listing.couples_accepted,
           photos: Array.isArray(listing.photos) ? listing.photos : ['/placeholder.svg'],
-          room_id: roomMap[listing.id] || listing.id,
+          room_id: roomMap[listing.id]?.id || listing.id,
+          room_slug: roomMap[listing.id]?.slug,
           geo: geoData
         };
       }) as ListingWithRoom[];
@@ -222,7 +224,7 @@ export const ListingGrid = ({
         {filteredAndSortedListings.map((listing) => (
           <Link
             key={listing.room_id}
-            to={`/room/${listing.room_id}`}
+            to={`/listing/${listing.room_slug || listing.room_id}`}
             className="block"
             onClick={() => handleCardClick(listing.room_id)}
           >
