@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { TermsPrivacyModal } from "./TermsPrivacyModal";
 import { OnboardingChoiceModal } from "@/components/onboarding/OnboardingChoiceModal";
 import { IndividualAgencyModal } from "./IndividualAgencyModal";
@@ -8,9 +8,12 @@ import { useAuth } from "@/hooks/useAuth";
 export const GlobalTermsHandler = () => {
   const { user, profile, needsTermsAcceptance, acceptTerms } = useAuth();
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [showTermsModal, setShowTermsModal] = useState(false);
   const [showChoiceModal, setShowChoiceModal] = useState(false);
   const [showIndividualAgencyModal, setShowIndividualAgencyModal] = useState(false);
+  
+  const hasListingIntent = searchParams.get('intent') === 'listing';
 
   // Show T&C modal immediately after first signup, only once
   useEffect(() => {
@@ -30,7 +33,13 @@ export const GlobalTermsHandler = () => {
     }
     
     setShowTermsModal(false);
-    setShowChoiceModal(true);
+    
+    // Check if user has listing intent - skip generic choice and go to individual/agency
+    if (hasListingIntent) {
+      setShowIndividualAgencyModal(true);
+    } else {
+      setShowChoiceModal(true);
+    }
   };
 
   const handleRoleChoice = (role: 'tenant' | 'lister') => {
@@ -47,6 +56,15 @@ export const GlobalTermsHandler = () => {
 
   const handleIndividualAgencyChoice = (choice: 'individual' | 'agency') => {
     setShowIndividualAgencyModal(false);
+    
+    // Clear the intent parameter from URL
+    if (hasListingIntent) {
+      setSearchParams(prev => {
+        const newParams = new URLSearchParams(prev);
+        newParams.delete('intent');
+        return newParams;
+      });
+    }
     
     if (choice === 'individual') {
       // Start listing wizard flow

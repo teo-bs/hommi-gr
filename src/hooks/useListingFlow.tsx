@@ -48,7 +48,7 @@ export const useListingFlow = () => {
 
   const initiateListingFlow = useCallback((returnAction?: () => void) => {
     if (!user) {
-      // User not authenticated - open auth modal
+      // User not authenticated - open auth modal with listing context
       setState(prev => ({
         ...prev,
         authModalOpen: true,
@@ -57,24 +57,20 @@ export const useListingFlow = () => {
       return;
     }
 
-    // T&C is handled globally by GlobalTermsHandler
-    // Go directly to wizard with default role
-    setState(prev => ({
-      ...prev,
-      wizardOpen: true,
-      selectedRole: prev.selectedRole || 'individual', // Default to individual
-      returnAction: returnAction || null
-    }));
+    // User is authenticated - navigate directly to publish page
+    // T&C and individual/agency choice is handled by GlobalTermsHandler on /me
+    window.location.href = '/publish';
   }, [user]);
 
   const handleAuthSuccess = useCallback(() => {
-    // Close auth modal and continue with wizard
+    // Close auth modal and set listing intent for GlobalTermsHandler
     setState(prev => ({
       ...prev,
-      authModalOpen: false,
-      wizardOpen: true,
-      selectedRole: prev.selectedRole || 'individual' // Default to individual
+      authModalOpen: false
     }));
+    
+    // Navigate to /me with listing intent - GlobalTermsHandler will handle T&C and choice flow
+    window.location.href = '/me?intent=listing';
   }, []);
 
   const handleDraftSaved = useCallback((draft: ListingDraft) => {

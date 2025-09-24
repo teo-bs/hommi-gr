@@ -16,12 +16,10 @@ export const AuthFlowManager = ({
   const navigate = useNavigate();
 
   const handleAuthSuccess = () => {
-    // Close auth modal and navigate to profile
+    // Close auth modal and call success callback
     onAuthClose();
     onAuthSuccess?.();
-    
-    // Navigate to profile page - GlobalTermsHandler will handle T&C and role choice
-    navigate('/me');
+    // Note: Navigation is now handled by the caller (e.g., useListingFlow)
   };
 
   const handleAuthClose = () => {
