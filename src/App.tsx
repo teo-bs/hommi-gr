@@ -10,6 +10,11 @@ import Index from "./pages/Index";
 import Search from "./pages/Search";
 import RoomPage from "./pages/RoomPage";
 import NotFound from "./pages/NotFound";
+import Favourites from "./pages/Favourites";
+import Overview from "./pages/Overview";
+import MyListings from "./pages/MyListings";
+import Help from "./pages/Help";
+import SearchPreferences from "./pages/SearchPreferences";
 
 const queryClient = new QueryClient();
 
@@ -28,6 +33,11 @@ const App = () => (
                 <Route path="/" element={<Index />} />
                 <Route path="/search" element={<Search />} />
                 <Route path="/room/:id" element={<RoomPage />} />
+                <Route path="/favourites" element={<Favourites />} />
+                <Route path="/overview" element={<Overview />} />
+                <Route path="/my-listings" element={<MyListings />} />
+                <Route path="/help" element={<Help />} />
+                <Route path="/search-preferences" element={<SearchPreferences />} />
                 <Route path="/404" element={<NotFound />} />
                 <Route path="*" element={<NotFound />} />
               </Routes>

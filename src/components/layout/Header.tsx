@@ -1,22 +1,95 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { Home, User, MessageSquare, Plus, Globe, Menu, X, Settings, Search, Calendar, LogOut, UserCheck } from "lucide-react";
+import { Home, User, MessageSquare, Plus, Globe, Menu, X, Settings, Search, Calendar, LogOut, UserCheck, MapPin, Heart, BarChart3, List } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useListingFlow } from "@/hooks/useListingFlow";
 import { AuthFlowManager } from "@/components/auth/AuthFlowManager";
 import { TermsPrivacyModal } from "@/components/auth/TermsPrivacyModal";
 import { RoleSelectionScreen } from "@/components/listing/RoleSelectionScreen";
 import { ListingWizard } from "@/components/listing/ListingWizard";
+import { useToast } from "@/hooks/use-toast";
 
 export const Header = () => {
-  const { user, profile, signOut } = useAuth();
+  const { user, profile, signOut, updateProfile } = useAuth();
   const listingFlow = useListingFlow();
   const navigate = useNavigate();
+  const { toast } = useToast();
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [language, setLanguage] = useState('el'); // Greek default
+  const [searchLocation, setSearchLocation] = useState('');
+  const [locationLoading, setLocationLoading] = useState(false);
+
+  // Get current user role, default to 'tenant'
+  const currentRole = profile?.user_role || 'tenant';
+
+  // Auto-detect location on component mount
+  useEffect(() => {
+    detectLocation();
+  }, []);
+
+  const detectLocation = async () => {
+    if (!navigator.geolocation) {
+      setSearchLocation('Αθήνα'); // Default to Athens
+      return;
+    }
+
+    setLocationLoading(true);
+    
+    navigator.geolocation.getCurrentPosition(
+      async (position) => {
+        try {
+          // For now, just use coordinates to determine major Greek cities
+          const { latitude, longitude } = position.coords;
+          
+          // Simple coordinate-based city detection for Greece
+          let detectedCity = 'Αθήνα'; // Default
+          
+          // Athens area
+          if (latitude >= 37.8 && latitude <= 38.2 && longitude >= 23.5 && longitude <= 24) {
+            detectedCity = 'Αθήνα';
+          }
+          // Thessaloniki area  
+          else if (latitude >= 40.5 && latitude <= 40.8 && longitude >= 22.8 && longitude <= 23.2) {
+            detectedCity = 'Θεσσαλονίκη';
+          }
+          // Patras area
+          else if (latitude >= 38.1 && latitude <= 38.4 && longitude >= 21.6 && longitude <= 21.9) {
+            detectedCity = 'Πάτρα';
+          }
+          // Heraklion area
+          else if (latitude >= 35.2 && latitude <= 35.4 && longitude >= 25.0 && longitude <= 25.3) {
+            detectedCity = 'Ηράκλειο';
+          }
+          
+          setSearchLocation(detectedCity);
+        } catch (error) {
+          console.error('Location detection error:', error);
+          setSearchLocation('Αθήνα');
+        } finally {
+          setLocationLoading(false);
+        }
+      },
+      (error) => {
+        console.error('Geolocation error:', error);
+        setSearchLocation('Αθήνα');
+        setLocationLoading(false);
+      },
+      { timeout: 5000, enableHighAccuracy: false }
+    );
+  };
+
+  const handleSearchSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    const searchQuery = new URLSearchParams({
+      city: searchLocation || 'Αθήνα',
+      filters: ''
+    });
+    navigate(`/search?${searchQuery.toString()}`);
+  };
 
   const handleAuthAction = (action: 'login' | 'signup') => {
     if (!user) {
@@ -37,15 +110,87 @@ export const Header = () => {
     navigate('/');
   };
 
-  const handleRoleSwitch = (newRole: 'seeker' | 'lister') => {
-    // TODO: Update user profile with new role
-    console.log('Switching to role:', newRole);
+  const handleRoleSwitch = async (newRole: 'tenant' | 'lister') => {
+    if (!user || !profile) return;
+    
+    try {
+      const { error } = await updateProfile({ user_role: newRole });
+      
+      if (error) {
+        toast({
+          title: "Σφάλμα",
+          description: "Δεν ήταν δυνατή η αλλαγή ρόλου",
+          variant: "destructive",
+        });
+        return;
+      }
+      
+      toast({
+        title: "Επιτυχία",
+        description: `Μετάβαση σε ${newRole === 'tenant' ? 'Tenant' : 'Lister'}`,
+      });
+      
+      // Redirect to appropriate page based on new role
+      if (newRole === 'lister') {
+        navigate('/');
+      } else {
+        navigate('/search');
+      }
+    } catch (error) {
+      toast({
+        title: "Σφάλμα",
+        description: "Παρουσιάστηκε απροσδόκητο σφάλμα",
+        variant: "destructive",
+      });
+    }
   };
 
-  // Determine user role - default to 'seeker' if not set
-  const userRole = profile?.role || 'seeker';
+  // Determine user role - default to 'tenant' if not set
+  const userRole = profile?.user_role || 'tenant';
 
-  const menuItems: any[] = [];
+  // Define navigation items based on role
+  const tenantNavItems = [
+    { 
+      href: "/favourites", 
+      label: language === 'el' ? 'Αγαπημένα' : 'Favourites',
+      icon: Heart
+    },
+    { 
+      href: "/inbox", 
+      label: language === 'el' ? 'Μηνύματα' : 'Inbox',
+      icon: MessageSquare
+    },
+    { 
+      href: "/help", 
+      label: language === 'el' ? 'Βοήθεια' : 'Help',
+      icon: MessageSquare
+    }
+  ];
+
+  const listerNavItems = [
+    { 
+      href: "/overview", 
+      label: language === 'el' ? 'Επισκόπηση' : 'Overview',
+      icon: BarChart3
+    },
+    { 
+      href: "/my-listings", 
+      label: language === 'el' ? 'Οι αγγελίες μου' : 'My listings',
+      icon: List
+    },
+    { 
+      href: "/inbox", 
+      label: language === 'el' ? 'Μηνύματα' : 'Inbox',
+      icon: MessageSquare
+    },
+    { 
+      href: "/help", 
+      label: language === 'el' ? 'Βοήθεια' : 'Help',
+      icon: MessageSquare
+    }
+  ];
+
+  const currentNavItems = currentRole === 'tenant' ? tenantNavItems : listerNavItems;
 
   return (
     <>
@@ -63,20 +208,50 @@ export const Header = () => {
             </Link>
 
             {/* Desktop Navigation */}
-            <nav className="hidden md:flex items-center space-x-8">
-              {menuItems.map((item) => (
+            <nav className="hidden lg:flex items-center space-x-6">
+              {/* Search Box - Only for tenants */}
+              {currentRole === 'tenant' && (
+                <form onSubmit={handleSearchSubmit} className="relative">
+                  <div className="relative">
+                    <MapPin className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <Input
+                      type="text"
+                      placeholder={locationLoading ? "Εντοπισμός..." : "Πού θέλετε να μείνετε;"}
+                      value={searchLocation}
+                      onChange={(e) => setSearchLocation(e.target.value)}
+                      className="pl-10 pr-4 w-80 bg-background border-border"
+                      disabled={locationLoading}
+                    />
+                  </div>
+                </form>
+              )}
+
+              {/* Navigation Items */}
+              {currentNavItems.map((item) => (
                 <Link
                   key={item.href}
                   to={item.href}
-                  className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+                  className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors flex items-center space-x-1"
                 >
-                  {item.label}
+                  <item.icon className="h-4 w-4" />
+                  <span>{item.label}</span>
                 </Link>
               ))}
+
+              {/* Publish Listing Button */}
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className="border-foreground/20"
+                onClick={handlePublishListing}
+              >
+                <Plus className="h-4 w-4 mr-2" />
+                {language === 'el' ? 'Δημοσίευσε αγγελία' : 'Publish listing'}
+              </Button>
             </nav>
 
             {/* Desktop Actions */}
-            <div className="hidden md:flex items-center space-x-4">
+            <div className="hidden lg:flex items-center space-x-4">
               <Button
                 variant="ghost"
                 size="sm"
@@ -89,66 +264,58 @@ export const Header = () => {
                 </span>
               </Button>
 
-              <Button 
-                variant="outline" 
-                size="sm" 
-                className="border-foreground/20"
-                onClick={handlePublishListing}
-              >
-                <Plus className="h-4 w-4 mr-2" />
-                {language === 'el' ? 'Δημοσίευσε αγγελία' : 'List Property'}
-              </Button>
-
               {user ? (
-                <div className="flex items-center space-x-2">
-                  <Link to="/inbox">
-                    <Button variant="ghost" size="sm">
-                      <MessageSquare className="h-4 w-4 mr-2" />
-                      {language === 'el' ? 'Μηνύματα' : 'Messages'}
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" size="sm" className="rounded-full w-10 h-10 p-0">
+                      <User className="h-5 w-5" />
                     </Button>
-                  </Link>
-
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" size="sm" className="rounded-full w-10 h-10 p-0">
-                        <User className="h-5 w-5" />
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end" className="w-56">
-                      <DropdownMenuItem onClick={() => navigate('/profile')}>
-                        <User className="h-4 w-4 mr-2" />
-                        {language === 'el' ? 'Το προφίλ μου' : 'My profile'}
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent 
+                    align="end" 
+                    className="w-56 bg-background border border-border shadow-lg z-50"
+                  >
+                    <DropdownMenuItem onClick={() => navigate('/profile')}>
+                      <User className="h-4 w-4 mr-2" />
+                      {language === 'el' ? 'Το προφίλ μου' : 'My profile'}
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => navigate('/settings')}>
+                      <Settings className="h-4 w-4 mr-2" />
+                      {language === 'el' ? 'Ρυθμίσεις' : 'Settings'}
+                    </DropdownMenuItem>
+                    
+                    {/* Role-specific menu items */}
+                    {currentRole === 'tenant' ? (
+                      <DropdownMenuItem onClick={() => navigate('/search-preferences')}>
+                        <Search className="h-4 w-4 mr-2" />
+                        {language === 'el' ? 'Προτιμήσεις αναζήτησης' : 'Search preferences'}
                       </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => navigate('/settings')}>
-                        <Settings className="h-4 w-4 mr-2" />
-                        {language === 'el' ? 'Ρυθμίσεις' : 'Settings'}
+                    ) : (
+                      <DropdownMenuItem onClick={() => navigate('/booking-settings')}>
+                        <Calendar className="h-4 w-4 mr-2" />
+                        {language === 'el' ? 'Ρυθμίσεις κρατήσεων' : 'Booking settings'}
                       </DropdownMenuItem>
-                      {userRole === 'seeker' ? (
-                        <DropdownMenuItem onClick={() => navigate('/search-preferences')}>
-                          <Search className="h-4 w-4 mr-2" />
-                          {language === 'el' ? 'Προτιμήσεις αναζήτησης' : 'Search preferences'}
-                        </DropdownMenuItem>
-                      ) : (
-                        <DropdownMenuItem onClick={() => navigate('/booking-settings')}>
-                          <Calendar className="h-4 w-4 mr-2" />
-                          {language === 'el' ? 'Ρυθμίσεις κρατήσεων' : 'Booking settings'}
-                        </DropdownMenuItem>
-                      )}
-                      <DropdownMenuSeparator />
-                      <DropdownMenuItem onClick={handleLogout}>
-                        <LogOut className="h-4 w-4 mr-2" />
-                        {language === 'el' ? 'Αποσύνδεση' : 'Log out'}
-                      </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => handleRoleSwitch(userRole === 'seeker' ? 'lister' : 'seeker')}>
-                        <UserCheck className="h-4 w-4 mr-2" />
-                        {userRole === 'seeker' 
-                          ? (language === 'el' ? 'Μετάβαση σε Lister' : 'Switch to Lister')
-                          : (language === 'el' ? 'Μετάβαση σε Tenant' : 'Switch to Tenant')
-                        }
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                </div>
+                    )}
+                    
+                    <DropdownMenuSeparator />
+                    
+                    {/* Role Switch */}
+                    <DropdownMenuItem onClick={() => handleRoleSwitch(currentRole === 'tenant' ? 'lister' : 'tenant')}>
+                      <UserCheck className="h-4 w-4 mr-2" />
+                      {currentRole === 'tenant' 
+                        ? (language === 'el' ? 'Μετάβαση σε Lister' : 'Switch to Lister')
+                        : (language === 'el' ? 'Μετάβαση σε Tenant' : 'Switch to Tenant')
+                      }
+                    </DropdownMenuItem>
+                    
+                    <DropdownMenuSeparator />
+                    
+                    <DropdownMenuItem onClick={handleLogout}>
+                      <LogOut className="h-4 w-4 mr-2" />
+                      {language === 'el' ? 'Αποσύνδεση' : 'Logout'}
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
               ) : (
                 <Button
                   variant="ghost"
@@ -165,7 +332,7 @@ export const Header = () => {
             <Button
               variant="ghost"
               size="sm"
-              className="md:hidden"
+              className="lg:hidden"
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
             >
               {mobileMenuOpen ? (
@@ -178,21 +345,41 @@ export const Header = () => {
 
           {/* Mobile Menu */}
           {mobileMenuOpen && (
-            <div className="md:hidden border-t border-border py-4">
-              <nav className="space-y-2">
-                {menuItems.map((item) => (
+            <div className="lg:hidden border-t border-border py-4">
+              {/* Mobile Search - Only for tenants */}
+              {currentRole === 'tenant' && (
+                <div className="px-4 mb-4">
+                  <form onSubmit={handleSearchSubmit} className="relative">
+                    <div className="relative">
+                      <MapPin className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                      <Input
+                        type="text"
+                        placeholder={locationLoading ? "Εντοπισμός..." : "Πού θέλετε να μείνετε;"}
+                        value={searchLocation}
+                        onChange={(e) => setSearchLocation(e.target.value)}
+                        className="pl-10 pr-4 w-full"
+                        disabled={locationLoading}
+                      />
+                    </div>
+                  </form>
+                </div>
+              )}
+
+              <nav className="space-y-2 px-4">
+                {currentNavItems.map((item) => (
                   <Link
                     key={item.href}
                     to={item.href}
-                    className="block px-3 py-2 text-base font-medium text-muted-foreground hover:text-foreground hover:bg-muted rounded-md transition-colors"
+                    className="block px-3 py-2 text-base font-medium text-muted-foreground hover:text-foreground hover:bg-muted rounded-md transition-colors flex items-center space-x-2"
                     onClick={() => setMobileMenuOpen(false)}
                   >
-                    {item.label}
+                    <item.icon className="h-4 w-4" />
+                    <span>{item.label}</span>
                   </Link>
                 ))}
               </nav>
               
-              <div className="mt-4 pt-4 border-t border-border space-y-2">
+              <div className="mt-4 pt-4 border-t border-border space-y-2 px-4">
                 <Button
                   variant="ghost"
                   size="sm"
@@ -213,17 +400,11 @@ export const Header = () => {
                   }}
                 >
                   <Plus className="h-4 w-4 mr-2" />
-                  {language === 'el' ? 'Δημοσίευσε αγγελία' : 'List Property'}
+                  {language === 'el' ? 'Δημοσίευσε αγγελία' : 'Publish listing'}
                 </Button>
 
                 {user ? (
                   <>
-                    <Link to="/inbox" onClick={() => setMobileMenuOpen(false)}>
-                      <Button variant="ghost" size="sm" className="w-full justify-start">
-                        <MessageSquare className="h-4 w-4 mr-2" />
-                        {language === 'el' ? 'Μηνύματα' : 'Messages'}
-                      </Button>
-                    </Link>
                     <Link to="/profile" onClick={() => setMobileMenuOpen(false)}>
                       <Button variant="ghost" size="sm" className="w-full justify-start">
                         <User className="h-4 w-4 mr-2" />
@@ -236,7 +417,7 @@ export const Header = () => {
                         {language === 'el' ? 'Ρυθμίσεις' : 'Settings'}
                       </Button>
                     </Link>
-                    {userRole === 'seeker' ? (
+                    {currentRole === 'tenant' ? (
                       <Link to="/search-preferences" onClick={() => setMobileMenuOpen(false)}>
                         <Button variant="ghost" size="sm" className="w-full justify-start">
                           <Search className="h-4 w-4 mr-2" />
@@ -256,27 +437,27 @@ export const Header = () => {
                       size="sm"
                       className="w-full justify-start"
                       onClick={() => {
-                        handleLogout();
+                        handleRoleSwitch(currentRole === 'tenant' ? 'lister' : 'tenant');
                         setMobileMenuOpen(false);
                       }}
                     >
-                      <LogOut className="h-4 w-4 mr-2" />
-                      {language === 'el' ? 'Αποσύνδεση' : 'Log out'}
+                      <UserCheck className="h-4 w-4 mr-2" />
+                      {currentRole === 'tenant' 
+                        ? (language === 'el' ? 'Μετάβαση σε Lister' : 'Switch to Lister')
+                        : (language === 'el' ? 'Μετάβαση σε Tenant' : 'Switch to Tenant')
+                      }
                     </Button>
                     <Button
                       variant="ghost"
                       size="sm"
                       className="w-full justify-start"
                       onClick={() => {
-                        handleRoleSwitch(userRole === 'seeker' ? 'lister' : 'seeker');
+                        handleLogout();
                         setMobileMenuOpen(false);
                       }}
                     >
-                      <UserCheck className="h-4 w-4 mr-2" />
-                      {userRole === 'seeker' 
-                        ? (language === 'el' ? 'Μετάβαση σε Lister' : 'Switch to Lister')
-                        : (language === 'el' ? 'Μετάβαση σε Tenant' : 'Switch to Tenant')
-                      }
+                      <LogOut className="h-4 w-4 mr-2" />
+                      {language === 'el' ? 'Αποσύνδεση' : 'Logout'}
                     </Button>
                   </>
                 ) : (
