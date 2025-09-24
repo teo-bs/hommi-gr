@@ -1,10 +1,16 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { TermsPrivacyModal } from "./TermsPrivacyModal";
+import { OnboardingChoiceModal } from "@/components/onboarding/OnboardingChoiceModal";
+import { IndividualAgencyModal } from "./IndividualAgencyModal";
 import { useAuth } from "@/hooks/useAuth";
 
 export const GlobalTermsHandler = () => {
   const { user, profile, needsTermsAcceptance, acceptTerms } = useAuth();
+  const navigate = useNavigate();
   const [showTermsModal, setShowTermsModal] = useState(false);
+  const [showChoiceModal, setShowChoiceModal] = useState(false);
+  const [showIndividualAgencyModal, setShowIndividualAgencyModal] = useState(false);
 
   // Show T&C modal immediately after first signup, only once
   useEffect(() => {
@@ -24,12 +30,49 @@ export const GlobalTermsHandler = () => {
     }
     
     setShowTermsModal(false);
+    setShowChoiceModal(true);
+  };
+
+  const handleRoleChoice = (role: 'tenant' | 'lister') => {
+    setShowChoiceModal(false);
+    
+    if (role === 'tenant') {
+      // Navigate to profile with onboarding parameters
+      navigate('/me?role=tenant&step=1');
+    } else {
+      // Show individual vs agency choice for listers
+      setShowIndividualAgencyModal(true);
+    }
+  };
+
+  const handleIndividualAgencyChoice = (choice: 'individual' | 'agency') => {
+    setShowIndividualAgencyModal(false);
+    
+    if (choice === 'individual') {
+      // Start listing wizard flow
+      navigate('/publish');
+    } else {
+      // Navigate to agencies page
+      navigate('/agencies');
+    }
   };
 
   return (
-    <TermsPrivacyModal
-      isOpen={showTermsModal}
-      onAccept={handleTermsAccepted}
-    />
+    <>
+      <TermsPrivacyModal
+        isOpen={showTermsModal}
+        onAccept={handleTermsAccepted}
+      />
+
+      <OnboardingChoiceModal
+        isOpen={showChoiceModal}
+        onChoice={handleRoleChoice}
+      />
+
+      <IndividualAgencyModal
+        isOpen={showIndividualAgencyModal}
+        onChoice={handleIndividualAgencyChoice}
+      />
+    </>
   );
 };

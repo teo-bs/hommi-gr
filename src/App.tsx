@@ -5,6 +5,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/hooks/useAuth";
 import { Header } from "@/components/layout/Header";
+import { GlobalTermsHandler } from "@/components/auth/GlobalTermsHandler";
 
 import Index from "./pages/Index";
 import Search from "./pages/Search";
@@ -31,6 +32,7 @@ const App = () => (
         <BrowserRouter>
           <div className="min-h-screen bg-background font-sans antialiased">
             <Header />
+            <GlobalTermsHandler />
             <main>
               <Routes>
                 <Route path="/" element={<Index />} />
