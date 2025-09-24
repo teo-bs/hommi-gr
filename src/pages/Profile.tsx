@@ -84,6 +84,24 @@ export default function Profile() {
     return basicOnboardingDone && profileIncomplete;
   };
 
+  // Update form data when profile changes
+  useEffect(() => {
+    if (profile) {
+      setFormData({
+        display_name: profile.display_name || '',
+        about_me: profile.about_me || '',
+        profession: profile.profession || '',
+        gender: (profile.gender as GenderType) || '',
+        country: profile.country || 'GR',
+        languages: profile.languages || ['el'],
+        social_instagram: profile.social_instagram || '',
+        social_linkedin: profile.social_linkedin || '',
+        social_twitter_x: profile.social_twitter_x || '',
+        social_tiktok: profile.social_tiktok || '',
+      });
+    }
+  }, [profile]);
+
   const handleSave = async () => {
     const updateData: any = {
       display_name: formData.display_name,
@@ -188,16 +206,6 @@ export default function Profile() {
             </div>
           )}
 
-          {/* Progress Bar */}
-          <Card className="mb-6">
-            <CardContent className="pt-6">
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-sm font-medium text-foreground">Πρόοδος προφίλ</span>
-                <span className="text-sm text-muted-foreground">{profile.profile_completion_pct || 0}%</span>
-              </div>
-              <Progress value={profile.profile_completion_pct || 0} className="w-full" />
-            </CardContent>
-          </Card>
 
           {/* ... keep existing profile content ... */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">

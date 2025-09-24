@@ -6,6 +6,7 @@ import { formatDistanceToNow } from "date-fns";
 
 interface ListerCardProps {
   profile: {
+    id?: string;
     display_name?: string;
     avatar_url?: string;
     member_since?: string;
@@ -13,9 +14,10 @@ interface ListerCardProps {
     profession?: string;
     languages?: string[];
   } | null;
+  listingId?: string;
 }
 
-export const ListerCard = ({ profile }: ListerCardProps) => {
+export const ListerCard = ({ profile, listingId }: ListerCardProps) => {
   if (!profile) return null;
 
   const memberSince = profile.member_since 

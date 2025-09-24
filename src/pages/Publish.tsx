@@ -112,19 +112,19 @@ export default function Publish() {
 
   // Load existing draft
   useEffect(() => {
-    if (user) {
+    if (user && profile) {
       loadDraft();
     }
-  }, [user]);
+  }, [user, profile]);
 
   const loadDraft = async () => {
-    if (!user) return;
+    if (!user || !profile) return;
 
     try {
       const { data: existingDraft } = await supabase
         .from('listings')
         .select('*')
-        .eq('owner_id', user.id)
+        .eq('owner_id', profile.id)
         .eq('status', 'draft')
         .order('created_at', { ascending: false })
         .limit(1)
@@ -180,7 +180,7 @@ export default function Publish() {
   };
 
   const saveDraft = async (updates: Partial<ListingDraft>) => {
-    if (!user) return;
+    if (!user || !profile) return;
 
     const updatedDraft = { ...draft, ...updates };
     setDraft(updatedDraft);
@@ -234,15 +234,26 @@ export default function Publish() {
           .from('listings')
           .update(draftData)
           .eq('id', updatedDraft.id);
+          
+        // Update room amenities if amenities changed
+        if (updates.amenities_room) {
+          await updateRoomAmenities(updatedDraft.id, updatedDraft.amenities_room);
+        }
       } else {
         const { data, error } = await supabase
           .from('listings')
-          .insert({ ...draftData, owner_id: user.id })
+          .insert({ ...draftData, owner_id: profile.id })
           .select()
           .single();
         
         if (data && !error) {
           setDraft(prev => ({ ...prev, id: data.id }));
+          
+          // Create room entry for this listing
+          await createRoomForListing(data.id, updatedDraft);
+          
+          // Create lister profile if it doesn't exist
+          await ensureListerProfile();
         }
       }
     } catch (error) {
@@ -288,6 +299,124 @@ export default function Publish() {
       navigate('/agencies');
     } else {
       nextStep();
+    }
+  };
+
+  // Helper function to update room amenities
+  const updateRoomAmenities = async (listingId: string, amenities: string[]) => {
+    try {
+      // Find the room for this listing
+      const { data: room } = await supabase
+        .from('rooms')
+        .select('id')
+        .eq('listing_id', listingId)
+        .single();
+
+      if (!room) return;
+
+      // Remove existing amenities
+      await supabase
+        .from('room_amenities')
+        .delete()
+        .eq('room_id', room.id);
+
+      // Add new amenities
+      if (amenities.length > 0) {
+        const { data: amenityRecords } = await supabase
+          .from('amenities')
+          .select('id, name')
+          .in('name', amenities);
+
+        if (amenityRecords?.length > 0) {
+          const roomAmenities = amenityRecords.map(amenity => ({
+            room_id: room.id,
+            amenity_id: amenity.id
+          }));
+
+          await supabase
+            .from('room_amenities')
+            .insert(roomAmenities);
+        }
+      }
+    } catch (error) {
+      console.error('Error updating room amenities:', error);
+    }
+  };
+
+  // Helper function to create room for listing
+  const createRoomForListing = async (listingId: string, listingData: ListingDraft) => {
+    try {
+      // Create room slug from listing title
+      const slug = listingData.title.toLowerCase()
+        .replace(/[^a-z0-9\s-]/g, '')
+        .replace(/\s+/g, '-')
+        .slice(0, 50) + '-' + listingId.slice(0, 8);
+
+      const { data: room, error: roomError } = await supabase
+        .from('rooms')
+        .insert({
+          listing_id: listingId,
+          slug: slug,
+          room_type: listingData.property_type === 'room' ? 'private' : 'entire_place',
+          room_size_m2: listingData.room_size_m2 || listingData.property_size_m2,
+          has_bed: listingData.bed_type ? true : false,
+          is_interior: listingData.orientation === 'interior'
+        })
+        .select()
+        .single();
+
+      if (roomError) {
+        console.error('Error creating room:', roomError);
+        return;
+      }
+
+      // Connect amenities to room
+      if (room && listingData.amenities_room?.length > 0) {
+        const { data: amenities } = await supabase
+          .from('amenities')
+          .select('id, name')
+          .in('name', listingData.amenities_room);
+
+        if (amenities?.length > 0) {
+          const roomAmenities = amenities.map(amenity => ({
+            room_id: room.id,
+            amenity_id: amenity.id
+          }));
+
+          await supabase
+            .from('room_amenities')
+            .insert(roomAmenities);
+        }
+      }
+    } catch (error) {
+      console.error('Error creating room:', error);
+    }
+  };
+
+  // Helper function to ensure lister profile exists
+  const ensureListerProfile = async () => {
+    if (!profile) return;
+    
+    try {
+      // Check if lister profile exists
+      const { data: existingLister } = await supabase
+        .from('listers')
+        .select('id')
+        .eq('profile_id', profile.id)
+        .maybeSingle();
+
+      if (!existingLister) {
+        // Create lister profile
+        await supabase
+          .from('listers')
+          .insert({
+            profile_id: profile.id,
+            score: 0,
+            badges: []
+          });
+      }
+    } catch (error) {
+      console.error('Error creating lister profile:', error);
     }
   };
 
