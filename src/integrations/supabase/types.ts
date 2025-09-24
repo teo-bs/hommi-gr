@@ -686,28 +686,34 @@ export type Database = {
       }
       threads: {
         Row: {
+          accepted_at: string | null
           created_at: string | null
+          declined_at: string | null
           host_id: string
           id: string
           listing_id: string
           seeker_id: string
-          status: string | null
+          status: Database["public"]["Enums"]["thread_status_enum"] | null
         }
         Insert: {
+          accepted_at?: string | null
           created_at?: string | null
+          declined_at?: string | null
           host_id: string
           id?: string
           listing_id: string
           seeker_id: string
-          status?: string | null
+          status?: Database["public"]["Enums"]["thread_status_enum"] | null
         }
         Update: {
+          accepted_at?: string | null
           created_at?: string | null
+          declined_at?: string | null
           host_id?: string
           id?: string
           listing_id?: string
           seeker_id?: string
-          status?: string | null
+          status?: Database["public"]["Enums"]["thread_status_enum"] | null
         }
         Relationships: [
           {
@@ -814,10 +820,23 @@ export type Database = {
         Args: { rid: string }
         Returns: undefined
       }
+      update_thread_status: {
+        Args: {
+          new_status: Database["public"]["Enums"]["thread_status_enum"]
+          thread_id: string
+        }
+        Returns: undefined
+      }
     }
     Enums: {
       gender_enum: "male" | "female" | "other" | "prefer_not_to_say"
       publish_status_enum: "draft" | "published"
+      thread_status_enum:
+        | "pending"
+        | "accepted"
+        | "declined"
+        | "blocked"
+        | "archived"
       user_role_enum: "tenant" | "lister"
       verification_kind_enum:
         | "email"
@@ -955,6 +974,13 @@ export const Constants = {
     Enums: {
       gender_enum: ["male", "female", "other", "prefer_not_to_say"],
       publish_status_enum: ["draft", "published"],
+      thread_status_enum: [
+        "pending",
+        "accepted",
+        "declined",
+        "blocked",
+        "archived",
+      ],
       user_role_enum: ["tenant", "lister"],
       verification_kind_enum: ["email", "phone", "govgr", "google", "facebook"],
       verification_status_enum: ["unverified", "pending", "verified"],
