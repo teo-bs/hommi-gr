@@ -165,66 +165,117 @@ export type Database = {
         Row: {
           amenities_property: Json | null
           amenities_room: Json | null
+          audience_preferences: Json | null
           availability_date: string | null
           bills_note: string | null
           city: string
           couples_accepted: boolean | null
           created_at: string | null
+          deposit: number | null
+          door: string | null
           flatmates_count: number | null
+          floor: number | null
           geo: Json | null
+          house_rules: string[] | null
           id: string
+          is_location_approx: boolean | null
+          lat: number | null
           listed_space: string | null
+          lng: number | null
           neighborhood: string | null
           owner_id: string
           pets_allowed: boolean | null
           photos: Json | null
           price_month: number
+          price_per_m2: number | null
+          property_size_m2: number | null
+          publish_status:
+            | Database["public"]["Enums"]["publish_status_enum"]
+            | null
+          publish_warnings: Json | null
+          room_size_m2: number | null
+          services: string[] | null
           smoking_allowed: boolean | null
-          status: string | null
+          status: Database["public"]["Enums"]["publish_status_enum"]
+          street_address: string | null
           title: string
           updated_at: string | null
         }
         Insert: {
           amenities_property?: Json | null
           amenities_room?: Json | null
+          audience_preferences?: Json | null
           availability_date?: string | null
           bills_note?: string | null
           city: string
           couples_accepted?: boolean | null
           created_at?: string | null
+          deposit?: number | null
+          door?: string | null
           flatmates_count?: number | null
+          floor?: number | null
           geo?: Json | null
+          house_rules?: string[] | null
           id?: string
+          is_location_approx?: boolean | null
+          lat?: number | null
           listed_space?: string | null
+          lng?: number | null
           neighborhood?: string | null
           owner_id: string
           pets_allowed?: boolean | null
           photos?: Json | null
           price_month: number
+          price_per_m2?: number | null
+          property_size_m2?: number | null
+          publish_status?:
+            | Database["public"]["Enums"]["publish_status_enum"]
+            | null
+          publish_warnings?: Json | null
+          room_size_m2?: number | null
+          services?: string[] | null
           smoking_allowed?: boolean | null
-          status?: string | null
+          status?: Database["public"]["Enums"]["publish_status_enum"]
+          street_address?: string | null
           title: string
           updated_at?: string | null
         }
         Update: {
           amenities_property?: Json | null
           amenities_room?: Json | null
+          audience_preferences?: Json | null
           availability_date?: string | null
           bills_note?: string | null
           city?: string
           couples_accepted?: boolean | null
           created_at?: string | null
+          deposit?: number | null
+          door?: string | null
           flatmates_count?: number | null
+          floor?: number | null
           geo?: Json | null
+          house_rules?: string[] | null
           id?: string
+          is_location_approx?: boolean | null
+          lat?: number | null
           listed_space?: string | null
+          lng?: number | null
           neighborhood?: string | null
           owner_id?: string
           pets_allowed?: boolean | null
           photos?: Json | null
           price_month?: number
+          price_per_m2?: number | null
+          property_size_m2?: number | null
+          publish_status?:
+            | Database["public"]["Enums"]["publish_status_enum"]
+            | null
+          publish_warnings?: Json | null
+          room_size_m2?: number | null
+          services?: string[] | null
           smoking_allowed?: boolean | null
-          status?: string | null
+          status?: Database["public"]["Enums"]["publish_status_enum"]
+          street_address?: string | null
           title?: string
           updated_at?: string | null
         }
@@ -277,56 +328,122 @@ export type Database = {
           },
         ]
       }
+      onboarding_progress: {
+        Row: {
+          completed_steps: number[]
+          current_step: number
+          role: Database["public"]["Enums"]["user_role_enum"]
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          completed_steps?: number[]
+          current_step?: number
+          role: Database["public"]["Enums"]["user_role_enum"]
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          completed_steps?: number[]
+          current_step?: number
+          role?: Database["public"]["Enums"]["user_role_enum"]
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
+          about_me: string | null
           avatar_url: string | null
           can_switch_roles: boolean | null
+          country: string | null
           created_at: string | null
+          date_of_birth: string | null
           display_name: string | null
           email: string
+          facebook_connected: boolean | null
+          gender: Database["public"]["Enums"]["gender_enum"] | null
+          google_connected: boolean | null
           id: string
           kyc_status: string | null
           languages: string[] | null
           last_active: string | null
+          marketing_opt_in: boolean | null
           member_since: string | null
           profession: string | null
-          role: string
+          profile_completion_pct: number | null
+          role: Database["public"]["Enums"]["user_role_enum"]
+          social_instagram: string | null
+          social_linkedin: string | null
+          social_tiktok: string | null
+          social_twitter_x: string | null
+          terms_accepted_at: string | null
           updated_at: string | null
           user_id: string
+          user_role: Database["public"]["Enums"]["user_role_enum"] | null
           verifications_json: Json | null
         }
         Insert: {
+          about_me?: string | null
           avatar_url?: string | null
           can_switch_roles?: boolean | null
+          country?: string | null
           created_at?: string | null
+          date_of_birth?: string | null
           display_name?: string | null
           email: string
+          facebook_connected?: boolean | null
+          gender?: Database["public"]["Enums"]["gender_enum"] | null
+          google_connected?: boolean | null
           id?: string
           kyc_status?: string | null
           languages?: string[] | null
           last_active?: string | null
+          marketing_opt_in?: boolean | null
           member_since?: string | null
           profession?: string | null
-          role?: string
+          profile_completion_pct?: number | null
+          role?: Database["public"]["Enums"]["user_role_enum"]
+          social_instagram?: string | null
+          social_linkedin?: string | null
+          social_tiktok?: string | null
+          social_twitter_x?: string | null
+          terms_accepted_at?: string | null
           updated_at?: string | null
           user_id: string
+          user_role?: Database["public"]["Enums"]["user_role_enum"] | null
           verifications_json?: Json | null
         }
         Update: {
+          about_me?: string | null
           avatar_url?: string | null
           can_switch_roles?: boolean | null
+          country?: string | null
           created_at?: string | null
+          date_of_birth?: string | null
           display_name?: string | null
           email?: string
+          facebook_connected?: boolean | null
+          gender?: Database["public"]["Enums"]["gender_enum"] | null
+          google_connected?: boolean | null
           id?: string
           kyc_status?: string | null
           languages?: string[] | null
           last_active?: string | null
+          marketing_opt_in?: boolean | null
           member_since?: string | null
           profession?: string | null
-          role?: string
+          profile_completion_pct?: number | null
+          role?: Database["public"]["Enums"]["user_role_enum"]
+          social_instagram?: string | null
+          social_linkedin?: string | null
+          social_tiktok?: string | null
+          social_twitter_x?: string | null
+          terms_accepted_at?: string | null
           updated_at?: string | null
           user_id?: string
+          user_role?: Database["public"]["Enums"]["user_role_enum"] | null
           verifications_json?: Json | null
         }
         Relationships: []
@@ -559,6 +676,36 @@ export type Database = {
           },
         ]
       }
+      verifications: {
+        Row: {
+          created_at: string
+          id: string
+          kind: Database["public"]["Enums"]["verification_kind_enum"]
+          status: Database["public"]["Enums"]["verification_status_enum"]
+          user_id: string
+          value: string | null
+          verified_at: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          kind: Database["public"]["Enums"]["verification_kind_enum"]
+          status?: Database["public"]["Enums"]["verification_status_enum"]
+          user_id: string
+          value?: string | null
+          verified_at?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          kind?: Database["public"]["Enums"]["verification_kind_enum"]
+          status?: Database["public"]["Enums"]["verification_status_enum"]
+          user_id?: string
+          value?: string | null
+          verified_at?: string | null
+        }
+        Relationships: []
+      }
       viewings: {
         Row: {
           created_at: string | null
@@ -612,7 +759,16 @@ export type Database = {
       }
     }
     Enums: {
-      [_ in never]: never
+      gender_enum: "male" | "female" | "other" | "prefer_not_to_say"
+      publish_status_enum: "draft" | "published"
+      user_role_enum: "tenant" | "lister"
+      verification_kind_enum:
+        | "email"
+        | "phone"
+        | "govgr"
+        | "google"
+        | "facebook"
+      verification_status_enum: "unverified" | "pending" | "verified"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -739,6 +895,12 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      gender_enum: ["male", "female", "other", "prefer_not_to_say"],
+      publish_status_enum: ["draft", "published"],
+      user_role_enum: ["tenant", "lister"],
+      verification_kind_enum: ["email", "phone", "govgr", "google", "facebook"],
+      verification_status_enum: ["unverified", "pending", "verified"],
+    },
   },
 } as const
