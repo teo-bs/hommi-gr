@@ -15,6 +15,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { OnboardingModal } from "@/components/onboarding/OnboardingModal";
 import { ProfileCompletionBanner } from "@/components/onboarding/ProfileCompletionBanner";
 import { ProfileCompletionModal } from "@/components/onboarding/ProfileCompletionModal";
+import { VerificationPanel } from '@/components/verification/VerificationPanel';
 import { supabase } from "@/integrations/supabase/client";
 
 type GenderType = 'male' | 'female' | 'other' | 'prefer_not_to_say' | '';
@@ -453,6 +454,11 @@ export default function Profile() {
                 </CardContent>
               </Card>
             </div>
+          </div>
+
+          {/* Verification Panel */}
+          <div className="mt-6">
+            <VerificationPanel />
           </div>
         </div>
       </div>
