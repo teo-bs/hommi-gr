@@ -6,15 +6,15 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSepara
 import { Home, User, MessageSquare, Plus, Globe, Menu, X, Settings, Search, Calendar, LogOut, UserCheck, MapPin, Heart, BarChart3, List } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useListingFlow } from "@/hooks/useListingFlow";
+import { useListingsCount } from "@/hooks/useListingsCount";
 import { AuthFlowManager } from "@/components/auth/AuthFlowManager";
-import { TermsPrivacyModal } from "@/components/auth/TermsPrivacyModal";
-import { RoleSelectionScreen } from "@/components/listing/RoleSelectionScreen";
 import { ListingWizard } from "@/components/listing/ListingWizard";
 import { useToast } from "@/hooks/use-toast";
 
 export const Header = () => {
   const { user, profile, signOut, updateProfile } = useAuth();
   const listingFlow = useListingFlow();
+  const { count: listingsCount } = useListingsCount();
   const navigate = useNavigate();
   const { toast } = useToast();
   const [showAuthModal, setShowAuthModal] = useState(false);
@@ -168,16 +168,18 @@ export const Header = () => {
   ];
 
   const listerNavItems = [
-    { 
-      href: "/overview", 
-      label: language === 'el' ? 'Επισκόπηση' : 'Overview',
-      icon: BarChart3
-    },
-    { 
-      href: "/my-listings", 
-      label: language === 'el' ? 'Οι αγγελίες μου' : 'My listings',
-      icon: List
-    },
+    ...(listingsCount > 0 ? [
+      { 
+        href: "/overview", 
+        label: language === 'el' ? 'Επισκόπηση' : 'Overview',
+        icon: BarChart3
+      },
+      { 
+        href: "/my-listings", 
+        label: language === 'el' ? 'Οι αγγελίες μου' : 'My listings',
+        icon: List
+      }
+    ] : []),
     { 
       href: "/inbox", 
       label: language === 'el' ? 'Μηνύματα' : 'Inbox',
@@ -505,22 +507,6 @@ export const Header = () => {
         onAuthSuccess={listingFlow.handleAuthSuccess}
       />
       
-      <TermsPrivacyModal
-        isOpen={listingFlow.termsModalOpen}
-        onAccept={listingFlow.handleTermsAccepted}
-      />
-      
-      {listingFlow.roleSelectionOpen && (
-        <div className="fixed inset-0 bg-background z-50 overflow-auto">
-          <div className="min-h-screen">
-            <RoleSelectionScreen
-              onRoleSelected={listingFlow.handleRoleSelected}
-              selectedRole={listingFlow.selectedRole || undefined}
-            />
-          </div>
-        </div>
-      )}
-      
       {listingFlow.wizardOpen && listingFlow.selectedRole && (
         <div className="fixed inset-0 bg-background z-50 overflow-auto">
           <div className="min-h-screen">
@@ -529,6 +515,7 @@ export const Header = () => {
               initialDraft={listingFlow.currentDraft || undefined}
               onSave={listingFlow.handleDraftSaved}
               onPublish={listingFlow.handleListingPublished}
+              onRoleChange={listingFlow.handleRoleChange}
               onBack={listingFlow.closeWizard}
             />
           </div>

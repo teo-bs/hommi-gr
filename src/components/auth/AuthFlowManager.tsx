@@ -16,50 +16,24 @@ export const AuthFlowManager = ({
   onAuthClose, 
   onAuthSuccess 
 }: AuthFlowManagerProps) => {
-  const { user, profile, needsTermsAcceptance, acceptTerms } = useAuth();
+  const { user, profile } = useAuth();
   const navigate = useNavigate();
-  const [showTermsModal, setShowTermsModal] = useState(false);
   const [showChoiceModal, setShowChoiceModal] = useState(false);
   const [pendingCallback, setPendingCallback] = useState<(() => void) | null>(null);
-  const [redirectedToProfile, setRedirectedToProfile] = useState(false);
-
-  // Check if we need to show terms modal after successful auth
-  useEffect(() => {
-    if (user && profile && needsTermsAcceptance()) {
-      setShowTermsModal(true);
-    }
-  }, [user, profile, needsTermsAcceptance]);
 
   const handleAuthSuccess = () => {
-    // Store the callback for after terms are accepted
+    // Store the callback for after role choice
     setPendingCallback(() => onAuthSuccess || (() => {}));
     
-    // Don't close auth modal yet - let the terms flow handle it
-    if (user && profile && needsTermsAcceptance()) {
-      // Navigate to profile page to show in background during T&Cs
-      if (!redirectedToProfile) {
-        navigate('/me');
-        setRedirectedToProfile(true);
-      }
-      setShowTermsModal(true);
+    // T&C handled globally by GlobalTermsHandler
+    // Show role choice modal immediately after successful auth
+    if (user && profile) {
+      setShowChoiceModal(true);
     } else {
-      // No terms needed, proceed normally
+      // No user yet, proceed normally
       onAuthClose();
       onAuthSuccess?.();
     }
-  };
-
-  const handleTermsAccepted = async (marketingOptIn: boolean) => {
-    const { error } = await acceptTerms(marketingOptIn);
-    
-    if (error) {
-      console.error('Failed to accept terms:', error);
-      return;
-    }
-    
-    // Terms accepted, now show role choice modal
-    setShowTermsModal(false);
-    setShowChoiceModal(true);
   };
 
   const handleRoleChoice = (role: 'tenant' | 'lister') => {
@@ -83,7 +57,7 @@ export const AuthFlowManager = ({
 
   const handleAuthClose = () => {
     // Only allow closing if no modals are pending
-    if (!showTermsModal && !showChoiceModal) {
+    if (!showChoiceModal) {
       onAuthClose();
       setPendingCallback(null);
     }
@@ -92,14 +66,9 @@ export const AuthFlowManager = ({
   return (
     <>
       <AuthModal
-        isOpen={isAuthOpen && !showTermsModal && !showChoiceModal}
+        isOpen={isAuthOpen && !showChoiceModal}
         onClose={handleAuthClose}
         onSuccess={handleAuthSuccess}
-      />
-      
-      <TermsPrivacyModal
-        isOpen={showTermsModal}
-        onAccept={handleTermsAccepted}
       />
 
       <OnboardingChoiceModal

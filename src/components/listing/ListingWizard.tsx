@@ -6,6 +6,7 @@ import { ArrowLeft, ArrowRight, Check } from "lucide-react";
 import { StepOne } from "./wizard/StepOne";
 import { StepTwo } from "./wizard/StepTwo";
 import { StepThree } from "./wizard/StepThree";
+import PublishStepZero from "@/components/publish/PublishStepZero";
 import { useToast } from "@/hooks/use-toast";
 
 export interface ListingDraft {
@@ -42,24 +43,27 @@ interface ListingWizardProps {
   initialDraft?: ListingDraft;
   onSave: (draft: ListingDraft) => void;
   onPublish: (listing: ListingDraft) => void;
+  onRoleChange: () => void;
   onBack: () => void;
 }
 
-export const ListingWizard = ({ role, initialDraft, onSave, onPublish, onBack }: ListingWizardProps) => {
+export const ListingWizard = ({ role, initialDraft, onSave, onPublish, onRoleChange, onBack }: ListingWizardProps) => {
   const { toast } = useToast();
-  const [currentStep, setCurrentStep] = useState(initialDraft?.step || 1);
+  const [currentStep, setCurrentStep] = useState(initialDraft?.step || 0); // Start from step 0 for role selection
+  const [selectedRole, setSelectedRole] = useState<'individual' | 'agency'>(role);
   const [draft, setDraft] = useState<ListingDraft>({
     title: '',
     city: '',
     neighborhood: '',
     price_month: null,
     photos: [],
-    role,
-    step: 1,
+    role: selectedRole,
+    step: 0,
     ...initialDraft
   });
 
   const steps = [
+    { id: 0, title: 'Role', description: 'Individual or Agency' },
     { id: 1, title: 'Basics', description: 'Title, location & price' },
     { id: 2, title: 'Details', description: 'Property & amenities' },
     { id: 3, title: 'Review', description: 'Preview & publish' }
@@ -93,6 +97,12 @@ export const ListingWizard = ({ role, initialDraft, onSave, onPublish, onBack }:
     setDraft(prev => ({ ...prev, ...updates }));
   };
 
+  const handleRoleSelection = (newRole: 'individual' | 'agency') => {
+    setSelectedRole(newRole);
+    setDraft(prev => ({ ...prev, role: newRole }));
+    setCurrentStep(1); // Move to basics after role selection
+  };
+
   const handleNext = () => {
     if (currentStep === 1 && !canProceedFromStep1) {
       toast({
@@ -109,7 +119,7 @@ export const ListingWizard = ({ role, initialDraft, onSave, onPublish, onBack }:
   };
 
   const handlePrevious = () => {
-    if (currentStep > 1) {
+    if (currentStep > 0) {
       setCurrentStep(currentStep - 1);
     }
   };
@@ -135,12 +145,18 @@ export const ListingWizard = ({ role, initialDraft, onSave, onPublish, onBack }:
 
   const renderStep = () => {
     switch (currentStep) {
+      case 0:
+        return (
+          <div className="max-w-2xl mx-auto">
+            <PublishStepZero onRoleSelected={handleRoleSelection} />
+          </div>
+        );
       case 1:
         return (
           <StepOne
             draft={draft}
             onChange={updateDraft}
-            role={role}
+            role={selectedRole}
           />
         );
       case 2:
@@ -148,14 +164,14 @@ export const ListingWizard = ({ role, initialDraft, onSave, onPublish, onBack }:
           <StepTwo
             draft={draft}
             onChange={updateDraft}
-            role={role}
+            role={selectedRole}
           />
         );
       case 3:
         return (
           <StepThree
             draft={draft}
-            role={role}
+            role={selectedRole}
             canPublish={canPublish}
             onPublish={handlePublish}
           />
@@ -165,7 +181,7 @@ export const ListingWizard = ({ role, initialDraft, onSave, onPublish, onBack }:
     }
   };
 
-  const progress = (currentStep / steps.length) * 100;
+  const progress = ((currentStep) / (steps.length - 1)) * 100;
 
   return (
     <div className="container mx-auto px-4 py-6 max-w-4xl">
@@ -178,11 +194,19 @@ export const ListingWizard = ({ role, initialDraft, onSave, onPublish, onBack }:
         
         <div className="flex-1">
           <h1 className="text-2xl font-bold">
-            Create {role === 'individual' ? 'Individual' : 'Agency'} Listing
+            Create {currentStep === 0 ? 'Listing' : (selectedRole === 'individual' ? 'Individual' : 'Agency') + ' Listing'}
           </h1>
           <p className="text-muted-foreground">
-            Step {currentStep} of {steps.length}: {steps[currentStep - 1].title}
+            Step {currentStep} of {steps.length - 1}: {steps[currentStep].title}
           </p>
+        </div>
+        
+        <div className="flex items-center gap-2">
+          {currentStep > 0 ? (
+            <Button variant="ghost" size="sm" onClick={onRoleChange}>
+              Change Role
+            </Button>
+          ) : null}
         </div>
       </div>
 
@@ -228,7 +252,7 @@ export const ListingWizard = ({ role, initialDraft, onSave, onPublish, onBack }:
       <Card className="p-4">
         <div className="flex items-center justify-between">
           <div>
-            {currentStep > 1 && (
+            {currentStep > 0 && (
               <Button variant="outline" onClick={handlePrevious}>
                 <ArrowLeft className="h-4 w-4 mr-2" />
                 Previous
@@ -249,7 +273,11 @@ export const ListingWizard = ({ role, initialDraft, onSave, onPublish, onBack }:
               </Button>
             )}
 
-            {currentStep < 3 ? (
+            {currentStep === 0 ? (
+              <div className="text-sm text-muted-foreground">
+                Please select your role to continue
+              </div>
+            ) : currentStep < 3 ? (
               <Button 
                 onClick={handleNext}
                 disabled={currentStep === 1 && !canProceedFromStep1}
