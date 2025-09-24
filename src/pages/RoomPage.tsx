@@ -3,7 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
-import { AuthModal } from "@/components/auth/AuthModal";
+import { AuthFlowManager } from "@/components/auth/AuthFlowManager";
 import { TermsPrivacyModal } from "@/components/auth/TermsPrivacyModal";
 import { MessageComposer } from "@/components/room/MessageComposer";
 import { ConversationView } from "@/components/room/ConversationView";
@@ -299,10 +299,10 @@ const RoomPage = () => {
         </div>
       </div>
 
-      <AuthModal 
-        isOpen={messageFlow.authModalOpen} 
-        onClose={messageFlow.closeAuth}
-        onSuccess={messageFlow.handleAuthSuccess}
+      <AuthFlowManager 
+        isAuthOpen={messageFlow.authModalOpen} 
+        onAuthClose={messageFlow.closeAuth}
+        onAuthSuccess={messageFlow.handleAuthSuccess}
       />
       
       <TermsPrivacyModal

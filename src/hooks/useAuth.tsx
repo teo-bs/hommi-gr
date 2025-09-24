@@ -1,22 +1,9 @@
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
+import type { Tables } from '@/integrations/supabase/types';
 
-interface Profile {
-  id: string;
-  user_id: string;
-  email: string;
-  display_name?: string;
-  avatar_url?: string;
-  role: string; // Accept any string from database
-  can_switch_roles: boolean;
-  kyc_status: string; // Accept any string from database  
-  member_since: string;
-  verifications_json: any;
-  languages: string[];
-  profession?: string;
-  last_active: string;
-}
+type Profile = Tables<'profiles'>;
 
 interface AuthContextType {
   user: User | null;
@@ -28,6 +15,8 @@ interface AuthContextType {
   signInWithGoogle: () => Promise<{ error: any }>;
   signOut: () => Promise<{ error: any }>;
   updateProfile: (updates: Partial<Profile>) => Promise<{ error: any }>;
+  acceptTerms: (marketingOptIn: boolean) => Promise<{ error: any }>;
+  needsTermsAcceptance: () => boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -160,6 +149,30 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     return { error };
   };
 
+  const acceptTerms = async (marketingOptIn: boolean) => {
+    if (!user) return { error: 'Not authenticated' };
+    
+    const updates = {
+      terms_accepted_at: new Date().toISOString(),
+      marketing_opt_in: marketingOptIn
+    };
+    
+    const { error } = await supabase
+      .from('profiles')
+      .update(updates)
+      .eq('user_id', user.id);
+    
+    if (!error && profile) {
+      setProfile({ ...profile, ...updates });
+    }
+    
+    return { error };
+  };
+
+  const needsTermsAcceptance = () => {
+    return user && profile && !profile.terms_accepted_at;
+  };
+
   const value: AuthContextType = {
     user,
     session,
@@ -170,6 +183,8 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     signInWithGoogle,
     signOut,
     updateProfile,
+    acceptTerms,
+    needsTermsAcceptance,
   };
 
   return (

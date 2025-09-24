@@ -19,7 +19,7 @@ interface ListingFlowState {
 }
 
 export const useListingFlow = () => {
-  const { user, profile } = useAuth();
+  const { user, profile, acceptTerms } = useAuth();
   const [state, setState] = useState<ListingFlowState>({
     authModalOpen: false,
     termsModalOpen: false,
@@ -55,8 +55,7 @@ export const useListingFlow = () => {
   // Check if user needs to accept terms
   const needsTermsAcceptance = useCallback(() => {
     if (!user || !profile) return false;
-    // TODO: Check if user has accepted terms in their profile
-    return !profile.verifications_json?.terms_accepted;
+    return !profile.terms_accepted_at;
   }, [user, profile]);
 
   const initiateListingFlow = useCallback((returnAction?: () => void) => {
@@ -123,9 +122,13 @@ export const useListingFlow = () => {
     });
   }, [needsTermsAcceptance]);
 
-  const handleTermsAccepted = useCallback((marketingEmails: boolean) => {
-    // TODO: Update user profile with terms acceptance and marketing preference
-    console.log('Terms accepted', { marketingEmails, userId: user?.id });
+  const handleTermsAccepted = useCallback(async (marketingEmails: boolean) => {
+    const { error } = await acceptTerms(marketingEmails);
+    
+    if (error) {
+      console.error('Failed to accept terms:', error);
+      return;
+    }
     
     setState(prev => {
       if (prev.returnAction) {
@@ -139,7 +142,7 @@ export const useListingFlow = () => {
         wizardOpen: !!prev.selectedRole
       };
     });
-  }, [user]);
+  }, [acceptTerms]);
 
   const handleRoleSelected = useCallback((role: 'individual' | 'agency') => {
     if (user) {

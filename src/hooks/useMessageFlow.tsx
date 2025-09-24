@@ -16,7 +16,7 @@ interface MessageFlowState {
 }
 
 export const useMessageFlow = (roomId: string) => {
-  const { user, profile } = useAuth();
+  const { user, profile, acceptTerms } = useAuth();
   const [state, setState] = useState<MessageFlowState>({
     authModalOpen: false,
     termsModalOpen: false,
@@ -29,9 +29,7 @@ export const useMessageFlow = (roomId: string) => {
   // Check if user needs to accept terms (simulate checking if they haven't accepted before)
   const needsTermsAcceptance = useCallback(() => {
     if (!user || !profile) return false;
-    // TODO: Check if user has accepted terms in their profile
-    // For now, simulate that new users need to accept terms
-    return !profile.verifications_json?.terms_accepted;
+    return !profile.terms_accepted_at;
   }, [user, profile]);
 
   const initiateMessageFlow = useCallback((message: string, returnAction?: () => void) => {
@@ -97,9 +95,13 @@ export const useMessageFlow = (roomId: string) => {
     });
   }, [needsTermsAcceptance, proceedWithMessage]);
 
-  const handleTermsAccepted = useCallback((marketingEmails: boolean) => {
-    // TODO: Update user profile with terms acceptance and marketing preference
-    console.log('Terms accepted', { marketingEmails, userId: user?.id });
+  const handleTermsAccepted = useCallback(async (marketingEmails: boolean) => {
+    const { error } = await acceptTerms(marketingEmails);
+    
+    if (error) {
+      console.error('Failed to accept terms:', error);
+      return;
+    }
     
     setState(prev => {
       if (prev.messageToSend) {
@@ -114,7 +116,7 @@ export const useMessageFlow = (roomId: string) => {
         awaitingTermsAcceptance: false
       };
     });
-  }, [user, proceedWithMessage]);
+  }, [acceptTerms, proceedWithMessage]);
 
   const handleMessageSent = useCallback((message: string) => {
     // Message sent successfully, open conversation view

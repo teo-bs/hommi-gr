@@ -5,7 +5,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSepara
 import { Home, User, MessageSquare, Plus, Globe, Menu, X, Settings, Search, Calendar, LogOut, UserCheck } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useListingFlow } from "@/hooks/useListingFlow";
-import { AuthModal } from "@/components/auth/AuthModal";
+import { AuthFlowManager } from "@/components/auth/AuthFlowManager";
 import { TermsPrivacyModal } from "@/components/auth/TermsPrivacyModal";
 import { RoleSelectionScreen } from "@/components/listing/RoleSelectionScreen";
 import { ListingWizard } from "@/components/listing/ListingWizard";
@@ -299,15 +299,15 @@ export const Header = () => {
         </div>
       </header>
 
-      <AuthModal 
-        isOpen={showAuthModal} 
-        onClose={() => setShowAuthModal(false)} 
+      <AuthFlowManager 
+        isAuthOpen={showAuthModal} 
+        onAuthClose={() => setShowAuthModal(false)} 
       />
       
-      <AuthModal 
-        isOpen={listingFlow.authModalOpen} 
-        onClose={listingFlow.closeAuth}
-        onSuccess={listingFlow.handleAuthSuccess}
+      <AuthFlowManager 
+        isAuthOpen={listingFlow.authModalOpen} 
+        onAuthClose={listingFlow.closeAuth}
+        onAuthSuccess={listingFlow.handleAuthSuccess}
       />
       
       <TermsPrivacyModal
