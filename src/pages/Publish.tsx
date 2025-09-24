@@ -11,6 +11,12 @@ import PublishStepFour from "@/components/publish/PublishStepFour";
 import PublishStepFive from "@/components/publish/PublishStepFive";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
+import { useListingValidation } from "@/hooks/useListingValidation";
+import { useVerifications } from "@/hooks/useVerifications";
+import { PublishWarningsBanner } from "@/components/publish/PublishWarningsBanner";
+import { VerificationPanel } from "@/components/verification/VerificationPanel";
+import { ProfileCompletionModal } from "@/components/onboarding/ProfileCompletionModal";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 interface ListingDraft {
   id?: string;
@@ -66,9 +72,15 @@ const STEPS = [
 ];
 
 export default function Publish() {
-  const { user } = useAuth();
+  const { user, profile } = useAuth();
   const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
+  const { validateListing, isValidating } = useListingValidation();
+  const { verifications } = useVerifications();
+  
+  const [showVerificationModal, setShowVerificationModal] = useState(false);
+  const [showProfileModal, setShowProfileModal] = useState(false);
+  const [publishWarnings, setPublishWarnings] = useState<any[]>([]);
   
   const currentStep = parseInt(searchParams.get('step') || '0');
   const [draft, setDraft] = useState<ListingDraft>({
@@ -282,6 +294,36 @@ export default function Publish() {
   const publishListing = async () => {
     if (!draft.id) return;
 
+    // Check phone verification
+    const phoneVerification = verifications.find(v => v.kind === 'phone');
+    if (!phoneVerification || phoneVerification.status !== 'verified') {
+      setShowVerificationModal(true);
+      return;
+    }
+
+    // Check profile completion
+    if (!profile || profile.profile_completion_pct < 100) {
+      setShowProfileModal(true);
+      return;
+    }
+
+    // Validate listing for outliers and mandatory fields
+    const validationResult = await validateListing(draft);
+    
+    if (validationResult.warnings.length > 0) {
+      setPublishWarnings(validationResult.warnings);
+      
+      // If there are errors, block publishing
+      if (!validationResult.canPublish) {
+        toast({
+          title: "Απαιτούνται διορθώσεις",
+          description: "Παρακαλώ διορθώστε τα σφάλματα πριν τη δημοσίευση.",
+          variant: "destructive"
+        });
+        return;
+      }
+    }
+
     try {
       await supabase
         .from('listings')
@@ -304,6 +346,27 @@ export default function Publish() {
     }
   };
 
+  const handleFixField = (field: string) => {
+    // Navigate to appropriate step based on field
+    const fieldStepMap: Record<string, number> = {
+      title: 4,
+      city: 1,
+      price_month: 2,
+      photos: 4,
+      date_of_birth: 0 // Will redirect to profile
+    };
+
+    const targetStep = fieldStepMap[field];
+    if (targetStep !== undefined) {
+      if (field === 'date_of_birth') {
+        navigate('/me');
+      } else {
+        setSearchParams({ step: targetStep.toString() });
+      }
+    }
+    setPublishWarnings([]);
+  };
+
   const progress = ((currentStep + 1) / STEPS.length) * 100;
   const maxStep = draft.property_type === 'apartment' ? 4 : 5;
 
@@ -316,6 +379,15 @@ export default function Publish() {
 
       <div className="min-h-screen bg-background">
         <div className="container mx-auto px-4 py-6 max-w-4xl">
+          {/* Publish Warnings */}
+          {publishWarnings.length > 0 && (
+            <PublishWarningsBanner
+              warnings={publishWarnings}
+              onFixField={handleFixField}
+              onDismiss={() => setPublishWarnings([])}
+            />
+          )}
+
           {/* Progress Bar */}
           <div className="mb-8">
             <div className="flex justify-between items-center mb-2">
@@ -381,6 +453,27 @@ export default function Publish() {
             />
           )}
         </div>
+
+        {/* Verification Modal */}
+        <Dialog open={showVerificationModal} onOpenChange={setShowVerificationModal}>
+          <DialogContent className="max-w-2xl">
+            <DialogHeader>
+              <DialogTitle>Επαλήθευση τηλεφώνου απαιτείται</DialogTitle>
+            </DialogHeader>
+            <div className="py-4">
+              <p className="text-muted-foreground mb-4">
+                Για τη δημοσίευση της αγγελίας σας, απαιτείται επαλήθευση του τηλεφώνου σας.
+              </p>
+              <VerificationPanel />
+            </div>
+          </DialogContent>
+        </Dialog>
+
+        {/* Profile Completion Modal */}
+        <ProfileCompletionModal 
+          isOpen={showProfileModal}
+          onClose={() => setShowProfileModal(false)}
+        />
       </div>
     </>
   );

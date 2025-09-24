@@ -17,6 +17,7 @@ import Help from "./pages/Help";
 import SearchPreferences from "@/pages/SearchPreferences";
 import Profile from "@/pages/Profile";
 import Publish from "./pages/Publish";
+import Agencies from "./pages/Agencies";
 
 const queryClient = new QueryClient();
 
@@ -42,6 +43,7 @@ const App = () => (
                 <Route path="/search-preferences" element={<SearchPreferences />} />
                 <Route path="/me" element={<Profile />} />
                 <Route path="/publish" element={<Publish />} />
+                <Route path="/agencies" element={<Agencies />} />
                 <Route path="*" element={<NotFound />} />
               </Routes>
             </main>
