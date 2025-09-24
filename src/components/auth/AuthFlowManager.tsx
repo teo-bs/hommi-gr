@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { AuthModal } from "./AuthModal";
 import { TermsPrivacyModal } from "./TermsPrivacyModal";
+import { OnboardingChoiceModal } from "@/components/onboarding/OnboardingChoiceModal";
 import { useAuth } from "@/hooks/useAuth";
 
 interface AuthFlowManagerProps {
@@ -18,6 +19,7 @@ export const AuthFlowManager = ({
   const { user, profile, needsTermsAcceptance, acceptTerms } = useAuth();
   const navigate = useNavigate();
   const [showTermsModal, setShowTermsModal] = useState(false);
+  const [showChoiceModal, setShowChoiceModal] = useState(false);
   const [pendingCallback, setPendingCallback] = useState<(() => void) | null>(null);
   const [redirectedToProfile, setRedirectedToProfile] = useState(false);
 
@@ -55,9 +57,22 @@ export const AuthFlowManager = ({
       return;
     }
     
-    // Terms accepted, close both modals and proceed
+    // Terms accepted, now show role choice modal
     setShowTermsModal(false);
+    setShowChoiceModal(true);
+  };
+
+  const handleRoleChoice = (role: 'tenant' | 'lister') => {
+    setShowChoiceModal(false);
     onAuthClose();
+    
+    // Navigate to appropriate onboarding flow
+    if (role === 'tenant') {
+      navigate('/me?role=tenant&step=1');
+    } else {
+      // TODO: Implement lister flow in future
+      navigate('/me');
+    }
     
     // Execute pending callback
     if (pendingCallback) {
@@ -67,8 +82,8 @@ export const AuthFlowManager = ({
   };
 
   const handleAuthClose = () => {
-    // Only allow closing if no terms are pending
-    if (!showTermsModal) {
+    // Only allow closing if no modals are pending
+    if (!showTermsModal && !showChoiceModal) {
       onAuthClose();
       setPendingCallback(null);
     }
@@ -77,7 +92,7 @@ export const AuthFlowManager = ({
   return (
     <>
       <AuthModal
-        isOpen={isAuthOpen && !showTermsModal}
+        isOpen={isAuthOpen && !showTermsModal && !showChoiceModal}
         onClose={handleAuthClose}
         onSuccess={handleAuthSuccess}
       />
@@ -85,6 +100,11 @@ export const AuthFlowManager = ({
       <TermsPrivacyModal
         isOpen={showTermsModal}
         onAccept={handleTermsAccepted}
+      />
+
+      <OnboardingChoiceModal
+        isOpen={showChoiceModal}
+        onChoice={handleRoleChoice}
       />
     </>
   );
