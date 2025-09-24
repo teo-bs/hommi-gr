@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { AuthModal } from "./AuthModal";
 import { TermsPrivacyModal } from "./TermsPrivacyModal";
 import { useAuth } from "@/hooks/useAuth";
@@ -15,8 +16,10 @@ export const AuthFlowManager = ({
   onAuthSuccess 
 }: AuthFlowManagerProps) => {
   const { user, profile, needsTermsAcceptance, acceptTerms } = useAuth();
+  const navigate = useNavigate();
   const [showTermsModal, setShowTermsModal] = useState(false);
   const [pendingCallback, setPendingCallback] = useState<(() => void) | null>(null);
+  const [redirectedToProfile, setRedirectedToProfile] = useState(false);
 
   // Check if we need to show terms modal after successful auth
   useEffect(() => {
@@ -31,6 +34,11 @@ export const AuthFlowManager = ({
     
     // Don't close auth modal yet - let the terms flow handle it
     if (user && profile && needsTermsAcceptance()) {
+      // Navigate to profile page to show in background during T&Cs
+      if (!redirectedToProfile) {
+        navigate('/me');
+        setRedirectedToProfile(true);
+      }
       setShowTermsModal(true);
     } else {
       // No terms needed, proceed normally

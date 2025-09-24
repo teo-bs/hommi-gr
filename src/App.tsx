@@ -5,7 +5,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/hooks/useAuth";
 import { Header } from "@/components/layout/Header";
-import { GlobalTermsHandler } from "@/components/auth/GlobalTermsHandler";
+
 import Index from "./pages/Index";
 import Search from "./pages/Search";
 import RoomPage from "./pages/RoomPage";
@@ -14,7 +14,8 @@ import Favourites from "./pages/Favourites";
 import Overview from "./pages/Overview";
 import MyListings from "./pages/MyListings";
 import Help from "./pages/Help";
-import SearchPreferences from "./pages/SearchPreferences";
+import SearchPreferences from "@/pages/SearchPreferences";
+import Profile from "@/pages/Profile";
 
 const queryClient = new QueryClient();
 
@@ -24,7 +25,7 @@ const App = () => (
       <TooltipProvider>
         <Toaster />
         <Sonner />
-        <GlobalTermsHandler />
+        
         <BrowserRouter>
           <div className="min-h-screen bg-background font-sans antialiased">
             <Header />
@@ -38,7 +39,7 @@ const App = () => (
                 <Route path="/my-listings" element={<MyListings />} />
                 <Route path="/help" element={<Help />} />
                 <Route path="/search-preferences" element={<SearchPreferences />} />
-                <Route path="/404" element={<NotFound />} />
+                <Route path="/me" element={<Profile />} />
                 <Route path="*" element={<NotFound />} />
               </Routes>
             </main>

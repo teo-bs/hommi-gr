@@ -208,47 +208,61 @@ export const Header = () => {
             </Link>
 
             {/* Desktop Navigation */}
-            <nav className="hidden lg:flex items-center space-x-6">
-              {/* Search Box - Only for tenants */}
-              {currentRole === 'tenant' && (
-                <form onSubmit={handleSearchSubmit} className="relative">
-                  <div className="relative">
-                    <MapPin className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                    <Input
-                      type="text"
-                      placeholder={locationLoading ? "Εντοπισμός..." : "Πού θέλετε να μείνετε;"}
-                      value={searchLocation}
-                      onChange={(e) => setSearchLocation(e.target.value)}
-                      className="pl-10 pr-4 w-80 bg-background border-border"
-                      disabled={locationLoading}
-                    />
-                  </div>
-                </form>
-              )}
+            {user ? (
+              <nav className="hidden lg:flex items-center space-x-6">
+                {/* Search Box - Only for tenants */}
+                {currentRole === 'tenant' && (
+                  <form onSubmit={handleSearchSubmit} className="relative">
+                    <div className="relative">
+                      <MapPin className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                      <Input
+                        type="text"
+                        placeholder={locationLoading ? "Εντοπισμός..." : "Πού θέλετε να μείνετε;"}
+                        value={searchLocation}
+                        onChange={(e) => setSearchLocation(e.target.value)}
+                        className="pl-10 pr-4 w-80 bg-background border-border"
+                        disabled={locationLoading}
+                      />
+                    </div>
+                  </form>
+                )}
 
-              {/* Navigation Items */}
-              {currentNavItems.map((item) => (
-                <Link
-                  key={item.href}
-                  to={item.href}
-                  className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors flex items-center space-x-1"
+                {/* Navigation Items */}
+                {currentNavItems.map((item) => (
+                  <Link
+                    key={item.href}
+                    to={item.href}
+                    className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors flex items-center space-x-1"
+                  >
+                    <item.icon className="h-4 w-4" />
+                    <span>{item.label}</span>
+                  </Link>
+                ))}
+
+                {/* Publish Listing Button */}
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  className="border-foreground/20"
+                  onClick={handlePublishListing}
                 >
-                  <item.icon className="h-4 w-4" />
-                  <span>{item.label}</span>
-                </Link>
-              ))}
-
-              {/* Publish Listing Button */}
-              <Button 
-                variant="outline" 
-                size="sm" 
-                className="border-foreground/20"
-                onClick={handlePublishListing}
-              >
-                <Plus className="h-4 w-4 mr-2" />
-                {language === 'el' ? 'Δημοσίευσε αγγελία' : 'Publish listing'}
-              </Button>
-            </nav>
+                  <Plus className="h-4 w-4 mr-2" />
+                  {language === 'el' ? 'Δημοσίευσε αγγελία' : 'Publish listing'}
+                </Button>
+              </nav>
+            ) : (
+              /* Logged-out Navigation */
+              <nav className="hidden lg:flex items-center space-x-6">
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  className="border-foreground/20"
+                  onClick={handlePublishListing}
+                >
+                  {language === 'el' ? 'Καταχώρησε το ακίνητό σου' : 'List your property'}
+                </Button>
+              </nav>
+            )}
 
             {/* Desktop Actions */}
             <div className="hidden lg:flex items-center space-x-4">
@@ -275,10 +289,10 @@ export const Header = () => {
                     align="end" 
                     className="w-56 bg-background border border-border shadow-lg z-50"
                   >
-                    <DropdownMenuItem onClick={() => navigate('/profile')}>
-                      <User className="h-4 w-4 mr-2" />
-                      {language === 'el' ? 'Το προφίλ μου' : 'My profile'}
-                    </DropdownMenuItem>
+                     <DropdownMenuItem onClick={() => navigate('/me')}>
+                       <User className="h-4 w-4 mr-2" />
+                       {language === 'el' ? 'Το προφίλ μου' : 'My profile'}
+                     </DropdownMenuItem>
                     <DropdownMenuItem onClick={() => navigate('/settings')}>
                       <Settings className="h-4 w-4 mr-2" />
                       {language === 'el' ? 'Ρυθμίσεις' : 'Settings'}
@@ -405,12 +419,12 @@ export const Header = () => {
 
                 {user ? (
                   <>
-                    <Link to="/profile" onClick={() => setMobileMenuOpen(false)}>
-                      <Button variant="ghost" size="sm" className="w-full justify-start">
-                        <User className="h-4 w-4 mr-2" />
-                        {language === 'el' ? 'Το προφίλ μου' : 'My profile'}
-                      </Button>
-                    </Link>
+                     <Link to="/me" onClick={() => setMobileMenuOpen(false)}>
+                       <Button variant="ghost" size="sm" className="w-full justify-start">
+                         <User className="h-4 w-4 mr-2" />
+                         {language === 'el' ? 'Το προφίλ μου' : 'My profile'}
+                       </Button>
+                     </Link>
                     <Link to="/settings" onClick={() => setMobileMenuOpen(false)}>
                       <Button variant="ghost" size="sm" className="w-full justify-start">
                         <Settings className="h-4 w-4 mr-2" />
