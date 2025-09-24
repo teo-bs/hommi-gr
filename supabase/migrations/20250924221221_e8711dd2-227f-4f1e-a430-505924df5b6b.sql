@@ -1,0 +1,21 @@
+-- Add missing columns to listings table for comprehensive listing flow
+ALTER TABLE public.listings 
+ADD COLUMN IF NOT EXISTS has_lift boolean DEFAULT false,
+ADD COLUMN IF NOT EXISTS bedrooms_single integer DEFAULT 0,
+ADD COLUMN IF NOT EXISTS bedrooms_double integer DEFAULT 0,
+ADD COLUMN IF NOT EXISTS bathrooms integer DEFAULT 1,
+ADD COLUMN IF NOT EXISTS wc_count integer DEFAULT 1,
+ADD COLUMN IF NOT EXISTS orientation text DEFAULT 'exterior',
+ADD COLUMN IF NOT EXISTS bed_type text,
+ADD COLUMN IF NOT EXISTS min_stay_months integer,
+ADD COLUMN IF NOT EXISTS max_stay_months integer,
+ADD COLUMN IF NOT EXISTS deposit_required boolean DEFAULT true,
+ADD COLUMN IF NOT EXISTS availability_to date,
+ADD COLUMN IF NOT EXISTS i_live_here boolean DEFAULT false,
+ADD COLUMN IF NOT EXISTS preferred_gender text[],
+ADD COLUMN IF NOT EXISTS preferred_age_min integer DEFAULT 18,
+ADD COLUMN IF NOT EXISTS preferred_age_max integer DEFAULT 99,
+ADD COLUMN IF NOT EXISTS preferred_situation text[],
+ADD COLUMN IF NOT EXISTS property_type text DEFAULT 'room',
+ADD COLUMN IF NOT EXISTS description text,
+ADD COLUMN IF NOT EXISTS step_completed integer DEFAULT 0;

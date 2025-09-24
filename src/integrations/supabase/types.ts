@@ -167,28 +167,45 @@ export type Database = {
           amenities_room: Json | null
           audience_preferences: Json | null
           availability_date: string | null
+          availability_to: string | null
+          bathrooms: number | null
+          bed_type: string | null
+          bedrooms_double: number | null
+          bedrooms_single: number | null
           bills_note: string | null
           city: string
           couples_accepted: boolean | null
           created_at: string | null
           deposit: number | null
+          deposit_required: boolean | null
+          description: string | null
           door: string | null
           flatmates_count: number | null
           floor: number | null
           geo: Json | null
+          has_lift: boolean | null
           house_rules: string[] | null
+          i_live_here: boolean | null
           id: string
           is_location_approx: boolean | null
           lat: number | null
           listed_space: string | null
           lng: number | null
+          max_stay_months: number | null
+          min_stay_months: number | null
           neighborhood: string | null
+          orientation: string | null
           owner_id: string
           pets_allowed: boolean | null
           photos: Json | null
+          preferred_age_max: number | null
+          preferred_age_min: number | null
+          preferred_gender: string[] | null
+          preferred_situation: string[] | null
           price_month: number
           price_per_m2: number | null
           property_size_m2: number | null
+          property_type: string | null
           publish_status:
             | Database["public"]["Enums"]["publish_status_enum"]
             | null
@@ -197,37 +214,56 @@ export type Database = {
           services: string[] | null
           smoking_allowed: boolean | null
           status: Database["public"]["Enums"]["publish_status_enum"]
+          step_completed: number | null
           street_address: string | null
           title: string
           updated_at: string | null
+          wc_count: number | null
         }
         Insert: {
           amenities_property?: Json | null
           amenities_room?: Json | null
           audience_preferences?: Json | null
           availability_date?: string | null
+          availability_to?: string | null
+          bathrooms?: number | null
+          bed_type?: string | null
+          bedrooms_double?: number | null
+          bedrooms_single?: number | null
           bills_note?: string | null
           city: string
           couples_accepted?: boolean | null
           created_at?: string | null
           deposit?: number | null
+          deposit_required?: boolean | null
+          description?: string | null
           door?: string | null
           flatmates_count?: number | null
           floor?: number | null
           geo?: Json | null
+          has_lift?: boolean | null
           house_rules?: string[] | null
+          i_live_here?: boolean | null
           id?: string
           is_location_approx?: boolean | null
           lat?: number | null
           listed_space?: string | null
           lng?: number | null
+          max_stay_months?: number | null
+          min_stay_months?: number | null
           neighborhood?: string | null
+          orientation?: string | null
           owner_id: string
           pets_allowed?: boolean | null
           photos?: Json | null
+          preferred_age_max?: number | null
+          preferred_age_min?: number | null
+          preferred_gender?: string[] | null
+          preferred_situation?: string[] | null
           price_month: number
           price_per_m2?: number | null
           property_size_m2?: number | null
+          property_type?: string | null
           publish_status?:
             | Database["public"]["Enums"]["publish_status_enum"]
             | null
@@ -236,37 +272,56 @@ export type Database = {
           services?: string[] | null
           smoking_allowed?: boolean | null
           status?: Database["public"]["Enums"]["publish_status_enum"]
+          step_completed?: number | null
           street_address?: string | null
           title: string
           updated_at?: string | null
+          wc_count?: number | null
         }
         Update: {
           amenities_property?: Json | null
           amenities_room?: Json | null
           audience_preferences?: Json | null
           availability_date?: string | null
+          availability_to?: string | null
+          bathrooms?: number | null
+          bed_type?: string | null
+          bedrooms_double?: number | null
+          bedrooms_single?: number | null
           bills_note?: string | null
           city?: string
           couples_accepted?: boolean | null
           created_at?: string | null
           deposit?: number | null
+          deposit_required?: boolean | null
+          description?: string | null
           door?: string | null
           flatmates_count?: number | null
           floor?: number | null
           geo?: Json | null
+          has_lift?: boolean | null
           house_rules?: string[] | null
+          i_live_here?: boolean | null
           id?: string
           is_location_approx?: boolean | null
           lat?: number | null
           listed_space?: string | null
           lng?: number | null
+          max_stay_months?: number | null
+          min_stay_months?: number | null
           neighborhood?: string | null
+          orientation?: string | null
           owner_id?: string
           pets_allowed?: boolean | null
           photos?: Json | null
+          preferred_age_max?: number | null
+          preferred_age_min?: number | null
+          preferred_gender?: string[] | null
+          preferred_situation?: string[] | null
           price_month?: number
           price_per_m2?: number | null
           property_size_m2?: number | null
+          property_type?: string | null
           publish_status?:
             | Database["public"]["Enums"]["publish_status_enum"]
             | null
@@ -275,9 +330,11 @@ export type Database = {
           services?: string[] | null
           smoking_allowed?: boolean | null
           status?: Database["public"]["Enums"]["publish_status_enum"]
+          step_completed?: number | null
           street_address?: string | null
           title?: string
           updated_at?: string | null
+          wc_count?: number | null
         }
         Relationships: [
           {

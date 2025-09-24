@@ -16,6 +16,7 @@ import MyListings from "./pages/MyListings";
 import Help from "./pages/Help";
 import SearchPreferences from "@/pages/SearchPreferences";
 import Profile from "@/pages/Profile";
+import Publish from "./pages/Publish";
 
 const queryClient = new QueryClient();
 
@@ -40,6 +41,7 @@ const App = () => (
                 <Route path="/help" element={<Help />} />
                 <Route path="/search-preferences" element={<SearchPreferences />} />
                 <Route path="/me" element={<Profile />} />
+                <Route path="/publish" element={<Publish />} />
                 <Route path="*" element={<NotFound />} />
               </Routes>
             </main>
