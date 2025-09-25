@@ -103,7 +103,7 @@ export const ListingGrid = ({
         {listings.map((listing) => (
           <Link
             key={listing.room_id}
-            to={`/listing/${listing.slug || listing.room_id}`}
+            to={`/listing/${listing.slug}`}
             className="block"
             onClick={() => handleCardClick(listing.room_id)}
           >
