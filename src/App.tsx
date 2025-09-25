@@ -19,6 +19,8 @@ import SearchPreferences from "@/pages/SearchPreferences";
 import Profile from "@/pages/Profile";
 import Publish from "./pages/Publish";
 import Agencies from "./pages/Agencies";
+import Inbox from "./pages/Inbox";
+import Settings from "./pages/Settings";
 
 const queryClient = new QueryClient();
 
@@ -47,6 +49,8 @@ const App = () => (
                 <Route path="/me" element={<Profile />} />
                 <Route path="/publish" element={<Publish />} />
                 <Route path="/agencies" element={<Agencies />} />
+                <Route path="/inbox" element={<Inbox />} />
+                <Route path="/settings" element={<Settings />} />
                 <Route path="*" element={<NotFound />} />
               </Routes>
             </main>
