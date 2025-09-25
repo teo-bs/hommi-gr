@@ -17,7 +17,14 @@ export const GlobalTermsHandler = () => {
 
   // Show T&C modal immediately after first signup, only once
   useEffect(() => {
+    console.log('GlobalTermsHandler: Checking terms acceptance', { 
+      user: !!user, 
+      profile: !!profile, 
+      needsTerms: user && profile && needsTermsAcceptance() 
+    });
+    
     if (user && profile && needsTermsAcceptance()) {
+      console.log('GlobalTermsHandler: Showing terms modal');
       setShowTermsModal(true);
     } else {
       setShowTermsModal(false);
@@ -25,6 +32,7 @@ export const GlobalTermsHandler = () => {
   }, [user, profile, needsTermsAcceptance]);
 
   const handleTermsAccepted = async (marketingOptIn: boolean) => {
+    console.log('GlobalTermsHandler: Terms accepted', { marketingOptIn });
     const { error } = await acceptTerms(marketingOptIn);
     
     if (error) {
@@ -32,12 +40,15 @@ export const GlobalTermsHandler = () => {
       return;
     }
     
+    console.log('GlobalTermsHandler: Terms accepted successfully');
     setShowTermsModal(false);
     
     // Check if user has listing intent - skip generic choice and go to individual/agency
     if (hasListingIntent) {
+      console.log('GlobalTermsHandler: Has listing intent, showing individual/agency modal');
       setShowIndividualAgencyModal(true);
     } else {
+      console.log('GlobalTermsHandler: No listing intent, showing role choice modal');
       setShowChoiceModal(true);
     }
   };

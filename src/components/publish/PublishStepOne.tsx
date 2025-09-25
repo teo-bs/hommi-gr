@@ -59,7 +59,7 @@ export default function PublishStepOne({
 
   const handleCitySelect = (city: string) => {
     onUpdate({ city });
-    setCityFilter('');
+    setCityFilter(city);
     setShowCitySuggestions(false);
   };
 
@@ -96,12 +96,17 @@ export default function PublishStepOne({
                 <Input
                   id="city"
                   placeholder="Αρχίστε να πληκτρολογείτε..."
-                  value={draft.city || cityFilter}
+                  value={draft.city || ''}
                   onChange={(e) => {
                     const value = e.target.value;
                     setCityFilter(value);
-                    onUpdate({ city: value });
-                    setShowCitySuggestions(true);
+                    if (value) {
+                      onUpdate({ city: value });
+                      setShowCitySuggestions(true);
+                    } else {
+                      onUpdate({ city: '' });
+                      setShowCitySuggestions(false);
+                    }
                   }}
                   onFocus={() => setShowCitySuggestions(true)}
                 />

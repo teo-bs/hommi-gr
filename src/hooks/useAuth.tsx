@@ -41,17 +41,22 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
 
   const fetchProfile = async (userId: string) => {
     try {
+      console.log('useAuth: Fetching profile for user:', userId);
       const { data, error } = await supabase
         .from('profiles')
         .select('*')
         .eq('user_id', userId)
-        .single();
+        .maybeSingle();
 
       if (error) {
         console.error('Error fetching profile:', error);
-        return;
+        // If profile doesn't exist, that's ok for new users
+        if (error.code !== 'PGRST116') { // PGRST116 is "no rows returned"
+          return;
+        }
       }
 
+      console.log('useAuth: Profile fetched:', data);
       setProfile(data);
     } catch (error) {
       console.error('Error fetching profile:', error);
