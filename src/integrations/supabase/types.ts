@@ -114,6 +114,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "applications_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "room_search_cache"
+            referencedColumns: ["listing_id"]
+          },
+          {
             foreignKeyName: "applications_seeker_id_fkey"
             columns: ["seeker_id"]
             isOneToOne: false
@@ -163,6 +170,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "listings"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "holds_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "room_search_cache"
+            referencedColumns: ["listing_id"]
           },
           {
             foreignKeyName: "holds_seeker_id_fkey"
@@ -619,6 +633,13 @@ export type Database = {
             foreignKeyName: "fk_room_amenities_room_id"
             columns: ["room_id"]
             isOneToOne: false
+            referencedRelation: "room_search_cache"
+            referencedColumns: ["room_id"]
+          },
+          {
+            foreignKeyName: "fk_room_amenities_room_id"
+            columns: ["room_id"]
+            isOneToOne: false
             referencedRelation: "rooms"
             referencedColumns: ["id"]
           },
@@ -723,6 +744,13 @@ export type Database = {
             referencedRelation: "listings"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "fk_rooms_listing_id"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "room_search_cache"
+            referencedColumns: ["listing_id"]
+          },
         ]
       }
       saved_rooms: {
@@ -745,6 +773,13 @@ export type Database = {
           user_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "saved_rooms_room_id_fkey"
+            columns: ["room_id"]
+            isOneToOne: false
+            referencedRelation: "room_search_cache"
+            referencedColumns: ["room_id"]
+          },
           {
             foreignKeyName: "saved_rooms_room_id_fkey"
             columns: ["room_id"]
@@ -799,6 +834,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "listings"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "threads_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "room_search_cache"
+            referencedColumns: ["listing_id"]
           },
           {
             foreignKeyName: "threads_seeker_id_fkey"
@@ -873,6 +915,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "viewings_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "room_search_cache"
+            referencedColumns: ["listing_id"]
+          },
+          {
             foreignKeyName: "viewings_seeker_id_fkey"
             columns: ["seeker_id"]
             isOneToOne: false
@@ -883,7 +932,41 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      room_search_cache: {
+        Row: {
+          availability_date: string | null
+          availability_status: string | null
+          city: string | null
+          couples_accepted: boolean | null
+          cover_photo_url: string | null
+          created_at: string | null
+          flatmates_count: number | null
+          last_active: string | null
+          last_viewed_at: string | null
+          lat: number | null
+          listed_space: string | null
+          lister_avatar: string | null
+          lister_name: string | null
+          listing_id: string | null
+          lng: number | null
+          max_stay_months: number | null
+          member_since: string | null
+          min_stay_months: number | null
+          neighborhood: string | null
+          pets_allowed: boolean | null
+          price_month: number | null
+          property_type: string | null
+          request_count: number | null
+          room_id: string | null
+          search_vector: unknown | null
+          slug: string | null
+          title: string | null
+          updated_at: string | null
+          verifications_json: Json | null
+          view_count: number | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       get_user_saved_rooms_count: {
@@ -897,6 +980,10 @@ export type Database = {
       is_room_saved_by_user: {
         Args: { room_uuid: string; user_uuid: string }
         Returns: boolean
+      }
+      refresh_room_search_cache: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
       }
       update_thread_status: {
         Args: {
