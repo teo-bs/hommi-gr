@@ -128,11 +128,11 @@ const RoomPage = () => {
 
         console.log('Stats fetch result:', { stats, statsError });
 
-        // Fetch lister data
+        // Fetch lister profile data
         const { data: lister, error: listerError } = await supabase
-          .from('listers')
-          .select('*, profile:profiles(*)')
-          .eq('profile_id', listing.owner_id)
+          .from('profiles')
+          .select('*')
+          .eq('id', listing.owner_id)
           .maybeSingle();
 
         console.log('Lister fetch result:', { lister, listerError });
@@ -163,7 +163,7 @@ const RoomPage = () => {
           room,
           listing,
           lister,
-          profile: lister?.profile,
+          profile: lister,
           photos: photos || [],
           amenities: {
             property: propertyAmenities,

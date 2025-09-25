@@ -24,7 +24,7 @@ export const Header = () => {
   const [locationLoading, setLocationLoading] = useState(false);
 
   // Get current user role, default to 'tenant'
-  const currentRole = profile?.user_role || 'tenant';
+  const currentRole = profile?.role || 'tenant';
 
   // Auto-detect location on component mount
   useEffect(() => {
@@ -114,7 +114,7 @@ export const Header = () => {
     if (!user || !profile) return;
     
     try {
-      const { error } = await updateProfile({ user_role: newRole });
+      const { error } = await updateProfile({ role: newRole });
       
       if (error) {
         toast({
@@ -146,7 +146,7 @@ export const Header = () => {
   };
 
   // Determine user role - default to 'tenant' if not set
-  const userRole = profile?.user_role || 'tenant';
+  const userRole = profile?.role || 'tenant';
 
   // Define navigation items based on role
   const tenantNavItems = [

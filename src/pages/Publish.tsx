@@ -393,30 +393,20 @@ export default function Publish() {
     }
   };
 
-  // Helper function to ensure lister profile exists
+  // Helper function to ensure lister role is set
   const ensureListerProfile = async () => {
     if (!profile) return;
     
     try {
-      // Check if lister profile exists
-      const { data: existingLister } = await supabase
-        .from('listers')
-        .select('id')
-        .eq('profile_id', profile.id)
-        .maybeSingle();
-
-      if (!existingLister) {
-        // Create lister profile
+      // Update profile role to lister if not already set
+      if (profile.role !== 'lister') {
         await supabase
-          .from('listers')
-          .insert({
-            profile_id: profile.id,
-            score: 0,
-            badges: []
-          });
+          .from('profiles')
+          .update({ role: 'lister' })
+          .eq('user_id', profile.user_id);
       }
     } catch (error) {
-      console.error('Error creating lister profile:', error);
+      console.error('Error updating profile role to lister:', error);
     }
   };
 
