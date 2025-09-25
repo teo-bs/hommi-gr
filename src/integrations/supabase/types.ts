@@ -977,6 +977,10 @@ export type Database = {
         Args: { rid: string }
         Returns: undefined
       }
+      is_lister_with_published: {
+        Args: { profile_id: string }
+        Returns: boolean
+      }
       is_room_saved_by_user: {
         Args: { room_uuid: string; user_uuid: string }
         Returns: boolean
