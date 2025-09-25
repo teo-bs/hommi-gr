@@ -21,6 +21,7 @@ import { PreferredFlatmateBlock } from "@/components/room/PreferredFlatmateBlock
 import { AmenitiesGrid } from "@/components/room/AmenitiesGrid";
 import { LocationMiniMap } from "@/components/room/LocationMiniMap";
 import { ListerCard } from "@/components/room/ListerCard";
+import { SaveRoomButton } from "@/components/room/SaveRoomButton";
 import { Skeleton } from "@/components/ui/skeleton";
 
 interface RoomData {
@@ -297,6 +298,14 @@ const RoomPage = () => {
                 price={listing.price_month}
                 deposit={listing.price_month}
                 billsIncluded={true}
+              />
+              
+              <SaveRoomButton 
+                roomId={room.id}
+                className="w-full"
+                variant="outline"
+                size="lg"
+                showText={true}
               />
               
               {/* Show request status if request was sent */}

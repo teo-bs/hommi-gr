@@ -1,10 +1,12 @@
-import React from "react";
+import React, { useState } from "react";
 import { Helmet } from "react-helmet-async";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { CheckCircle, Calendar, Users, TrendingUp, Mail, Phone } from "lucide-react";
+import { AgencyLeadForm } from "@/components/forms/AgencyLeadForm";
 
 export default function Agencies() {
+  const [showForm, setShowForm] = useState(false);
   const features = [
     {
       icon: <Users className="h-5 w-5" />,
@@ -29,8 +31,7 @@ export default function Agencies() {
   ];
 
   const handleBookCall = () => {
-    // External calendar link - replace with actual booking URL
-    window.open('https://calendly.com/hommi-agencies', '_blank');
+    setShowForm(true);
   };
 
   return (
@@ -77,6 +78,13 @@ export default function Agencies() {
               </Card>
             ))}
           </div>
+
+          {/* Contact Form */}
+          {showForm && (
+            <div className="mb-12">
+              <AgencyLeadForm />
+            </div>
+          )}
 
           {/* CTA Section */}
           <Card className="bg-gradient-to-r from-primary/5 to-secondary/5 border-primary/20">

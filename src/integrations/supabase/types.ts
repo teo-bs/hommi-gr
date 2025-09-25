@@ -14,6 +14,45 @@ export type Database = {
   }
   public: {
     Tables: {
+      agency_leads: {
+        Row: {
+          company_name: string
+          contact_name: string
+          created_at: string
+          email: string
+          id: string
+          message: string | null
+          phone: string | null
+          status: string
+          updated_at: string
+          website: string | null
+        }
+        Insert: {
+          company_name: string
+          contact_name: string
+          created_at?: string
+          email: string
+          id?: string
+          message?: string | null
+          phone?: string | null
+          status?: string
+          updated_at?: string
+          website?: string | null
+        }
+        Update: {
+          company_name?: string
+          contact_name?: string
+          created_at?: string
+          email?: string
+          id?: string
+          message?: string | null
+          phone?: string | null
+          status?: string
+          updated_at?: string
+          website?: string | null
+        }
+        Relationships: []
+      }
       amenities: {
         Row: {
           category: string
@@ -686,6 +725,35 @@ export type Database = {
           },
         ]
       }
+      saved_rooms: {
+        Row: {
+          created_at: string
+          id: string
+          room_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          room_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          room_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "saved_rooms_room_id_fkey"
+            columns: ["room_id"]
+            isOneToOne: false
+            referencedRelation: "rooms"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       threads: {
         Row: {
           accepted_at: string | null
@@ -818,9 +886,17 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      get_user_saved_rooms_count: {
+        Args: { user_uuid: string }
+        Returns: number
+      }
       increment_room_views: {
         Args: { rid: string }
         Returns: undefined
+      }
+      is_room_saved_by_user: {
+        Args: { room_uuid: string; user_uuid: string }
+        Returns: boolean
       }
       update_thread_status: {
         Args: {
