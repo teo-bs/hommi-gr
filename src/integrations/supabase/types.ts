@@ -414,7 +414,6 @@ export type Database = {
           terms_accepted_at: string | null
           updated_at: string | null
           user_id: string
-          user_role: Database["public"]["Enums"]["user_role_enum"] | null
           verifications_json: Json | null
         }
         Insert: {
@@ -448,7 +447,6 @@ export type Database = {
           terms_accepted_at?: string | null
           updated_at?: string | null
           user_id: string
-          user_role?: Database["public"]["Enums"]["user_role_enum"] | null
           verifications_json?: Json | null
         }
         Update: {
@@ -482,7 +480,6 @@ export type Database = {
           terms_accepted_at?: string | null
           updated_at?: string | null
           user_id?: string
-          user_role?: Database["public"]["Enums"]["user_role_enum"] | null
           verifications_json?: Json | null
         }
         Relationships: []
