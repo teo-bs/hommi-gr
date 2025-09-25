@@ -134,33 +134,6 @@ export type Database = {
           },
         ]
       }
-      listers: {
-        Row: {
-          badges: Json | null
-          created_at: string | null
-          id: string
-          profile_id: string
-          score: number | null
-          updated_at: string | null
-        }
-        Insert: {
-          badges?: Json | null
-          created_at?: string | null
-          id?: string
-          profile_id: string
-          score?: number | null
-          updated_at?: string | null
-        }
-        Update: {
-          badges?: Json | null
-          created_at?: string | null
-          id?: string
-          profile_id?: string
-          score?: number | null
-          updated_at?: string | null
-        }
-        Relationships: []
-      }
       listings: {
         Row: {
           amenities_property: Json | null
@@ -423,9 +396,12 @@ export type Database = {
           gender: Database["public"]["Enums"]["gender_enum"] | null
           google_connected: boolean | null
           id: string
+          is_public: boolean | null
           kyc_status: string | null
           languages: string[] | null
           last_active: string | null
+          lister_badges: Json | null
+          lister_score: number | null
           marketing_opt_in: boolean | null
           member_since: string | null
           profession: string | null
@@ -454,9 +430,12 @@ export type Database = {
           gender?: Database["public"]["Enums"]["gender_enum"] | null
           google_connected?: boolean | null
           id?: string
+          is_public?: boolean | null
           kyc_status?: string | null
           languages?: string[] | null
           last_active?: string | null
+          lister_badges?: Json | null
+          lister_score?: number | null
           marketing_opt_in?: boolean | null
           member_since?: string | null
           profession?: string | null
@@ -485,9 +464,12 @@ export type Database = {
           gender?: Database["public"]["Enums"]["gender_enum"] | null
           google_connected?: boolean | null
           id?: string
+          is_public?: boolean | null
           kyc_status?: string | null
           languages?: string[] | null
           last_active?: string | null
+          lister_badges?: Json | null
+          lister_score?: number | null
           marketing_opt_in?: boolean | null
           member_since?: string | null
           profession?: string | null
