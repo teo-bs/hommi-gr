@@ -17,6 +17,7 @@ import { PublishWarningsBanner } from "@/components/publish/PublishWarningsBanne
 import { VerificationPanel } from "@/components/verification/VerificationPanel";
 import { ProfileCompletionModal } from "@/components/onboarding/ProfileCompletionModal";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
 
 interface ListingDraft {
   id?: string;
@@ -76,7 +77,7 @@ export default function Publish() {
   const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
   const { validateListing, isValidating } = useListingValidation();
-  const { verifications } = useVerifications();
+  const { verifications, refetch: refetchVerifications } = useVerifications();
   
   const [showVerificationModal, setShowVerificationModal] = useState(false);
   const [showProfileModal, setShowProfileModal] = useState(false);
@@ -184,6 +185,8 @@ export default function Publish() {
 
     const updatedDraft = { ...draft, ...updates };
     setDraft(updatedDraft);
+    
+    console.log('Saving draft with updates:', updates, 'Full draft:', updatedDraft);
 
     try {
       const draftData = {
@@ -415,28 +418,43 @@ export default function Publish() {
 
     // Check phone verification
     const phoneVerification = verifications.find(v => v.kind === 'phone');
+    console.log('Phone verification check:', {
+      hasVerification: !!phoneVerification,
+      status: phoneVerification?.status,
+      allVerifications: verifications
+    });
     if (!phoneVerification || phoneVerification.status !== 'verified') {
       setShowVerificationModal(true);
       return;
     }
 
-    // Check profile completion
-    if (!profile || profile.profile_completion_pct < 100) {
+    // Check profile completion (80% is sufficient for publishing)
+    if (!profile || profile.profile_completion_pct < 80) {
+      console.log('Profile completion check failed:', {
+        profile: !!profile,
+        completion: profile?.profile_completion_pct
+      });
       setShowProfileModal(true);
       return;
     }
 
     // Validate listing for outliers and mandatory fields
+    console.log('Validating listing before publish:', draft);
     const validationResult = await validateListing(draft);
     
+    console.log('Validation result:', validationResult);
     if (validationResult.warnings.length > 0) {
       setPublishWarnings(validationResult.warnings);
       
       // If there are errors, block publishing
       if (!validationResult.canPublish) {
+        const errorFields = validationResult.warnings
+          .filter(w => w.severity === 'error')
+          .map(w => w.message)
+          .join(', ');
         toast({
           title: "Απαιτούνται διορθώσεις",
-          description: "Παρακαλώ διορθώστε τα σφάλματα πριν τη δημοσίευση.",
+          description: `Παρακαλώ διορθώστε: ${errorFields}`,
           variant: "destructive"
         });
         return;
@@ -582,17 +600,53 @@ export default function Publish() {
             <div className="py-4">
               <p className="text-muted-foreground mb-4">
                 Για τη δημοσίευση της αγγελίας σας, απαιτείται επαλήθευση του τηλεφώνου σας.
+                Αυτό βοηθά στη διασφάλιση της ασφάλειας της κοινότητας μας.
               </p>
               <VerificationPanel />
+              <div className="flex justify-end space-x-2 mt-4">
+                <Button variant="outline" onClick={() => setShowVerificationModal(false)}>
+                  Κλείσιμο
+                </Button>
+                <Button onClick={async () => {
+                  await refetchVerifications();
+                  setShowVerificationModal(false);
+                  // Try to publish again after verification
+                  setTimeout(() => publishListing(), 500);
+                }}>
+                  Επανάληψη δημοσίευσης
+                </Button>
+              </div>
             </div>
           </DialogContent>
         </Dialog>
 
-        {/* Profile Completion Modal */}
-        <ProfileCompletionModal 
-          isOpen={showProfileModal}
-          onClose={() => setShowProfileModal(false)}
-        />
+        {/* Profile Completion Modal - Custom implementation */}
+        <Dialog open={showProfileModal} onOpenChange={setShowProfileModal}>
+          <DialogContent className="max-w-lg">
+            <DialogHeader>
+              <DialogTitle>Ολοκληρώστε το προφίλ σας</DialogTitle>
+            </DialogHeader>
+            <div className="py-4 space-y-4">
+              <p className="text-muted-foreground">
+                Για να δημοσιεύσετε την αγγελία σας, χρειάζεται να ολοκληρώσετε το προφίλ σας τουλάχιστον κατά 80%.
+              </p>
+              <div className="bg-muted p-3 rounded-md">
+                <p className="text-sm font-medium">Τρέχουσα ολοκλήρωση: {profile?.profile_completion_pct || 0}%</p>
+              </div>
+              <p className="text-sm text-muted-foreground">
+                Παρακαλώ συμπληρώστε τα απαραίτητα στοιχεία στο προφίλ σας και προσπαθήστε ξανά.
+              </p>
+              <div className="flex justify-end space-x-2">
+                <Button variant="outline" onClick={() => setShowProfileModal(false)}>
+                  Άκυρο
+                </Button>
+                <Button onClick={() => { setShowProfileModal(false); navigate('/me'); }}>
+                  Μεταβάστε στο προφίλ
+                </Button>
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
       </div>
     </>
   );

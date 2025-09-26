@@ -73,6 +73,12 @@ export default function PublishStepFive({
 
   const isValid = (draft.preferred_gender && draft.preferred_gender.length > 0) ||
     (draft.preferred_situation && draft.preferred_situation.length > 0);
+    
+  console.log('PublishStepFive validation:', {
+    preferred_gender: draft.preferred_gender,
+    preferred_situation: draft.preferred_situation,
+    isValid
+  });
 
   return (
     <div className="space-y-6">
