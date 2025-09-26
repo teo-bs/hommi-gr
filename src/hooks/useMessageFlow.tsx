@@ -23,18 +23,19 @@ interface MessageFlowState {
 
 export const useMessageFlow = (listingId?: string) => {
   const { user, profile, acceptTerms } = useAuth();
-  const [requestStatus, setRequestStatus] = useState<'none' | 'pending' | 'accepted' | 'loading'>('none');
+  const [requestStatus, setRequestStatus] = useState<'none' | 'pending' | 'accepted' | 'declined'>('none');
   const [threadId, setThreadId] = useState<string | null>(null);
   const [showConversation, setShowConversation] = useState(false);
   const [authModalOpen, setAuthModalOpen] = useState(false);
   const [termsModalOpen, setTermsModalOpen] = useState(false);
   const [messageToSend, setMessageToSend] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
 
   const createChatRequest = async () => {
     if (!user || !profile || !listingId) return;
 
     try {
-      setRequestStatus('loading');
+      setLoading(true);
       
       // Get the listing to find the host
       const { data: listing, error: listingError } = await supabase
@@ -58,7 +59,8 @@ export const useMessageFlow = (listingId?: string) => {
 
       if (existingThread) {
         setThreadId(existingThread.id);
-        setRequestStatus(existingThread.status === 'accepted' ? 'accepted' : 'pending');
+        setRequestStatus(existingThread.status === 'accepted' ? 'accepted' : 
+                        existingThread.status === 'declined' ? 'declined' : 'pending');
         if (existingThread.status === 'accepted') {
           setShowConversation(true);
         }
@@ -82,11 +84,13 @@ export const useMessageFlow = (listingId?: string) => {
       }
 
       setThreadId(newThread.id);
-      setRequestStatus('pending'); // Set to pending, not accepted
+      setRequestStatus('pending');
       // Don't open conversation immediately - wait for host approval
     } catch (error) {
       console.error('Error creating chat request:', error);
       setRequestStatus('none');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -114,7 +118,8 @@ export const useMessageFlow = (listingId?: string) => {
 
         if (thread) {
           setThreadId(thread.id);
-          setRequestStatus(thread.status === 'accepted' ? 'accepted' : 'pending');
+          setRequestStatus(thread.status === 'accepted' ? 'accepted' : 
+                          thread.status === 'declined' ? 'declined' : 'pending');
           if (thread.status === 'accepted') {
             setShowConversation(true);
           }
@@ -142,7 +147,7 @@ export const useMessageFlow = (listingId?: string) => {
             setShowConversation(true);
             // Optionally show a toast notification
           } else if (updatedThread.status === 'declined') {
-            setRequestStatus('none');
+            setRequestStatus('declined');
             setShowConversation(false);
           }
         }
@@ -240,6 +245,6 @@ export const useMessageFlow = (listingId?: string) => {
     // Helpers
     isAuthenticated: !!user,
     needsTermsAcceptance: needsTermsAcceptance(),
-    loading: false,
+    loading: loading,
   };
 };
