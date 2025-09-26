@@ -84,14 +84,19 @@ export default function Profile() {
     return basicOnboardingDone && profileIncomplete;
   };
 
-  // Auto-show completion banner after onboarding
+  // Auto-show completion modal after onboarding
   useEffect(() => {
-    if (shouldShowCompletionBanner() && searchParams.get('completed_onboarding') === 'true') {
+    const completedOnboarding = searchParams.get('completed_onboarding');
+    if (completedOnboarding === 'true' && profile) {
       setShowCompletionModal(true);
-      // Remove the URL parameter after showing
-      setSearchParams({});
+      // Remove the parameter to avoid showing the modal again
+      setSearchParams(prev => {
+        const newParams = new URLSearchParams(prev);
+        newParams.delete('completed_onboarding');
+        return newParams;
+      });
     }
-  }, [profile, onboardingProgress, searchParams, setSearchParams]);
+  }, [searchParams, setSearchParams, profile]);
 
   // Update form data when profile changes
   useEffect(() => {
@@ -177,6 +182,32 @@ export default function Profile() {
     return date.toLocaleDateString('el-GR', { year: 'numeric', month: 'long' });
   };
 
+  const getCountryLabel = (country: string): string => {
+    const countries: Record<string, string> = {
+      'GR': 'Ελλάδα',
+      'CY': 'Κύπρος',
+      'US': 'ΗΠΑ',
+      'GB': 'Ηνωμένο Βασίλειο',
+      'DE': 'Γερμανία',
+      'FR': 'Γαλλία',
+      'IT': 'Ιταλία',
+      'ES': 'Ισπανία',
+    };
+    return countries[country] || country;
+  };
+
+  const getLanguageLabel = (code: string): string => {
+    const languages: Record<string, string> = {
+      'el': 'Ελληνικά',
+      'en': 'Αγγλικά',
+      'fr': 'Γαλλικά',
+      'de': 'Γερμανικά',
+      'it': 'Ιταλικά',
+      'es': 'Ισπανικά',
+    };
+    return languages[code] || code;
+  };
+
   const socialLinks = [
     { key: 'social_instagram' as keyof FormData, label: 'Instagram', icon: '📷' },
     { key: 'social_linkedin' as keyof FormData, label: 'LinkedIn', icon: '💼' },
@@ -216,42 +247,115 @@ export default function Profile() {
           )}
 
           {/* Profile Completion Data as Bubbles */}
-          {profile && (profile.profile_completion_pct || 0) >= 80 && (
+          {profile && profile.profile_extras && (
             <div className="mb-6">
               <Card>
                 <CardHeader>
                   <CardTitle className="text-lg">Στοιχεία Προφίλ</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  {/* Languages */}
-                  {profile.languages && Array.isArray(profile.languages) && profile.languages.length > 0 && (
-                    <div>
-                      <Label className="text-sm font-medium mb-2 block">Γλώσσες</Label>
+                  {/* Professional & Study Info */}
+                  {(profile.profession || profile.country) && (
+                    <div className="space-y-2">
+                      <h4 className="text-sm font-medium text-muted-foreground">Δραστηριότητα</h4>
                       <div className="flex flex-wrap gap-2">
-                        {profile.languages.map((lang: string, index: number) => (
-                          <Badge key={index} variant="secondary">{lang}</Badge>
+                        {profile.profession && (
+                          <Badge variant="secondary">{profile.profession}</Badge>
+                        )}
+                        {profile.country && (
+                          <Badge variant="secondary">
+                            {getCountryLabel(profile.country)}
+                          </Badge>
+                        )}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Languages */}
+                  {profile.languages && profile.languages.length > 0 && (
+                    <div className="space-y-2">
+                      <h4 className="text-sm font-medium text-muted-foreground">Γλώσσες</h4>
+                      <div className="flex flex-wrap gap-2">
+                        {profile.languages.map((lang) => (
+                          <Badge key={lang} variant="secondary">
+                            {getLanguageLabel(lang)}
+                          </Badge>
                         ))}
                       </div>
                     </div>
                   )}
-                  
-                  {/* Professional Info */}
-                  <div className="pt-2 border-t">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      {profile.profession && (
-                        <div>
-                          <Label className="text-sm font-medium">Επάγγελμα</Label>
-                          <p className="text-sm text-muted-foreground mt-1">{profile.profession}</p>
+
+                      {/* Profile Extras - Interest Bubbles */}
+                      {(profile.profile_extras as any)?.personality && Array.isArray((profile.profile_extras as any).personality) && (profile.profile_extras as any).personality.length > 0 && (
+                        <div className="space-y-2">
+                          <h4 className="text-sm font-medium text-muted-foreground">Προσωπικότητα</h4>
+                          <div className="flex flex-wrap gap-2">
+                            {(profile.profile_extras as any).personality.map((item: string) => (
+                              <Badge key={item} variant="outline">{item}</Badge>
+                            ))}
+                          </div>
                         </div>
                       )}
-                      {profile.country && (
-                        <div>
-                          <Label className="text-sm font-medium">Χώρα</Label>
-                          <p className="text-sm text-muted-foreground mt-1">{profile.country}</p>
+
+                      {/* Lifestyle */}
+                      {(profile.profile_extras as any)?.lifestyle && Array.isArray((profile.profile_extras as any).lifestyle) && (profile.profile_extras as any).lifestyle.length > 0 && (
+                        <div className="space-y-2">
+                          <h4 className="text-sm font-medium text-muted-foreground">Στυλ ζωής</h4>
+                          <div className="flex flex-wrap gap-2">
+                            {(profile.profile_extras as any).lifestyle.map((item: string) => (
+                              <Badge key={item} variant="outline">{item}</Badge>
+                            ))}
+                          </div>
                         </div>
                       )}
-                    </div>
-                  </div>
+
+                      {/* Music */}
+                      {(profile.profile_extras as any)?.music && Array.isArray((profile.profile_extras as any).music) && (profile.profile_extras as any).music.length > 0 && (
+                        <div className="space-y-2">
+                          <h4 className="text-sm font-medium text-muted-foreground">Μουσική</h4>
+                          <div className="flex flex-wrap gap-2">
+                            {(profile.profile_extras as any).music.map((item: string) => (
+                              <Badge key={item} variant="outline">{item}</Badge>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Sports */}
+                      {(profile.profile_extras as any)?.sports && Array.isArray((profile.profile_extras as any).sports) && (profile.profile_extras as any).sports.length > 0 && (
+                        <div className="space-y-2">
+                          <h4 className="text-sm font-medium text-muted-foreground">Σπορ</h4>
+                          <div className="flex flex-wrap gap-2">
+                            {(profile.profile_extras as any).sports.map((item: string) => (
+                              <Badge key={item} variant="outline">{item}</Badge>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Movies */}
+                      {(profile.profile_extras as any)?.movies && Array.isArray((profile.profile_extras as any).movies) && (profile.profile_extras as any).movies.length > 0 && (
+                        <div className="space-y-2">
+                          <h4 className="text-sm font-medium text-muted-foreground">Ταινίες</h4>
+                          <div className="flex flex-wrap gap-2">
+                            {(profile.profile_extras as any).movies.map((item: string) => (
+                              <Badge key={item} variant="outline">{item}</Badge>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Who's Moving */}
+                      {(profile.profile_extras as any)?.who_moving && (
+                        <div className="space-y-2">
+                          <h4 className="text-sm font-medium text-muted-foreground">Ποιος μετακομίζει</h4>
+                          <div className="flex flex-wrap gap-2">
+                            <Badge variant="outline">
+                              {(profile.profile_extras as any).who_moving === 'just_me' ? 'Μόνος μου' : 'Με κάποιον'}
+                            </Badge>
+                          </div>
+                        </div>
+                      )}
                 </CardContent>
               </Card>
             </div>
@@ -294,26 +398,28 @@ export default function Profile() {
                         if (!file || !user) return;
                         
                         try {
-                          // Upload to Supabase storage
+                          // Upload to user-specific folder in avatars bucket
                           const fileExt = file.name.split('.').pop();
-                          const fileName = `${user.id}-${Date.now()}.${fileExt}`;
+                          const fileName = `${user.id}/${Date.now()}.${fileExt}`;
                           
-                          const { error: uploadError } = await supabase.storage
+                          const { data, error: uploadError } = await supabase.storage
                             .from('avatars')
-                            .upload(fileName, file);
+                            .upload(fileName, file, {
+                              upsert: true
+                            });
 
                           if (uploadError) {
                             throw uploadError;
                           }
 
                           // Get public URL
-                          const { data } = supabase.storage
+                          const { data: publicUrlData } = supabase.storage
                             .from('avatars')
-                            .getPublicUrl(fileName);
+                            .getPublicUrl(data.path);
 
                           // Update profile with new avatar
                           const { error: updateError } = await updateProfile({
-                            avatar_url: data.publicUrl
+                            avatar_url: publicUrlData.publicUrl
                           });
 
                           if (updateError) {
@@ -328,7 +434,7 @@ export default function Profile() {
                           console.error('Upload error:', error);
                           toast({
                             title: "Σφάλμα",
-                            description: "Δεν ήταν δυνατή η αποθήκευση της φωτογραφίας",
+                            description: "Δεν ήταν δυνατή η αποθήκευση της φωτογραφίας. Βεβαιωθείτε ότι το αρχείο είναι εικόνα.",
                             variant: "destructive",
                           });
                         }

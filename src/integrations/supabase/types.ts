@@ -459,6 +459,7 @@ export type Database = {
           member_since: string | null
           profession: string | null
           profile_completion_pct: number | null
+          profile_extras: Json
           role: Database["public"]["Enums"]["user_role_enum"]
           social_instagram: string | null
           social_linkedin: string | null
@@ -492,6 +493,7 @@ export type Database = {
           member_since?: string | null
           profession?: string | null
           profile_completion_pct?: number | null
+          profile_extras?: Json
           role?: Database["public"]["Enums"]["user_role_enum"]
           social_instagram?: string | null
           social_linkedin?: string | null
@@ -525,6 +527,7 @@ export type Database = {
           member_since?: string | null
           profession?: string | null
           profile_completion_pct?: number | null
+          profile_extras?: Json
           role?: Database["public"]["Enums"]["user_role_enum"]
           social_instagram?: string | null
           social_linkedin?: string | null

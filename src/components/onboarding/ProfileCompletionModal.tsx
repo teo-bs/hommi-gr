@@ -108,6 +108,18 @@ export const ProfileCompletionModal = ({ isOpen, onClose }: ProfileCompletionMod
     setIsSubmitting(true);
 
     try {
+      // Collect all selected chips and form data
+      const profile_extras = {
+        personality: formData.personality,
+        lifestyle: formData.lifestyle,
+        music: formData.music,
+        sports: formData.sports,
+        movies: formData.movies,
+        study_level: whatYouDo.includes('study') ? formData.study_level : undefined,
+        work_profession: whatYouDo.includes('work') ? formData.work_profession : undefined,
+        who_moving: formData.who_moving
+      };
+
       const updateData: any = {
         display_name: formData.display_name,
         about_me: formData.about_me,
@@ -115,6 +127,7 @@ export const ProfileCompletionModal = ({ isOpen, onClose }: ProfileCompletionMod
         social_twitter_x: formData.social_twitter_x || null,
         social_linkedin: formData.social_linkedin || null,
         social_tiktok: formData.social_tiktok || null,
+        profile_extras
       };
 
       // Set profession based on what they do

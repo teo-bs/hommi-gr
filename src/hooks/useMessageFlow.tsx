@@ -1,6 +1,6 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { useAuth } from "@/hooks/useAuth";
-import { useChatRequests } from "@/hooks/useChatRequests";
+import { supabase } from "@/integrations/supabase/client";
 
 interface MessageFlowState {
   // Auth flow
@@ -21,113 +21,164 @@ interface MessageFlowState {
   returnAction: (() => void) | null;
 }
 
-export const useMessageFlow = (roomId: string) => {
+export const useMessageFlow = (listingId?: string) => {
   const { user, profile, acceptTerms } = useAuth();
-  const { createChatRequest, loading: requestLoading } = useChatRequests();
-  const [state, setState] = useState<MessageFlowState>({
-    authModalOpen: false,
-    termsModalOpen: false,
-    awaitingTermsAcceptance: false,
-    conversationOpen: false,
-    messageToSend: null,
-    requestSent: false,
-    requestStatus: 'none',
-    threadId: null,
-    returnAction: null,
-  });
+  const [requestStatus, setRequestStatus] = useState<'none' | 'pending' | 'accepted' | 'loading'>('none');
+  const [threadId, setThreadId] = useState<string | null>(null);
+  const [showConversation, setShowConversation] = useState(false);
+  const [authModalOpen, setAuthModalOpen] = useState(false);
+  const [termsModalOpen, setTermsModalOpen] = useState(false);
+  const [messageToSend, setMessageToSend] = useState<string | null>(null);
 
-  // Check if user needs to accept terms (simulate checking if they haven't accepted before)
+  const createChatRequest = async () => {
+    if (!user || !profile || !listingId) return;
+
+    try {
+      setRequestStatus('loading');
+      
+      // Get the listing to find the host
+      const { data: listing, error: listingError } = await supabase
+        .from('listings')
+        .select('owner_id')
+        .eq('id', listingId)
+        .single();
+
+      if (listingError || !listing) {
+        throw new Error('Listing not found');
+      }
+
+      // Check if thread already exists
+      const { data: existingThread } = await supabase
+        .from('threads')
+        .select('*')
+        .eq('listing_id', listingId)
+        .eq('seeker_id', profile.id)
+        .eq('host_id', listing.owner_id)
+        .single();
+
+      if (existingThread) {
+        setThreadId(existingThread.id);
+        setRequestStatus(existingThread.status === 'accepted' ? 'accepted' : 'pending');
+        if (existingThread.status === 'accepted') {
+          setShowConversation(true);
+        }
+        return;
+      }
+
+      // Create new thread
+      const { data: newThread, error: threadError } = await supabase
+        .from('threads')
+        .insert([{
+          listing_id: listingId,
+          seeker_id: profile.id,
+          host_id: listing.owner_id,
+          status: 'pending'
+        }])
+        .select()
+        .single();
+
+      if (threadError || !newThread) {
+        throw new Error('Failed to create thread');
+      }
+
+      setThreadId(newThread.id);
+      setRequestStatus('pending'); // Set to pending, not accepted
+      // Don't open conversation immediately - wait for host approval
+    } catch (error) {
+      console.error('Error creating chat request:', error);
+      setRequestStatus('none');
+    }
+  };
+
+  // Load existing thread status on mount
+  useEffect(() => {
+    const loadThreadStatus = async () => {
+      if (!user || !profile || !listingId) return;
+
+      try {
+        const { data: listing } = await supabase
+          .from('listings')
+          .select('owner_id')
+          .eq('id', listingId)
+          .single();
+
+        if (!listing) return;
+
+        const { data: thread } = await supabase
+          .from('threads')
+          .select('*')
+          .eq('listing_id', listingId)
+          .eq('seeker_id', profile.id)
+          .eq('host_id', listing.owner_id)
+          .single();
+
+        if (thread) {
+          setThreadId(thread.id);
+          setRequestStatus(thread.status === 'accepted' ? 'accepted' : 'pending');
+          if (thread.status === 'accepted') {
+            setShowConversation(true);
+          }
+        }
+      } catch (error) {
+        console.error('Error loading thread status:', error);
+      }
+    };
+
+    loadThreadStatus();
+  }, [user, profile, listingId]);
+
+  // Subscribe to thread status changes for real-time updates
+  useEffect(() => {
+    if (!threadId) return;
+
+    const subscription = supabase
+      .channel('thread_status_changes')
+      .on('postgres_changes', 
+        { event: 'UPDATE', schema: 'public', table: 'threads', filter: `id=eq.${threadId}` },
+        (payload) => {
+          const updatedThread = payload.new;
+          if (updatedThread.status === 'accepted') {
+            setRequestStatus('accepted');
+            setShowConversation(true);
+            // Optionally show a toast notification
+          } else if (updatedThread.status === 'declined') {
+            setRequestStatus('none');
+            setShowConversation(false);
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, [threadId]);
+
+  // Check if user needs to accept terms
   const needsTermsAcceptance = useCallback(() => {
     if (!user || !profile) return false;
     return !profile.terms_accepted_at;
   }, [user, profile]);
 
-  const initiateMessageFlow = useCallback(async (
-    message: string, 
-    listingId?: string, 
-    hostProfileId?: string,
-    returnAction?: () => void
-  ) => {
-    if (!user) {
-      // User not logged in - save message and show auth modal
-      setState(prev => ({
-        ...prev,
-        authModalOpen: true,
-        messageToSend: message,
-        returnAction: returnAction || null
-      }));
-      return;
-    }
-
-    if (needsTermsAcceptance()) {
-      // User logged in but needs to accept terms
-      setState(prev => ({
-        ...prev,
-        termsModalOpen: true,
-        awaitingTermsAcceptance: true,
-        messageToSend: message,
-        returnAction: returnAction || null
-      }));
-      return;
-    }
-
-    // User authenticated and terms accepted - proceed with chat request
-    if (listingId && hostProfileId) {
-      const result = await createChatRequest(listingId, hostProfileId, message);
-      
-      if (result.success) {
-        setState(prev => ({
-          ...prev,
-          requestSent: true,
-          requestStatus: result.threadId ? 'accepted' : 'pending',
-          threadId: result.threadId || null,
-          conversationOpen: !!result.threadId, // Open conversation if accepted
-          messageToSend: result.threadId ? message : null
-        }));
-      } else {
-        // Handle error case - could show error modal or toast
-        console.error('Failed to create chat request:', result.error);
-      }
-    } else {
-      // Fallback to old behavior for backward compatibility
-      proceedWithMessage(message);
-    }
-  }, [user, needsTermsAcceptance, createChatRequest]);
-
   const proceedWithMessage = useCallback((message: string) => {
-    setState(prev => ({
-      ...prev,
-      conversationOpen: true,
-      messageToSend: message,
-      authModalOpen: false,
-      termsModalOpen: false,
-      awaitingTermsAcceptance: false
-    }));
+    setShowConversation(true);
+    setMessageToSend(message);
+    setAuthModalOpen(false);
+    setTermsModalOpen(false);
   }, []);
 
   const handleAuthSuccess = useCallback(() => {
-    setState(prev => {
-      if (prev.awaitingTermsAcceptance || needsTermsAcceptance()) {
-        // After auth, check if we need terms acceptance
-        return {
-          ...prev,
-          authModalOpen: false,
-          termsModalOpen: true,
-          awaitingTermsAcceptance: true
-        };
-      } else {
-        // Auth complete, proceed with message
-        const message = prev.messageToSend;
-        if (message) {
-          proceedWithMessage(message);
-        }
-        return {
-          ...prev,
-          authModalOpen: false
-        };
+    if (needsTermsAcceptance()) {
+      setAuthModalOpen(false);
+      setTermsModalOpen(true);
+    } else {
+      const message = messageToSend;
+      if (message) {
+        proceedWithMessage(message);
       }
-    });
-  }, [needsTermsAcceptance, proceedWithMessage]);
+      setAuthModalOpen(false);
+    }
+  }, [needsTermsAcceptance, proceedWithMessage, messageToSend]);
 
   const handleTermsAccepted = useCallback(async (marketingEmails: boolean) => {
     const { error } = await acceptTerms(marketingEmails);
@@ -137,66 +188,48 @@ export const useMessageFlow = (roomId: string) => {
       return;
     }
     
-    setState(prev => {
-      if (prev.messageToSend) {
-        proceedWithMessage(prev.messageToSend);
-      }
-      if (prev.returnAction) {
-        prev.returnAction();
-      }
-      return {
-        ...prev,
-        termsModalOpen: false,
-        awaitingTermsAcceptance: false
-      };
-    });
-  }, [acceptTerms, proceedWithMessage]);
+    const message = messageToSend;
+    if (message) {
+      proceedWithMessage(message);
+    }
+    setTermsModalOpen(false);
+  }, [acceptTerms, proceedWithMessage, messageToSend]);
 
   const handleMessageSent = useCallback((message: string) => {
-    // Message sent successfully, open conversation view
-    setState(prev => ({
-      ...prev,
-      conversationOpen: true,
-      messageToSend: message
-    }));
+    setShowConversation(true);
+    setMessageToSend(message);
   }, []);
 
   const closeAuth = useCallback(() => {
-    setState(prev => ({
-      ...prev,
-      authModalOpen: false
-    }));
+    setAuthModalOpen(false);
   }, []);
 
   const closeConversation = useCallback(() => {
-    setState(prev => ({
-      ...prev,
-      conversationOpen: false,
-      messageToSend: null,
-      returnAction: null
-    }));
+    setShowConversation(false);
+    setMessageToSend(null);
   }, []);
 
   const reset = useCallback(() => {
-    setState({
-      authModalOpen: false,
-      termsModalOpen: false,
-      awaitingTermsAcceptance: false,
-      conversationOpen: false,
-      messageToSend: null,
-      requestSent: false,
-      requestStatus: 'none',
-      threadId: null,
-      returnAction: null,
-    });
+    setAuthModalOpen(false);
+    setTermsModalOpen(false);
+    setShowConversation(false);
+    setMessageToSend(null);
+    setRequestStatus('none');
+    setThreadId(null);
   }, []);
 
   return {
     // State
-    ...state,
+    requestStatus,
+    threadId,
+    showConversation,
+    conversationOpen: showConversation,
+    authModalOpen,
+    termsModalOpen,
+    messageToSend,
     
     // Actions
-    initiateMessageFlow,
+    createChatRequest,
     handleAuthSuccess,
     handleTermsAccepted,
     handleMessageSent,
@@ -207,6 +240,6 @@ export const useMessageFlow = (roomId: string) => {
     // Helpers
     isAuthenticated: !!user,
     needsTermsAcceptance: needsTermsAcceptance(),
-    loading: requestLoading,
+    loading: false,
   };
 };

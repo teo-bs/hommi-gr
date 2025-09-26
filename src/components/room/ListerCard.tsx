@@ -5,31 +5,43 @@ import { Star, Calendar, Clock, Globe } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 
 interface ListerCardProps {
-  profile: {
-    id?: string;
+  lister?: {
+    id: string;
     display_name?: string;
     avatar_url?: string;
     member_since?: string;
     last_active?: string;
+    kyc_status?: string;
     profession?: string;
     languages?: string[];
-  } | null;
-  listingId?: string;
+  };
+  verificationBadge?: boolean;
+  languages?: string[];
+  memberSince?: string;
+  lastActive?: string;
+  profession?: string;
 }
 
-export const ListerCard = ({ profile, listingId }: ListerCardProps) => {
-  if (!profile) return null;
+export const ListerCard = ({ 
+  lister, 
+  verificationBadge, 
+  languages, 
+  memberSince: propMemberSince, 
+  lastActive: propLastActive,
+  profession: propProfession 
+}: ListerCardProps) => {
+  if (!lister) return null;
 
-  const memberSince = profile.member_since 
-    ? new Date(profile.member_since).getFullYear()
+  const memberSince = propMemberSince || lister.member_since
+    ? new Date(propMemberSince || lister.member_since!).getFullYear()
     : new Date().getFullYear();
     
-  const lastActive = profile.last_active 
-    ? formatDistanceToNow(new Date(profile.last_active), { addSuffix: true })
+  const lastActive = propLastActive || lister.last_active
+    ? formatDistanceToNow(new Date(propLastActive || lister.last_active!), { addSuffix: true })
     : 'recently active';
 
-  const languages = profile.languages || ['el', 'en'];
-  const languageLabels = languages.map(lang => {
+  const displayLanguages = languages || lister.languages || ['el', 'en'];
+  const languageLabels = displayLanguages.map(lang => {
     switch(lang) {
       case 'el': return 'Ελληνικά';
       case 'en': return 'English';
@@ -37,20 +49,32 @@ export const ListerCard = ({ profile, listingId }: ListerCardProps) => {
     }
   });
 
+  const getLanguageLabel = (code: string): string => {
+    const languageMap: Record<string, string> = {
+      'el': 'Ελληνικά',
+      'en': 'English',
+      'fr': 'Français',
+      'de': 'Deutsch',
+      'it': 'Italiano',
+      'es': 'Español',
+    };
+    return languageMap[code] || code;
+  };
+
   return (
     <Card>
       <CardHeader className="pb-3">
         <div className="flex items-start space-x-4">
           <Avatar className="h-16 w-16">
-            <AvatarImage src={profile.avatar_url} />
+            <AvatarImage src={lister.avatar_url} />
             <AvatarFallback className="bg-primary/10 text-primary font-semibold text-lg">
-              {profile.display_name?.charAt(0)?.toUpperCase() || 'U'}
+              {lister.display_name?.charAt(0)?.toUpperCase() || 'U'}
             </AvatarFallback>
           </Avatar>
           
           <div className="flex-1">
             <h3 className="font-semibold text-lg">
-              {profile.display_name || 'Hommi User'}
+              {lister.display_name || 'Hommi User'}
             </h3>
             
             <div className="flex items-center space-x-1 mt-1">
@@ -65,10 +89,12 @@ export const ListerCard = ({ profile, listingId }: ListerCardProps) => {
       <CardContent className="space-y-4">
         {/* Status Badges */}
         <div className="flex flex-wrap gap-2">
-          <Badge variant="secondary" className="text-xs">
-            <Star className="h-3 w-3 mr-1" />
-            Verified ID
-          </Badge>
+          {verificationBadge && (
+            <Badge variant="secondary" className="text-xs">
+              <Star className="h-3 w-3 mr-1" />
+              Gov.gr Verified
+            </Badge>
+          )}
           <Badge variant="secondary" className="text-xs">
             <Star className="h-3 w-3 mr-1" />
             Superhost
@@ -93,10 +119,10 @@ export const ListerCard = ({ profile, listingId }: ListerCardProps) => {
             </div>
           </div>
           
-          {profile.profession && (
+          {(propProfession || lister.profession) && (
             <div className="flex items-center justify-between">
               <span className="text-muted-foreground">Profession</span>
-              <span>{profile.profession}</span>
+              <span>{propProfession || lister.profession}</span>
             </div>
           )}
         </div>
@@ -108,11 +134,16 @@ export const ListerCard = ({ profile, listingId }: ListerCardProps) => {
             <span className="text-sm font-medium">Languages</span>
           </div>
           <div className="flex flex-wrap gap-1">
-            {languageLabels.map((lang, index) => (
+            {displayLanguages.slice(0, 3).map((lang, index) => (
               <Badge key={index} variant="outline" className="text-xs">
-                {lang}
+                {getLanguageLabel(lang)}
               </Badge>
             ))}
+            {displayLanguages.length > 3 && (
+              <Badge variant="outline" className="text-xs">
+                +{displayLanguages.length - 3}
+              </Badge>
+            )}
           </div>
         </div>
       </CardContent>

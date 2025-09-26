@@ -199,11 +199,7 @@ const RoomPage = () => {
     if (!roomData) return;
     
     // Use the new chat request flow
-    await messageFlow.initiateMessageFlow(
-      "Γεια σας! Ενδιαφέρομαι για το δωμάτιο. Μπορούμε να μιλήσουμε;",
-      roomData.listing.id,
-      roomData.listing.owner_id
-    );
+    await messageFlow.createChatRequest();
   };
 
   const handleMessageSent = (message: string) => {
@@ -291,44 +287,39 @@ const RoomPage = () => {
             </div>
           </div>
 
-          {/* Sidebar */}
-          <div className="space-y-6">
-            <div className="sticky top-8 space-y-4">
+          {/* Right Sidebar - Sticky */}
+          <div className="lg:col-span-1">
+            {/* Lister Card - Not Sticky */}
+            <div className="mb-4">
+              <ListerCard 
+                lister={room.lister}
+                verificationBadge={room.lister?.kyc_status === 'approved'}
+                languages={room.lister?.languages || []}
+                memberSince={room.lister?.member_since}
+                lastActive={room.lister?.last_active}
+                profession={room.lister?.profession}
+              />
+            </div>
+            
+            {/* Sticky Section */}
+            <div className="sticky top-4 space-y-4">
               <PriceBox 
-                price={listing.price_month}
-                deposit={listing.price_month}
-                billsIncluded={true}
+                price={room.price_month}
+                billsIncluded={room.bills_note}
+                deposit={room.deposit}
               />
               
-              <SaveRoomButton 
-                roomId={room.id}
-                className="w-full"
-                variant="outline"
-                size="lg"
-                showText={true}
-              />
+              <SaveRoomButton roomId={room.id} />
               
-              {/* Show request status if request was sent */}
+              <CTAStack onRequestChat={handleRequestChat} />
+              
+              <QuickFacts room={room} listing={listing} />
+              
               <RequestStatus 
                 status={messageFlow.requestStatus}
-                onOpenConversation={() => {
-                  // Open the conversation by setting the state directly
-                  messageFlow.handleMessageSent(messageFlow.messageToSend || "");
-                }}
-                onRequestAgain={() => handleRequestChat()}
+                onOpenConversation={() => messageFlow.handleMessageSent("")}
+                onRequestAgain={handleRequestChat}
               />
-              
-              {/* Show CTA buttons only if no request sent yet */}
-              {messageFlow.requestStatus === 'none' && (
-                <CTAStack onRequestChat={handleRequestChat} />
-              )}
-              
-              <QuickFacts 
-                room={room}
-                listing={listing}
-              />
-              
-              <ListerCard profile={profile} />
             </div>
           </div>
         </div>
