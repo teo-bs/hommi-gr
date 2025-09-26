@@ -220,90 +220,34 @@ export default function Profile() {
             <div className="mb-6">
               <Card>
                 <CardHeader>
-                  <CardTitle className="text-lg">Ενδιαφέροντα & Στυλ Ζωής</CardTitle>
+                  <CardTitle className="text-lg">Στοιχεία Προφίλ</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  {/* Personality */}
-                  {profile.personality && Array.isArray(profile.personality) && profile.personality.length > 0 && (
+                  {/* Languages */}
+                  {profile.languages && Array.isArray(profile.languages) && profile.languages.length > 0 && (
                     <div>
-                      <Label className="text-sm font-medium mb-2 block">Προσωπικότητα</Label>
+                      <Label className="text-sm font-medium mb-2 block">Γλώσσες</Label>
                       <div className="flex flex-wrap gap-2">
-                        {(profile.personality as string[]).map((item: string, index: number) => (
-                          <Badge key={index} variant="secondary">{item}</Badge>
+                        {profile.languages.map((lang: string, index: number) => (
+                          <Badge key={index} variant="secondary">{lang}</Badge>
                         ))}
                       </div>
                     </div>
                   )}
                   
-                  {/* Lifestyle */}
-                  {profile.lifestyle && Array.isArray(profile.lifestyle) && profile.lifestyle.length > 0 && (
-                    <div>
-                      <Label className="text-sm font-medium mb-2 block">Στυλ ζωής</Label>
-                      <div className="flex flex-wrap gap-2">
-                        {(profile.lifestyle as string[]).map((item: string, index: number) => (
-                          <Badge key={index} variant="outline">{item}</Badge>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-                  
-                  {/* Music */}
-                  {profile.music && Array.isArray(profile.music) && profile.music.length > 0 && (
-                    <div>
-                      <Label className="text-sm font-medium mb-2 block">Μουσική</Label>
-                      <div className="flex flex-wrap gap-2">
-                        {(profile.music as string[]).map((item: string, index: number) => (
-                          <Badge key={index} variant="secondary">{item}</Badge>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-                  
-                  {/* Sports */}
-                  {profile.sports && Array.isArray(profile.sports) && profile.sports.length > 0 && (
-                    <div>
-                      <Label className="text-sm font-medium mb-2 block">Σπορ</Label>
-                      <div className="flex flex-wrap gap-2">
-                        {(profile.sports as string[]).map((item: string, index: number) => (
-                          <Badge key={index} variant="outline">{item}</Badge>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-                  
-                  {/* Movies */}
-                  {profile.movies && Array.isArray(profile.movies) && profile.movies.length > 0 && (
-                    <div>
-                      <Label className="text-sm font-medium mb-2 block">Ταινίες</Label>
-                      <div className="flex flex-wrap gap-2">
-                        {(profile.movies as string[]).map((item: string, index: number) => (
-                          <Badge key={index} variant="secondary">{item}</Badge>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Study/Work Info */}
+                  {/* Professional Info */}
                   <div className="pt-2 border-t">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      {profile.study_level && (
-                        <div>
-                          <Label className="text-sm font-medium">Επίπεδο σπουδών</Label>
-                          <p className="text-sm text-muted-foreground mt-1">{profile.study_level}</p>
-                        </div>
-                      )}
-                      {profile.work_profession && (
+                      {profile.profession && (
                         <div>
                           <Label className="text-sm font-medium">Επάγγελμα</Label>
-                          <p className="text-sm text-muted-foreground mt-1">{profile.work_profession}</p>
+                          <p className="text-sm text-muted-foreground mt-1">{profile.profession}</p>
                         </div>
                       )}
-                      {profile.who_moving && (
+                      {profile.country && (
                         <div>
-                          <Label className="text-sm font-medium">Ποιος μετακομίζει</Label>
-                          <p className="text-sm text-muted-foreground mt-1">
-                            {profile.who_moving === 'just_me' ? 'Μόνο εγώ' : 'Εγώ και κάποιος άλλος'}
-                          </p>
+                          <Label className="text-sm font-medium">Χώρα</Label>
+                          <p className="text-sm text-muted-foreground mt-1">{profile.country}</p>
                         </div>
                       )}
                     </div>
