@@ -122,7 +122,7 @@ export const OnboardingStepTwo = ({ data, onComplete, onBack }: OnboardingStepTw
           <SelectTrigger className={errors.country ? 'border-red-500' : ''}>
             <SelectValue placeholder="Επιλέξτε χώρα" />
           </SelectTrigger>
-          <SelectContent className="max-h-60">
+          <SelectContent className="max-h-60 z-50 bg-background border shadow-lg">
             {COUNTRIES.map((country) => (
               <SelectItem key={country.value} value={country.value}>
                 {country.label}
@@ -169,7 +169,7 @@ export const OnboardingStepTwo = ({ data, onComplete, onBack }: OnboardingStepTw
           <SelectTrigger className={errors.languages ? 'border-red-500' : ''}>
             <SelectValue placeholder="Προσθέστε γλώσσα" />
           </SelectTrigger>
-          <SelectContent className="max-h-60">
+          <SelectContent className="max-h-60 z-50 bg-background border shadow-lg">
             {AVAILABLE_LANGUAGES
               .filter(lang => !formData.languages.includes(lang.value))
               .map((language) => (

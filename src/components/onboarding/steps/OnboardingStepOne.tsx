@@ -138,7 +138,7 @@ export const OnboardingStepOne = ({ data, onComplete, onBack }: OnboardingStepOn
               )}
             </Button>
           </PopoverTrigger>
-          <PopoverContent className="w-auto p-0" align="start">
+          <PopoverContent className="w-auto p-0 z-50" align="start">
             <Calendar
               mode="single"
               selected={formData.date_of_birth}
@@ -181,7 +181,7 @@ export const OnboardingStepOne = ({ data, onComplete, onBack }: OnboardingStepOn
           <SelectTrigger className={errors.gender ? 'border-red-500' : ''}>
             <SelectValue placeholder="Επιλέξτε φύλο" />
           </SelectTrigger>
-          <SelectContent>
+          <SelectContent className="z-50 bg-background border shadow-lg">
             <SelectItem value="female">Γυναίκα</SelectItem>
             <SelectItem value="male">Άνδρας</SelectItem>
             <SelectItem value="other">Non-binary</SelectItem>
@@ -210,7 +210,7 @@ export const OnboardingStepOne = ({ data, onComplete, onBack }: OnboardingStepOn
           <SelectTrigger className={errors.what_you_do ? 'border-red-500' : ''}>
             <SelectValue placeholder="Επιλέξτε δραστηριότητα" />
           </SelectTrigger>
-          <SelectContent>
+          <SelectContent className="z-50 bg-background border shadow-lg">
             <SelectItem value="study">Σπουδάζω</SelectItem>
             <SelectItem value="work">Εργάζομαι</SelectItem>
             <SelectItem value="study_work">Σπουδάζω & Εργάζομαι</SelectItem>
