@@ -323,20 +323,13 @@ const RoomPage = () => {
                 <CTAStack onRequestChat={handleRequestChat} />
               )}
               
-              <MessageComposer
-                roomId={roomIdentifier}
-                listingTitle={listing.title}
-                onAuthRequired={() => messageFlow.initiateMessageFlow("", undefined, undefined, handleRequestChat)}
-                onMessageSent={handleMessageSent}
-              />
-              
               <QuickFacts 
                 room={room}
                 listing={listing}
               />
+              
+              <ListerCard profile={profile} />
             </div>
-            
-            <ListerCard profile={profile} />
           </div>
         </div>
       </div>

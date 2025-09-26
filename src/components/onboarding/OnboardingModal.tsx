@@ -120,8 +120,8 @@ export const OnboardingModal = () => {
         description: "Τα βασικά στοιχεία του προφίλ σας αποθηκεύτηκαν",
       });
       
-      // Close modal automatically
-      navigate('/me');
+      // Navigate to profile with completion flag
+      navigate('/me?completed_onboarding=true');
       
     } catch (error) {
       toast({
