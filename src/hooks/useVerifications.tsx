@@ -97,13 +97,14 @@ export const useVerifications = () => {
   };
 
   const verifyPhone = async () => {
-    // For MVP, we'll create a placeholder phone verification
+    // For testing purposes, automatically verify phone number
     // In a real app, you'd integrate with SMS/phone verification service
     setLoading(true);
     
     try {
-      // For now, just create a pending verification
-      const { error } = await createOrUpdateVerification('phone', '', 'pending');
+      // Mock phone verification - automatically set to verified for testing
+      const mockPhoneNumber = '+30 69X XXX XXXX'; // Mock Greek phone number
+      const { error } = await createOrUpdateVerification('phone', mockPhoneNumber, 'verified');
       setLoading(false);
       return { error };
     } catch (error: any) {

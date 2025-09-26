@@ -73,8 +73,8 @@ export const VerificationPanel = () => {
       });
     } else {
       toast({
-        title: 'Επαλήθευση ξεκίνησε',
-        description: 'Η επαλήθευση τηλεφώνου ξεκίνησε.',
+        title: 'Επιτυχής επαλήθευση',
+        description: 'Το τηλέφωνό σας επαληθεύτηκε επιτυχώς!',
       });
     }
   };
