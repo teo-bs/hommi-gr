@@ -23,8 +23,6 @@ export const OnboardingStepThree = ({ data, onComplete, onBack, isSubmitting }: 
         return 'Γυναίκα';
       case 'other':
         return 'Non-binary';
-      case 'prefer_not_to_say':
-        return 'Προτιμώ να μην απαντήσω';
       default:
         return '-';
     }
@@ -94,11 +92,11 @@ export const OnboardingStepThree = ({ data, onComplete, onBack, isSubmitting }: 
             <Avatar className="w-16 h-16">
               <AvatarImage src={data.avatar_url} />
               <AvatarFallback className="text-lg">
-                {data.display_name?.[0]?.toUpperCase() || 'U'}
+                {data.first_name?.[0]?.toUpperCase() || 'U'}
               </AvatarFallback>
             </Avatar>
             <div>
-              <h3 className="font-semibold text-lg">{data.display_name}</h3>
+              <h3 className="font-semibold text-lg">{data.first_name} {data.last_name}</h3>
               <p className="text-muted-foreground">{getGenderLabel(data.gender)}</p>
               {data.date_of_birth && (
                 <div className="flex items-center gap-1 text-sm text-muted-foreground">

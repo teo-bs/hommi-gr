@@ -446,6 +446,7 @@ export type Database = {
           display_name: string | null
           email: string
           facebook_connected: boolean | null
+          first_name: string | null
           gender: Database["public"]["Enums"]["gender_enum"] | null
           google_connected: boolean | null
           id: string
@@ -453,6 +454,7 @@ export type Database = {
           kyc_status: string | null
           languages: string[] | null
           last_active: string | null
+          last_name: string | null
           lister_badges: Json | null
           lister_score: number | null
           marketing_opt_in: boolean | null
@@ -480,6 +482,7 @@ export type Database = {
           display_name?: string | null
           email: string
           facebook_connected?: boolean | null
+          first_name?: string | null
           gender?: Database["public"]["Enums"]["gender_enum"] | null
           google_connected?: boolean | null
           id?: string
@@ -487,6 +490,7 @@ export type Database = {
           kyc_status?: string | null
           languages?: string[] | null
           last_active?: string | null
+          last_name?: string | null
           lister_badges?: Json | null
           lister_score?: number | null
           marketing_opt_in?: boolean | null
@@ -514,6 +518,7 @@ export type Database = {
           display_name?: string | null
           email?: string
           facebook_connected?: boolean | null
+          first_name?: string | null
           gender?: Database["public"]["Enums"]["gender_enum"] | null
           google_connected?: boolean | null
           id?: string
@@ -521,6 +526,7 @@ export type Database = {
           kyc_status?: string | null
           languages?: string[] | null
           last_active?: string | null
+          last_name?: string | null
           lister_badges?: Json | null
           lister_score?: number | null
           marketing_opt_in?: boolean | null

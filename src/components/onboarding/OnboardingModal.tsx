@@ -12,9 +12,10 @@ import { useToast } from "@/hooks/use-toast";
 import { X } from "lucide-react";
 
 export interface OnboardingData {
-  display_name: string;
+  first_name: string;
+  last_name: string;
   date_of_birth: string | null;
-  gender: 'male' | 'female' | 'other' | 'prefer_not_to_say' | null;
+  gender: 'male' | 'female' | 'other' | null;
   what_you_do: 'study' | 'work' | 'study_work' | null;
   country: string;
   languages: string[];
@@ -33,10 +34,11 @@ export const OnboardingModal = () => {
   const isOpen = role === 'tenant' && currentStep >= 1 && currentStep <= 3;
   
   const [formData, setFormData] = useState<OnboardingData>({
-    display_name: profile?.display_name || '',
+    first_name: profile?.first_name || '',
+    last_name: profile?.last_name || '',
     date_of_birth: profile?.date_of_birth || null,
-    gender: profile?.gender || null,
-    what_you_do: null,
+    gender: (profile?.gender as OnboardingData['gender']) || null,
+    what_you_do: ((profile?.profile_extras as any)?.what_you_do as OnboardingData['what_you_do']) || null,
     country: profile?.country || 'GR',
     languages: profile?.languages || ['el'],
   });
@@ -95,12 +97,14 @@ export const OnboardingModal = () => {
     try {
       // Store what_you_do in profile_extras for conditional modal later
       const profile_extras = {
+        ...(profile?.profile_extras as any || {}),
         what_you_do: formData.what_you_do
       };
 
       // Update profile with all collected data
       const { error } = await updateProfile({
-        display_name: formData.display_name,
+        first_name: formData.first_name,
+        last_name: formData.last_name,
         date_of_birth: formData.date_of_birth,
         gender: formData.gender,
         country: formData.country,

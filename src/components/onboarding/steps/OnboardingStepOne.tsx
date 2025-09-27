@@ -22,7 +22,8 @@ interface OnboardingStepOneProps {
 export const OnboardingStepOne = ({ data, onComplete, onBack }: OnboardingStepOneProps) => {
   const { user } = useAuth();
   const [formData, setFormData] = useState({
-    display_name: data.display_name,
+    first_name: data.first_name || '',
+    last_name: data.last_name || '',
     date_of_birth: data.date_of_birth ? new Date(data.date_of_birth) : undefined,
     gender: data.gender || '',
     what_you_do: data.what_you_do || '',
@@ -35,8 +36,12 @@ export const OnboardingStepOne = ({ data, onComplete, onBack }: OnboardingStepOn
   const validateForm = () => {
     const newErrors: Record<string, string> = {};
 
-    if (!formData.display_name.trim()) {
-      newErrors.display_name = "Το όνομα είναι υποχρεωτικό";
+    if (!formData.first_name.trim()) {
+      newErrors.first_name = "Το όνομα είναι υποχρεωτικό";
+    }
+
+    if (!formData.last_name.trim()) {
+      newErrors.last_name = "Το επώνυμο είναι υποχρεωτικό";
     }
 
     if (!formData.date_of_birth) {
@@ -91,7 +96,8 @@ export const OnboardingStepOne = ({ data, onComplete, onBack }: OnboardingStepOn
     
     if (validateForm()) {
       onComplete({
-        display_name: formData.display_name,
+        first_name: formData.first_name,
+        last_name: formData.last_name,
         date_of_birth: formData.date_of_birth?.toISOString().split('T')[0] || null,
         gender: formData.gender as OnboardingData['gender'],
         what_you_do: formData.what_you_do as OnboardingData['what_you_do'],
@@ -107,7 +113,7 @@ export const OnboardingStepOne = ({ data, onComplete, onBack }: OnboardingStepOn
         value={formData.avatar_url}
         onChange={handlePhotoUpload}
         placeholder="Προσθέστε φωτογραφία προφίλ (προαιρετικό)"
-        fallbackText={formData.display_name?.[0]?.toUpperCase() || 'U'}
+        fallbackText={formData.first_name?.[0]?.toUpperCase() || 'U'}
       />
       {isUploading && (
         <p className="text-sm text-muted-foreground text-center">
@@ -115,25 +121,47 @@ export const OnboardingStepOne = ({ data, onComplete, onBack }: OnboardingStepOn
         </p>
       )}
 
-      {/* Name & Surname */}
+      {/* First Name */}
       <div className="space-y-2">
-        <Label htmlFor="display_name">
-          Όνομα και Επώνυμο <span className="text-red-500">*</span>
+        <Label htmlFor="first_name">
+          Όνομα <span className="text-red-500">*</span>
         </Label>
         <Input
-          id="display_name"
-          value={formData.display_name}
+          id="first_name"
+          value={formData.first_name}
           onChange={(e) => {
-            setFormData({ ...formData, display_name: e.target.value });
-            if (errors.display_name) {
-              setErrors({ ...errors, display_name: '' });
+            setFormData({ ...formData, first_name: e.target.value });
+            if (errors.first_name) {
+              setErrors({ ...errors, first_name: '' });
             }
           }}
-          placeholder="π.χ. Μαρία Παπαδοπούλου"
-          className={errors.display_name ? 'border-red-500' : ''}
+          placeholder="π.χ. Μαρία"
+          className={errors.first_name ? 'border-red-500' : ''}
         />
-        {errors.display_name && (
-          <p className="text-sm text-red-500">{errors.display_name}</p>
+        {errors.first_name && (
+          <p className="text-sm text-red-500">{errors.first_name}</p>
+        )}
+      </div>
+
+      {/* Last Name */}
+      <div className="space-y-2">
+        <Label htmlFor="last_name">
+          Επώνυμο <span className="text-red-500">*</span>
+        </Label>
+        <Input
+          id="last_name"
+          value={formData.last_name}
+          onChange={(e) => {
+            setFormData({ ...formData, last_name: e.target.value });
+            if (errors.last_name) {
+              setErrors({ ...errors, last_name: '' });
+            }
+          }}
+          placeholder="π.χ. Παπαδοπούλου"
+          className={errors.last_name ? 'border-red-500' : ''}
+        />
+        {errors.last_name && (
+          <p className="text-sm text-red-500">{errors.last_name}</p>
         )}
       </div>
 
