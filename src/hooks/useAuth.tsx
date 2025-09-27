@@ -147,8 +147,9 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
       .update(updates)
       .eq('user_id', user.id);
     
-    if (!error && profile) {
-      setProfile({ ...profile, ...updates });
+    if (!error) {
+      // Refetch profile to get server-computed values like display_name and profile_completion_pct
+      await fetchProfile(user.id);
     }
     
     return { error };

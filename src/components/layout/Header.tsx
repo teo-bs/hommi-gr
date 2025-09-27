@@ -410,21 +410,24 @@ export const Header = () => {
                   {language === 'el' ? 'English' : 'Ελληνικά'}
                 </Button>
                 
-                <Button 
-                  variant="outline" 
-                  size="sm" 
-                  className="w-full justify-start border-foreground/20"
-                  onClick={() => {
-                    handlePublishListing();
-                    setMobileMenuOpen(false);
-                  }}
-                >
-                  <Plus className="h-4 w-4 mr-2" />
-                  {currentRole === 'lister' 
-                    ? (language === 'el' ? 'Δημοσίευσε αγγελία' : 'Publish listing')
-                    : (language === 'el' ? 'Καταχώρησε το ακίνητό σου' : 'List your property')
-                  }
-                </Button>
+                {/* Publish listing button - Only show for listers or logged out users */}
+                {(currentRole === 'lister' || !user) && (
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    className="w-full justify-start border-foreground/20"
+                    onClick={() => {
+                      handlePublishListing();
+                      setMobileMenuOpen(false);
+                    }}
+                  >
+                    <Plus className="h-4 w-4 mr-2" />
+                    {currentRole === 'lister' 
+                      ? (language === 'el' ? 'Δημοσίευσε αγγελία' : 'Publish listing')
+                      : (language === 'el' ? 'Καταχώρησε το ακίνητό σου' : 'List your property')
+                    }
+                  </Button>
+                )}
 
                 {user ? (
                   <>

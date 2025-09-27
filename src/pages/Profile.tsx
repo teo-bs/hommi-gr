@@ -21,10 +21,9 @@ import { VerificationPanel } from '@/components/verification/VerificationPanel';
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
 
-type GenderType = 'male' | 'female' | 'other' | 'prefer_not_to_say' | '';
+type GenderType = 'male' | 'female' | 'other' | '';
 
 interface FormData {
-  display_name: string;
   about_me: string;
   profession: string;
   gender: GenderType;
@@ -47,7 +46,6 @@ export default function Profile() {
   const [showEditModal, setShowEditModal] = useState(false);
   const [onboardingProgress, setOnboardingProgress] = useState<any>(null);
   const [formData, setFormData] = useState<FormData>({
-    display_name: profile?.display_name || '',
     about_me: profile?.about_me || '',
     profession: profile?.profession || '',
     gender: (profile?.gender as GenderType) || '',
@@ -79,13 +77,10 @@ export default function Profile() {
 
   // Check if we should show completion banner
   const shouldShowCompletionBanner = () => {
-    if (!profile || !onboardingProgress) return false;
+    if (!profile) return false;
     
-    // Show if basic onboarding is done (steps 1-3) but profile completion is low
-    const basicOnboardingDone = onboardingProgress.completed_steps?.includes(3);
-    const profileIncomplete = (profile.profile_completion_pct || 0) < 80;
-    
-    return basicOnboardingDone && profileIncomplete;
+    // Show for tenants with less than 80% completion
+    return profile.role === 'tenant' && (profile.profile_completion_pct || 0) < 80;
   };
 
   // Calculate missing fields for the banner
@@ -93,15 +88,23 @@ export default function Profile() {
     if (!profile) return [];
     const missing = [];
     
+    // Core required fields for completion calculation
+    if (!profile.first_name) missing.push('Όνομα');
+    if (!profile.last_name) missing.push('Επώνυμο');
+    if (!profile.date_of_birth) missing.push('Ηλικία');
+    if (!profile.profession) missing.push('Επάγγελμα');
+    if (!profile.country) missing.push('Χώρα');
+    
+    // Conditional extras based on what they do
     const whatYouDo = (profile.profile_extras as any)?.what_you_do;
     if (whatYouDo === 'study' || whatYouDo === 'study_work') {
       if (!(profile.profile_extras as any)?.study_level) {
-        missing.push('Σπουδές');
+        missing.push('Επίπεδο σπουδών');
       }
     }
     if (whatYouDo === 'work' || whatYouDo === 'study_work') {
       if (!(profile.profile_extras as any)?.work_profession) {
-        missing.push('Επάγγελμα');
+        missing.push('Τομέας εργασίας');
       }
     }
     
@@ -126,7 +129,6 @@ export default function Profile() {
   useEffect(() => {
     if (profile) {
       setFormData({
-        display_name: profile.display_name || '',
         about_me: profile.about_me || '',
         profession: profile.profession || '',
         gender: (profile.gender as GenderType) || '',
@@ -142,7 +144,6 @@ export default function Profile() {
 
   const handleSave = async () => {
     const updateData: any = {
-      display_name: formData.display_name,
       about_me: formData.about_me,
       profession: formData.profession,
       country: formData.country,
@@ -154,7 +155,7 @@ export default function Profile() {
     };
     
     // Only add gender if it's a valid value
-    if (formData.gender && ['male', 'female', 'other', 'prefer_not_to_say'].includes(formData.gender)) {
+    if (formData.gender && ['male', 'female', 'other'].includes(formData.gender)) {
       updateData.gender = formData.gender;
     }
     
@@ -178,7 +179,6 @@ export default function Profile() {
 
   const handleCancel = () => {
     setFormData({
-      display_name: profile?.display_name || '',
       about_me: profile?.about_me || '',
       profession: profile?.profession || '',
       gender: (profile?.gender as GenderType) || '',
@@ -408,7 +408,7 @@ export default function Profile() {
                       <Avatar className="w-32 h-32">
                         <AvatarImage src={profile.avatar_url || undefined} />
                         <AvatarFallback className="text-2xl">
-                          {formData.display_name?.[0]?.toUpperCase() || user?.email?.[0]?.toUpperCase() || 'U'}
+                          {profile?.display_name?.[0]?.toUpperCase() || user?.email?.[0]?.toUpperCase() || 'U'}
                         </AvatarFallback>
                       </Avatar>
                       {isEditing && (
@@ -477,18 +477,10 @@ export default function Profile() {
                     />
 
                     <div className="space-y-2">
-                      {isEditing ? (
-                        <Input
-                          value={formData.display_name}
-                          onChange={(e) => setFormData({ ...formData, display_name: e.target.value })}
-                          placeholder="Πλήρες όνομα"
-                          className="text-center font-semibold"
-                        />
-                      ) : (
-                        <h2 className="text-xl font-semibold text-foreground">
-                          {formData.display_name || user?.email}
-                        </h2>
-                      )}
+                      {/* Display name is read-only, computed from first/last name */}
+                      <h2 className="text-xl font-semibold text-foreground">
+                        {profile?.display_name || user?.email}
+                      </h2>
                       
                       {getAge() && (
                         <p className="text-muted-foreground">
@@ -618,7 +610,6 @@ export default function Profile() {
                             <SelectItem value="male">Άνδρας</SelectItem>
                             <SelectItem value="female">Γυναίκα</SelectItem>
                             <SelectItem value="other">Άλλο</SelectItem>
-                            <SelectItem value="prefer_not_to_say">Προτιμώ να μην απαντήσω</SelectItem>
                           </SelectContent>
                         </Select>
                       ) : (
@@ -626,7 +617,6 @@ export default function Profile() {
                           {formData.gender === 'male' ? 'Άνδρας' :
                            formData.gender === 'female' ? 'Γυναίκα' :
                            formData.gender === 'other' ? 'Άλλο' :
-                           formData.gender === 'prefer_not_to_say' ? 'Προτιμώ να μην απαντήσω' :
                            'Δεν έχει προστεθεί'}
                         </p>
                       )}

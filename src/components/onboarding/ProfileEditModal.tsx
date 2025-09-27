@@ -7,12 +7,14 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { FileUpload } from "@/components/ui/file-upload";
+import { Badge } from "@/components/ui/badge";
 import { format } from "date-fns";
-import { CalendarIcon } from "lucide-react";
+import { CalendarIcon, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { PERSONALITY_OPTIONS, LIFESTYLE_OPTIONS, MUSIC_OPTIONS, SPORTS_OPTIONS, MOVIES_OPTIONS } from "@/constants/profileExtras";
 
 interface ProfileEditModalProps {
   isOpen: boolean;
@@ -36,6 +38,12 @@ export const ProfileEditModal = ({ isOpen, onClose }: ProfileEditModalProps) => 
     what_you_do: (profile?.profile_extras as any)?.what_you_do || 'study_work',
     study_level: (profile?.profile_extras as any)?.study_level || '',
     work_profession: (profile?.profile_extras as any)?.work_profession || '',
+    personality: (profile?.profile_extras as any)?.personality || [],
+    lifestyle: (profile?.profile_extras as any)?.lifestyle || [],
+    music: (profile?.profile_extras as any)?.music || [],
+    sports: (profile?.profile_extras as any)?.sports || [],
+    movies: (profile?.profile_extras as any)?.movies || [],
+    who_moving: (profile?.profile_extras as any)?.who_moving || '',
   });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -103,6 +111,48 @@ export const ProfileEditModal = ({ isOpen, onClose }: ProfileEditModalProps) => 
     }
   };
 
+  const addChip = (category: string, value: string) => {
+    setFormData(prev => ({
+      ...prev,
+      [category]: [...(prev[category as keyof typeof prev] as string[]), value]
+    }));
+  };
+
+  const removeChip = (category: string, value: string) => {
+    setFormData(prev => ({
+      ...prev,
+      [category]: (prev[category as keyof typeof prev] as string[]).filter((item: string) => item !== value)
+    }));
+  };
+
+  const renderChipSection = (title: string, category: string, options: string[]) => (
+    <div>
+      <Label className="text-base font-medium">{title}</Label>
+      <div className="mt-2 flex flex-wrap gap-2">
+        {options.map((option) => {
+          const isSelected = (formData[category as keyof typeof formData] as string[]).includes(option);
+          return (
+            <Badge
+              key={option}
+              variant={isSelected ? "default" : "outline"}
+              className="cursor-pointer hover:bg-primary/90"
+              onClick={() => {
+                if (isSelected) {
+                  removeChip(category, option);
+                } else {
+                  addChip(category, option);
+                }
+              }}
+            >
+              {option}
+              {isSelected && <X className="ml-1 h-3 w-3" />}
+            </Badge>
+          );
+        })}
+      </div>
+    </div>
+  );
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -117,6 +167,12 @@ export const ProfileEditModal = ({ isOpen, onClose }: ProfileEditModalProps) => 
         what_you_do: formData.what_you_do,
         study_level: (formData.what_you_do === 'study' || formData.what_you_do === 'study_work') ? formData.study_level : undefined,
         work_profession: (formData.what_you_do === 'work' || formData.what_you_do === 'study_work') ? formData.work_profession : undefined,
+        personality: formData.personality,
+        lifestyle: formData.lifestyle,
+        music: formData.music,
+        sports: formData.sports,
+        movies: formData.movies,
+        who_moving: formData.who_moving,
       };
 
       const updateData: any = {
@@ -197,59 +253,34 @@ export const ProfileEditModal = ({ isOpen, onClose }: ProfileEditModalProps) => 
 
             {/* First Name */}
             <div>
-              <Label>
-                Όνομα <span className="text-red-500">*</span>
-              </Label>
+              <Label>Όνομα</Label>
               <Input
                 value={formData.first_name}
-                onChange={(e) => {
-                  setFormData({ ...formData, first_name: e.target.value });
-                  if (errors.first_name) {
-                    setErrors({ ...errors, first_name: '' });
-                  }
-                }}
+                onChange={(e) => setFormData({ ...formData, first_name: e.target.value })}
                 placeholder="π.χ. Μαρία"
-                className={errors.first_name ? 'border-red-500' : ''}
               />
-              {errors.first_name && (
-                <p className="text-sm text-red-500">{errors.first_name}</p>
-              )}
             </div>
 
             {/* Last Name */}
             <div>
-              <Label>
-                Επώνυμο <span className="text-red-500">*</span>
-              </Label>
+              <Label>Επώνυμο</Label>
               <Input
                 value={formData.last_name}
-                onChange={(e) => {
-                  setFormData({ ...formData, last_name: e.target.value });
-                  if (errors.last_name) {
-                    setErrors({ ...errors, last_name: '' });
-                  }
-                }}
+                onChange={(e) => setFormData({ ...formData, last_name: e.target.value })}
                 placeholder="π.χ. Παπαδοπούλου"
-                className={errors.last_name ? 'border-red-500' : ''}
               />
-              {errors.last_name && (
-                <p className="text-sm text-red-500">{errors.last_name}</p>
-              )}
             </div>
 
             {/* Date of Birth */}
             <div>
-              <Label>
-                Ημερομηνία Γέννησης <span className="text-red-500">*</span>
-              </Label>
+              <Label>Ημερομηνία Γέννησης</Label>
               <Popover>
                 <PopoverTrigger asChild>
                   <Button
                     variant="outline"
                     className={cn(
                       "w-full justify-start text-left font-normal",
-                      !formData.date_of_birth && "text-muted-foreground",
-                      errors.date_of_birth && "border-red-500"
+                      !formData.date_of_birth && "text-muted-foreground"
                     )}
                   >
                     <CalendarIcon className="mr-2 h-4 w-4" />
@@ -264,12 +295,7 @@ export const ProfileEditModal = ({ isOpen, onClose }: ProfileEditModalProps) => 
                   <Calendar
                     mode="single"
                     selected={formData.date_of_birth}
-                    onSelect={(date) => {
-                      setFormData({ ...formData, date_of_birth: date });
-                      if (errors.date_of_birth) {
-                        setErrors({ ...errors, date_of_birth: '' });
-                      }
-                    }}
+                    onSelect={(date) => setFormData({ ...formData, date_of_birth: date })}
                     disabled={(date) =>
                       date > new Date() || date < new Date("1900-01-01")
                     }
@@ -277,56 +303,26 @@ export const ProfileEditModal = ({ isOpen, onClose }: ProfileEditModalProps) => 
                     captionLayout="dropdown-buttons"
                     fromYear={1940}
                     toYear={2010}
+                    className="pointer-events-auto"
                   />
                 </PopoverContent>
               </Popover>
-              {errors.date_of_birth && (
-                <p className="text-sm text-red-500">{errors.date_of_birth}</p>
-              )}
             </div>
 
             {/* Gender */}
             <div>
-              <Label>
-                Φύλο <span className="text-red-500">*</span>
-              </Label>
+              <Label>Φύλο</Label>
               <Select
                 value={formData.gender}
-                onValueChange={(value) => {
-                  setFormData({ ...formData, gender: value });
-                  if (errors.gender) {
-                    setErrors({ ...errors, gender: '' });
-                  }
-                }}
+                onValueChange={(value) => setFormData({ ...formData, gender: value })}
               >
-                <SelectTrigger className={errors.gender ? 'border-red-500' : ''}>
+                <SelectTrigger>
                   <SelectValue placeholder="Επιλέξτε φύλο" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="female">Γυναίκα</SelectItem>
                   <SelectItem value="male">Άνδρας</SelectItem>
                   <SelectItem value="other">Non-binary</SelectItem>
-                </SelectContent>
-              </Select>
-              {errors.gender && (
-                <p className="text-sm text-red-500">{errors.gender}</p>
-              )}
-            </div>
-
-            {/* Country */}
-            <div>
-              <Label>Χώρα</Label>
-              <Select
-                value={formData.country}
-                onValueChange={(value) => setFormData({ ...formData, country: value })}
-              >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="GR">Ελλάδα</SelectItem>
-                  <SelectItem value="CY">Κύπρος</SelectItem>
-                  <SelectItem value="other">Άλλη</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -341,81 +337,37 @@ export const ProfileEditModal = ({ isOpen, onClose }: ProfileEditModalProps) => 
               />
             </div>
 
+            {/* Personality Chips */}
+            {renderChipSection("Προσωπικότητα", "personality", PERSONALITY_OPTIONS)}
+
+            {/* Lifestyle Chips */}
+            {renderChipSection("Στυλ ζωής", "lifestyle", LIFESTYLE_OPTIONS)}
+
+            {/* Music Chips */}
+            {renderChipSection("Μουσική", "music", MUSIC_OPTIONS)}
+
+            {/* Sports Chips */}
+            {renderChipSection("Σπορ", "sports", SPORTS_OPTIONS)}
+
+            {/* Movies Chips */}
+            {renderChipSection("Ταινίες", "movies", MOVIES_OPTIONS)}
+
+            {/* Who's Moving */}
             <div>
-              <Label>
-                Με τι ασχολείστε; <span className="text-red-500">*</span>
-              </Label>
+              <Label>Ποιος μετακομίζει;</Label>
               <Select
-                value={formData.what_you_do}
-                onValueChange={(value) => setFormData({ ...formData, what_you_do: value as any })}
+                value={formData.who_moving}
+                onValueChange={(value) => setFormData({ ...formData, who_moving: value })}
               >
                 <SelectTrigger>
-                  <SelectValue placeholder="Επιλέξτε δραστηριότητα" />
+                  <SelectValue placeholder="Επιλέξτε..." />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="study">Σπουδάζω</SelectItem>
-                  <SelectItem value="work">Εργάζομαι</SelectItem>
-                  <SelectItem value="study_work">Σπουδάζω & Εργάζομαι</SelectItem>
+                  <SelectItem value="just_me">Μόνος μου</SelectItem>
+                  <SelectItem value="with_someone">Με κάποιον</SelectItem>
                 </SelectContent>
               </Select>
             </div>
-
-            {(formData.what_you_do === 'study' || formData.what_you_do === 'study_work') && (
-              <div>
-                <Label>
-                  Τι σπουδάζεις; <span className="text-red-500">*</span>
-                </Label>
-                <Select
-                  value={formData.study_level}
-                  onValueChange={(value) => setFormData({ ...formData, study_level: value })}
-                >
-                  <SelectTrigger className={errors.study_level ? 'border-red-500' : ''}>
-                    <SelectValue placeholder="Επιλέξτε επίπεδο" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="pre-uni">Προ-πανεπιστημιακές σπουδές</SelectItem>
-                    <SelectItem value="bachelors">Πτυχίο (Bachelor)</SelectItem>
-                    <SelectItem value="masters">Μεταπτυχιακό (Masters)</SelectItem>
-                    <SelectItem value="phd">Διδακτορικό (PhD)</SelectItem>
-                  </SelectContent>
-                </Select>
-                {errors.study_level && (
-                  <p className="text-sm text-red-500">{errors.study_level}</p>
-                )}
-              </div>
-            )}
-
-            {(formData.what_you_do === 'work' || formData.what_you_do === 'study_work') && (
-              <div>
-                <Label>
-                  Με τι ασχολείσαι; <span className="text-red-500">*</span>
-                </Label>
-                <Select
-                  value={formData.work_profession}
-                  onValueChange={(value) => setFormData({ ...formData, work_profession: value })}
-                >
-                  <SelectTrigger className={errors.work_profession ? 'border-red-500' : ''}>
-                    <SelectValue placeholder="Επιλέξτε επάγγελμα" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="software-engineer">Μηχανικός Λογισμικού</SelectItem>
-                    <SelectItem value="teacher">Εκπαιδευτικός</SelectItem>
-                    <SelectItem value="doctor">Γιατρός</SelectItem>
-                    <SelectItem value="lawyer">Δικηγόρος</SelectItem>
-                    <SelectItem value="accountant">Λογιστής</SelectItem>
-                    <SelectItem value="designer">Σχεδιαστής</SelectItem>
-                    <SelectItem value="sales">Πωλήσεις</SelectItem>
-                    <SelectItem value="marketing">Μάρκετινγκ</SelectItem>
-                    <SelectItem value="consultant">Σύμβουλος</SelectItem>
-                    <SelectItem value="entrepreneur">Επιχειρηματίας</SelectItem>
-                    <SelectItem value="other">Άλλο</SelectItem>
-                  </SelectContent>
-                </Select>
-                {errors.work_profession && (
-                  <p className="text-sm text-red-500">{errors.work_profession}</p>
-                )}
-              </div>
-            )}
           </div>
 
           <div className="flex justify-between pt-4">
