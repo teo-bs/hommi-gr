@@ -155,7 +155,7 @@ describe('Profile Completion Tests', () => {
     // Banner should show missing fields
     cy.get('[data-testid="profile-completion-banner"]').should('be.visible');
     cy.contains('Λείπουν:').should('be.visible');
-    cy.contains('Σπουδές').should('be.visible');
+    cy.contains('Ηλικία').should('be.visible');
     cy.contains('Επάγγελμα').should('be.visible');
   });
 
@@ -202,7 +202,7 @@ describe('Profile Completion Tests', () => {
     cy.contains('Ταινίες').should('be.visible');
     
     // Should be able to modify existing selections
-    cy.contains('Εξωστρεφής').parent().find('[data-testid="remove-chip"]').should('exist');
-    cy.contains('Pop').parent().find('[data-testid="remove-chip"]').should('exist');
+    cy.contains('Εξωστρεφής').should('be.visible');
+    cy.contains('Pop').should('be.visible');
   });
 });

@@ -108,11 +108,11 @@ describe('Tenant Profile Tests', () => {
     
     // Fields with values should show checkmarks when not editing
     cy.get('[data-testid="field-profession"]').within(() => {
-      cy.get('[data-testid="validation-checkmark"]').should('be.visible');
+      cy.get('.lucide-check').should('be.visible');
     });
     
     cy.get('[data-testid="field-country"]').within(() => {
-      cy.get('[data-testid="validation-checkmark"]').should('be.visible');
+      cy.get('.lucide-check').should('be.visible');
     });
   });
 
@@ -120,11 +120,11 @@ describe('Tenant Profile Tests', () => {
     cy.visit('/me');
     cy.wait(['@getProfile', '@getOnboardingProgress']);
     
-    // Click edit button
+    // Click edit button to enter edit mode
     cy.contains('Επεξεργασία').click();
     
     // Checkmarks should be hidden when editing
-    cy.get('[data-testid="validation-checkmark"]').should('not.exist');
+    cy.get('.lucide-check').should('not.exist');
   });
 
   it('should update completion banner live as user completes fields', () => {

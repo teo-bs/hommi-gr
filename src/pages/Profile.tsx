@@ -562,108 +562,83 @@ export default function Profile() {
                 </CardHeader>
                 <CardContent className="space-y-6">
                   {/* About Me */}
-                  <div>
-                    <Label className="text-sm font-medium">Σχετικά με εμένα</Label>
-                    {isEditing ? (
-                      <Textarea
-                        value={formData.about_me}
-                        onChange={(e) => setFormData({ ...formData, about_me: e.target.value })}
-                        placeholder="Πείτε μας λίγα λόγια για εσάς..."
-                        className="mt-1 min-h-[100px]"
-                      />
-                    ) : (
-                      <p className="mt-1 text-foreground whitespace-pre-wrap break-words overflow-wrap-anywhere leading-relaxed">
-                        {formData.about_me || "Δεν έχει προστεθεί περιγραφή"}
-                      </p>
-                    )}
+                  <div data-testid="field-about-me">
+                    <ProfileField
+                      type="textarea"
+                      label="Σχετικά με εμένα"
+                      value={formData.about_me}
+                      onChange={(value) => setFormData({ ...formData, about_me: value })}
+                      placeholder="Πείτε μας λίγα λόγια για εσάς..."
+                      isEditing={isEditing}
+                      maxLength={500}
+                    />
                   </div>
 
                   {/* Basic Info Grid */}
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <Label className="text-sm font-medium">Επάγγελμα</Label>
-                      {isEditing ? (
-                        <Input
-                          value={formData.profession}
-                          onChange={(e) => setFormData({ ...formData, profession: e.target.value })}
-                          placeholder="π.χ. Μηχανικός"
-                          className="mt-1"
-                        />
-                      ) : (
-                        <p className="mt-1 text-foreground">
-                          {formData.profession || "Δεν έχει προστεθεί"}
-                        </p>
-                      )}
+                    <div data-testid="field-profession">
+                      <ProfileField
+                        type="text"
+                        label="Επάγγελμα"
+                        value={formData.profession}
+                        onChange={(value) => setFormData({ ...formData, profession: value })}
+                        placeholder="π.χ. Μηχανικός"
+                        isEditing={isEditing}
+                        isRequired={true}
+                      />
                     </div>
 
-                    <div>
-                      <Label className="text-sm font-medium">Φύλο</Label>
-                      {isEditing ? (
-                        <Select
-                          value={formData.gender}
-                          onValueChange={(value: GenderType) => setFormData({ ...formData, gender: value })}
-                        >
-                          <SelectTrigger className="mt-1">
-                            <SelectValue placeholder="Επιλέξτε φύλο" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="male">Άνδρας</SelectItem>
-                            <SelectItem value="female">Γυναίκα</SelectItem>
-                            <SelectItem value="other">Άλλο</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      ) : (
-                        <p className="mt-1 text-foreground">
-                          {formData.gender === 'male' ? 'Άνδρας' :
-                           formData.gender === 'female' ? 'Γυναίκα' :
-                           formData.gender === 'other' ? 'Άλλο' :
-                           'Δεν έχει προστεθεί'}
-                        </p>
-                      )}
+                    <div data-testid="field-gender">
+                      <ProfileField
+                        type="select"
+                        label="Φύλο"
+                        value={formData.gender}
+                        onChange={(value) => setFormData({ ...formData, gender: value as GenderType })}
+                        placeholder="Επιλέξτε φύλο"
+                        isEditing={isEditing}
+                        options={[
+                          { value: 'male', label: 'Άνδρας' },
+                          { value: 'female', label: 'Γυναίκα' },
+                          { value: 'other', label: 'Άλλο' }
+                        ]}
+                      />
                     </div>
 
-                    <div>
-                      <Label className="text-sm font-medium">Χώρα</Label>
-                      {isEditing ? (
-                        <Select
-                          value={formData.country}
-                          onValueChange={(value) => setFormData({ ...formData, country: value })}
-                        >
-                          <SelectTrigger className="mt-1">
-                            <SelectValue placeholder="Επιλέξτε χώρα" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="GR">Ελλάδα</SelectItem>
-                            <SelectItem value="CY">Κύπρος</SelectItem>
-                            <SelectItem value="US">Η.Π.Α.</SelectItem>
-                            <SelectItem value="GB">Ηνωμένο Βασίλειο</SelectItem>
-                            <SelectItem value="DE">Γερμανία</SelectItem>
-                            <SelectItem value="FR">Γαλλία</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      ) : (
-                        <p className="mt-1 text-foreground">
-                          {formData.country === 'GR' ? 'Ελλάδα' :
-                           formData.country === 'CY' ? 'Κύπρος' :
-                           formData.country || 'Δεν έχει προστεθεί'}
-                        </p>
-                      )}
+                    <div data-testid="field-country">
+                      <ProfileField
+                        type="select"
+                        label="Χώρα"
+                        value={formData.country}
+                        onChange={(value) => setFormData({ ...formData, country: value })}
+                        placeholder="Επιλέξτε χώρα"
+                        isEditing={isEditing}
+                        isRequired={true}
+                        options={[
+                          { value: 'GR', label: 'Ελλάδα' },
+                          { value: 'CY', label: 'Κύπρος' },
+                          { value: 'US', label: 'Η.Π.Α.' },
+                          { value: 'GB', label: 'Ηνωμένο Βασίλειο' },
+                          { value: 'DE', label: 'Γερμανία' },
+                          { value: 'FR', label: 'Γαλλία' }
+                        ]}
+                      />
                     </div>
 
-                    <div>
-                      <Label className="text-sm font-medium">Γλώσσες</Label>
-                      <div className="mt-1 flex flex-wrap gap-2">
-                        {formData.languages.map((lang, index) => (
-                          <Badge key={index} variant="secondary">
-                            {lang === 'el' ? 'Ελληνικά' :
-                             lang === 'en' ? 'Αγγλικά' :
-                             lang === 'fr' ? 'Γαλλικά' :
-                             lang === 'de' ? 'Γερμανικά' :
-                             lang === 'es' ? 'Ισπανικά' :
-                             lang}
-                          </Badge>
-                        ))}
-                      </div>
+                    <div data-testid="field-languages">
+                      <ProfileField
+                        type="multiselect"
+                        label="Γλώσσες"
+                        value={formData.languages}
+                        onChange={(value) => setFormData({ ...formData, languages: value })}
+                        isEditing={false} // Languages are not editable in this view for now
+                        options={[
+                          { value: 'el', label: 'Ελληνικά' },
+                          { value: 'en', label: 'Αγγλικά' },
+                          { value: 'fr', label: 'Γαλλικά' },
+                          { value: 'de', label: 'Γερμανικά' },
+                          { value: 'es', label: 'Ισπανικά' }
+                        ]}
+                      />
                     </div>
                   </div>
 
