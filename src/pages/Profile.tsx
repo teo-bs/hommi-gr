@@ -15,6 +15,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { OnboardingModal } from "@/components/onboarding/OnboardingModal";
 import { ProfileCompletionBanner } from "@/components/onboarding/ProfileCompletionBanner";
 import { ProfileCompletionModal } from "@/components/onboarding/ProfileCompletionModal";
+import { ProfileEditModal } from "@/components/onboarding/ProfileEditModal";
 import { VerificationPanel } from '@/components/verification/VerificationPanel';
 import { supabase } from "@/integrations/supabase/client";
 
@@ -41,6 +42,7 @@ export default function Profile() {
   
   const [isEditing, setIsEditing] = useState(false);
   const [showCompletionModal, setShowCompletionModal] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
   const [onboardingProgress, setOnboardingProgress] = useState<any>(null);
   const [formData, setFormData] = useState<FormData>({
     display_name: profile?.display_name || '',
@@ -82,6 +84,26 @@ export default function Profile() {
     const profileIncomplete = (profile.profile_completion_pct || 0) < 80;
     
     return basicOnboardingDone && profileIncomplete;
+  };
+
+  // Calculate missing fields for the banner
+  const getMissingFields = () => {
+    if (!profile) return [];
+    const missing = [];
+    
+    const whatYouDo = (profile.profile_extras as any)?.what_you_do;
+    if (whatYouDo === 'study' || whatYouDo === 'study_work') {
+      if (!(profile.profile_extras as any)?.study_level) {
+        missing.push('Σπουδές');
+      }
+    }
+    if (whatYouDo === 'work' || whatYouDo === 'study_work') {
+      if (!(profile.profile_extras as any)?.work_profession) {
+        missing.push('Επάγγελμα');
+      }
+    }
+    
+    return missing;
   };
 
   // Auto-show completion modal after onboarding
@@ -242,6 +264,7 @@ export default function Profile() {
               <ProfileCompletionBanner
                 completionPercent={profile.profile_completion_pct || 0}
                 onComplete={() => setShowCompletionModal(true)}
+                missingFields={getMissingFields()}
               />
             </div>
           )}
@@ -251,7 +274,16 @@ export default function Profile() {
             <div className="mb-6">
               <Card>
                 <CardHeader>
-                  <CardTitle className="text-lg">Στοιχεία Προφίλ</CardTitle>
+                  <div className="flex items-center justify-between">
+                    <CardTitle className="text-lg">Στοιχεία Προφίλ</CardTitle>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => setShowEditModal(true)}
+                    >
+                      Επεξεργασία
+                    </Button>
+                  </div>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   {/* Professional & Study Info */}
@@ -672,9 +704,14 @@ export default function Profile() {
       <OnboardingModal />
 
       {/* Profile Completion Modal */}
-      <ProfileCompletionModal
+      <ProfileCompletionModal 
         isOpen={showCompletionModal}
         onClose={() => setShowCompletionModal(false)}
+      />
+      
+      <ProfileEditModal 
+        isOpen={showEditModal}
+        onClose={() => setShowEditModal(false)}
       />
     </>
   );

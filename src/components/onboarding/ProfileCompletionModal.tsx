@@ -66,8 +66,9 @@ export const ProfileCompletionModal = ({ isOpen, onClose }: ProfileCompletionMod
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Get what_you_do from profile or assume from existing profession
-  const whatYouDo: 'study' | 'work' | 'study_work' = 'study_work'; // This should come from the onboarding data
+  // Get what_you_do from profile_extras
+  const whatYouDo: 'study' | 'work' | 'study_work' = 
+    (profile?.profile_extras as any)?.what_you_do || 'study_work';
 
   const validateForm = () => {
     const newErrors: Record<string, string> = {};
@@ -76,13 +77,13 @@ export const ProfileCompletionModal = ({ isOpen, onClose }: ProfileCompletionMod
       newErrors.display_name = "Το όνομα είναι υποχρεωτικό";
     }
 
-    if (whatYouDo.includes('study')) {
+    if (whatYouDo === 'study' || whatYouDo === 'study_work') {
       if (!formData.study_level) {
         newErrors.study_level = "Επιλέξτε επίπεδο σπουδών";
       }
     }
 
-    if (whatYouDo.includes('work')) {
+    if (whatYouDo === 'work' || whatYouDo === 'study_work') {
       if (!formData.work_profession) {
         newErrors.work_profession = "Συμπληρώστε το επάγγελμά σας";
       }
@@ -115,8 +116,8 @@ export const ProfileCompletionModal = ({ isOpen, onClose }: ProfileCompletionMod
         music: formData.music,
         sports: formData.sports,
         movies: formData.movies,
-        study_level: whatYouDo.includes('study') ? formData.study_level : undefined,
-        work_profession: whatYouDo.includes('work') ? formData.work_profession : undefined,
+        study_level: (whatYouDo === 'study' || whatYouDo === 'study_work') ? formData.study_level : undefined,
+        work_profession: (whatYouDo === 'work' || whatYouDo === 'study_work') ? formData.work_profession : undefined,
         who_moving: formData.who_moving
       };
 
@@ -131,13 +132,11 @@ export const ProfileCompletionModal = ({ isOpen, onClose }: ProfileCompletionMod
       };
 
       // Set profession based on what they do
-      if (whatYouDo.includes('work')) {
-        if (whatYouDo.includes('study')) {
-          updateData.profession = `${formData.work_profession} | Student (${formData.study_level})`;
-        } else {
-          updateData.profession = formData.work_profession;
-        }
-      } else if (whatYouDo.includes('study')) {
+      if (whatYouDo === 'study_work') {
+        updateData.profession = `${formData.work_profession} | Student (${formData.study_level})`;
+      } else if (whatYouDo === 'work') {
+        updateData.profession = formData.work_profession;
+      } else if (whatYouDo === 'study') {
         updateData.profession = `Student (${formData.study_level})`;
       }
 
@@ -279,10 +278,10 @@ export const ProfileCompletionModal = ({ isOpen, onClose }: ProfileCompletionMod
           <div className="space-y-4">
             <h3 className="font-medium">Λεπτομέρειες δραστηριοτήτων</h3>
             
-            {whatYouDo.includes('study') && (
+            {(whatYouDo === 'study' || whatYouDo === 'study_work') && (
               <div>
                 <Label>
-                  Τι σπουδάζετε; <span className="text-red-500">*</span>
+                  Τι σπουδάζεις; <span className="text-red-500">*</span>
                 </Label>
                 <Select
                   value={formData.study_level}
@@ -304,10 +303,10 @@ export const ProfileCompletionModal = ({ isOpen, onClose }: ProfileCompletionMod
               </div>
             )}
 
-            {whatYouDo.includes('work') && (
+            {(whatYouDo === 'work' || whatYouDo === 'study_work') && (
               <div>
                 <Label>
-                  Τι δουλειά κάνετε; <span className="text-red-500">*</span>
+                  Με τι ασχολείσαι; <span className="text-red-500">*</span>
                 </Label>
                 <Select
                   value={formData.work_profession}

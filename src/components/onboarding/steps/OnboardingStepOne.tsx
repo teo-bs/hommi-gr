@@ -5,11 +5,13 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { FileUpload } from "@/components/ui/file-upload";
 import { format } from "date-fns";
-import { CalendarIcon, Camera, Upload } from "lucide-react";
+import { CalendarIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { OnboardingData } from "../OnboardingModal";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
 
 interface OnboardingStepOneProps {
   data: OnboardingData;
@@ -18,14 +20,17 @@ interface OnboardingStepOneProps {
 }
 
 export const OnboardingStepOne = ({ data, onComplete, onBack }: OnboardingStepOneProps) => {
+  const { user } = useAuth();
   const [formData, setFormData] = useState({
     display_name: data.display_name,
     date_of_birth: data.date_of_birth ? new Date(data.date_of_birth) : undefined,
     gender: data.gender || '',
     what_you_do: data.what_you_do || '',
+    avatar_url: data.avatar_url || '',
   });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [isUploading, setIsUploading] = useState(false);
 
   const validateForm = () => {
     const newErrors: Record<string, string> = {};
@@ -55,6 +60,32 @@ export const OnboardingStepOne = ({ data, onComplete, onBack }: OnboardingStepOn
     return Object.keys(newErrors).length === 0;
   };
 
+  const handlePhotoUpload = async (file: File | null) => {
+    if (!file || !user) return;
+    
+    setIsUploading(true);
+    try {
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${user.id}/${Date.now()}.${fileExt}`;
+      
+      const { data, error: uploadError } = await supabase.storage
+        .from('avatars')
+        .upload(fileName, file, { upsert: true });
+
+      if (uploadError) throw uploadError;
+
+      const { data: publicUrlData } = supabase.storage
+        .from('avatars')
+        .getPublicUrl(data.path);
+
+      setFormData({ ...formData, avatar_url: publicUrlData.publicUrl });
+    } catch (error) {
+      console.error('Upload error:', error);
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -64,6 +95,7 @@ export const OnboardingStepOne = ({ data, onComplete, onBack }: OnboardingStepOn
         date_of_birth: formData.date_of_birth?.toISOString().split('T')[0] || null,
         gender: formData.gender as OnboardingData['gender'],
         what_you_do: formData.what_you_do as OnboardingData['what_you_do'],
+        avatar_url: formData.avatar_url,
       });
     }
   };
@@ -71,27 +103,17 @@ export const OnboardingStepOne = ({ data, onComplete, onBack }: OnboardingStepOn
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       {/* Profile Photo */}
-      <div className="flex flex-col items-center space-y-4">
-        <div className="relative">
-          <Avatar className="w-24 h-24">
-            <AvatarImage src={data.avatar_url} />
-            <AvatarFallback className="text-lg">
-              {formData.display_name?.[0]?.toUpperCase() || 'U'}
-            </AvatarFallback>
-          </Avatar>
-          <Button
-            type="button"
-            size="sm"
-            variant="secondary"
-            className="absolute -bottom-2 -right-2 rounded-full w-8 h-8 p-0"
-          >
-            <Camera className="h-4 w-4" />
-          </Button>
-        </div>
+      <FileUpload
+        value={formData.avatar_url}
+        onChange={handlePhotoUpload}
+        placeholder="Προσθέστε φωτογραφία προφίλ (προαιρετικό)"
+        fallbackText={formData.display_name?.[0]?.toUpperCase() || 'U'}
+      />
+      {isUploading && (
         <p className="text-sm text-muted-foreground text-center">
-          Προσθέστε 1-5 φωτογραφίες (προαιρετικό)
+          Φόρτωση φωτογραφίας...
         </p>
-      </div>
+      )}
 
       {/* Name & Surname */}
       <div className="space-y-2">
@@ -154,8 +176,8 @@ export const OnboardingStepOne = ({ data, onComplete, onBack }: OnboardingStepOn
               initialFocus
               className="pointer-events-auto"
               captionLayout="dropdown-buttons"
-              fromYear={1950}
-              toYear={new Date().getFullYear()}
+              fromYear={1940}
+              toYear={2010}
             />
           </PopoverContent>
         </Popover>
@@ -185,7 +207,6 @@ export const OnboardingStepOne = ({ data, onComplete, onBack }: OnboardingStepOn
             <SelectItem value="female">Γυναίκα</SelectItem>
             <SelectItem value="male">Άνδρας</SelectItem>
             <SelectItem value="other">Non-binary</SelectItem>
-            <SelectItem value="prefer_not_to_say">Προτιμώ να μην απαντήσω</SelectItem>
           </SelectContent>
         </Select>
         {errors.gender && (
@@ -196,7 +217,7 @@ export const OnboardingStepOne = ({ data, onComplete, onBack }: OnboardingStepOn
       {/* What you do */}
       <div className="space-y-2">
         <Label>
-          Τι κάνετε; <span className="text-red-500">*</span>
+          Με τι ασχολείστε; <span className="text-red-500">*</span>
         </Label>
         <Select
           value={formData.what_you_do}

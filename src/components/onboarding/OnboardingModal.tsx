@@ -93,6 +93,11 @@ export const OnboardingModal = () => {
     setIsSubmitting(true);
     
     try {
+      // Store what_you_do in profile_extras for conditional modal later
+      const profile_extras = {
+        what_you_do: formData.what_you_do
+      };
+
       // Update profile with all collected data
       const { error } = await updateProfile({
         display_name: formData.display_name,
@@ -101,6 +106,7 @@ export const OnboardingModal = () => {
         country: formData.country,
         languages: formData.languages,
         avatar_url: formData.avatar_url,
+        profile_extras
       });
 
       if (error) {

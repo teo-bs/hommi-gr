@@ -6,9 +6,10 @@ import { Sparkles, ArrowRight } from "lucide-react";
 interface ProfileCompletionBannerProps {
   completionPercent: number;
   onComplete: () => void;
+  missingFields?: string[];
 }
 
-export const ProfileCompletionBanner = ({ completionPercent, onComplete }: ProfileCompletionBannerProps) => {
+export const ProfileCompletionBanner = ({ completionPercent, onComplete, missingFields }: ProfileCompletionBannerProps) => {
   // Don't show banner if profile is already highly complete
   if (completionPercent >= 80) return null;
 
@@ -25,6 +26,11 @@ export const ProfileCompletionBanner = ({ completionPercent, onComplete }: Profi
               <h3 className="font-semibold text-foreground mb-1">
                 Πρόσθεσε τις τελευταίες πινελιές στο προφίλ σου…
               </h3>
+              {missingFields && missingFields.length > 0 && (
+                <p className="text-xs text-muted-foreground mb-2">
+                  Λείπουν: {missingFields.join(', ')}
+                </p>
+              )}
               <div className="flex items-center space-x-3">
                 <Progress value={completionPercent} className="flex-1 max-w-[200px]" />
                 <span className="text-sm text-muted-foreground">
