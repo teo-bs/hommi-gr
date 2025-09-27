@@ -400,14 +400,15 @@ export const ProfileCompletionModal = ({ isOpen, onClose }: ProfileCompletionMod
                   placeholder="username"
                 />
               </div>
-              <div>
-                <Label>TikTok</Label>
-                <Input
-                  value={formData.social_tiktok}
-                  onChange={(e) => setFormData({ ...formData, social_tiktok: e.target.value })}
-                  placeholder="username"
-                />
-              </div>
+                <div>
+                  <Label>TikTok (Κρυφό προσωρινά)</Label>
+                  <Input
+                    value={formData.social_tiktok}
+                    onChange={(e) => setFormData({ ...formData, social_tiktok: e.target.value })}
+                    placeholder="username"
+                    style={{ display: 'none' }}
+                  />
+                </div>
             </div>
           </div>
 

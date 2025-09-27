@@ -241,16 +241,19 @@ export const Header = () => {
                   </Link>
                 ))}
 
-                {/* Publish Listing Button */}
-                <Button 
-                  variant="outline" 
-                  size="sm" 
-                  className="border-foreground/20"
-                  onClick={handlePublishListing}
-                >
-                  <Plus className="h-4 w-4 mr-2" />
-                  {language === 'el' ? 'Δημοσίευσε αγγελία' : 'Publish listing'}
-                </Button>
+                {/* Publish Listing Button - Only show for listers */}
+                {currentRole === 'lister' && (
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    className="border-foreground/20"
+                    onClick={handlePublishListing}
+                    data-testid="publish-listing-btn"
+                  >
+                    <Plus className="h-4 w-4 mr-2" />
+                    {language === 'el' ? 'Δημοσίευσε αγγελία' : 'Publish listing'}
+                  </Button>
+                )}
               </nav>
             ) : (
               /* Logged-out Navigation */
@@ -350,6 +353,7 @@ export const Header = () => {
               size="sm"
               className="lg:hidden"
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              data-testid="mobile-menu-btn"
             >
               {mobileMenuOpen ? (
                 <X className="h-5 w-5" />
@@ -416,7 +420,10 @@ export const Header = () => {
                   }}
                 >
                   <Plus className="h-4 w-4 mr-2" />
-                  {language === 'el' ? 'Δημοσίευσε αγγελία' : 'Publish listing'}
+                  {currentRole === 'lister' 
+                    ? (language === 'el' ? 'Δημοσίευσε αγγελία' : 'Publish listing')
+                    : (language === 'el' ? 'Καταχώρησε το ακίνητό σου' : 'List your property')
+                  }
                 </Button>
 
                 {user ? (

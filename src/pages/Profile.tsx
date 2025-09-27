@@ -10,14 +10,16 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
-import { Camera, MapPin, Calendar, Star, Users, ExternalLink, Plus, X } from "lucide-react";
+import { Camera, MapPin, Calendar, Star, Users, ExternalLink, Plus, X, Check } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { OnboardingModal } from "@/components/onboarding/OnboardingModal";
 import { ProfileCompletionBanner } from "@/components/onboarding/ProfileCompletionBanner";
 import { ProfileCompletionModal } from "@/components/onboarding/ProfileCompletionModal";
 import { ProfileEditModal } from "@/components/onboarding/ProfileEditModal";
+import { ProfileField } from "@/components/profile/ProfileField";
 import { VerificationPanel } from '@/components/verification/VerificationPanel';
 import { supabase } from "@/integrations/supabase/client";
+import { cn } from "@/lib/utils";
 
 type GenderType = 'male' | 'female' | 'other' | 'prefer_not_to_say' | '';
 
@@ -234,7 +236,7 @@ export default function Profile() {
     { key: 'social_instagram' as keyof FormData, label: 'Instagram', icon: '📷' },
     { key: 'social_linkedin' as keyof FormData, label: 'LinkedIn', icon: '💼' },
     { key: 'social_twitter_x' as keyof FormData, label: 'Twitter/X', icon: '🐦' },
-    { key: 'social_tiktok' as keyof FormData, label: 'TikTok', icon: '🎵' },
+    // TikTok hidden for now
   ];
 
   if (!profile) {
@@ -260,7 +262,7 @@ export default function Profile() {
 
           {/* Completion Banner */}
           {shouldShowCompletionBanner() && (
-            <div className="mb-6">
+            <div className="mb-6" data-testid="profile-completion-banner">
               <ProfileCompletionBanner
                 completionPercent={profile.profile_completion_pct || 0}
                 onComplete={() => setShowCompletionModal(true)}
@@ -280,6 +282,7 @@ export default function Profile() {
                       size="sm"
                       variant="outline"
                       onClick={() => setShowEditModal(true)}
+                      data-testid="profile-details-edit-btn"
                     >
                       Επεξεργασία
                     </Button>
@@ -577,7 +580,7 @@ export default function Profile() {
                         className="mt-1 min-h-[100px]"
                       />
                     ) : (
-                      <p className="mt-1 text-foreground whitespace-pre-wrap">
+                      <p className="mt-1 text-foreground whitespace-pre-wrap break-words overflow-wrap-anywhere leading-relaxed">
                         {formData.about_me || "Δεν έχει προστεθεί περιγραφή"}
                       </p>
                     )}
@@ -674,20 +677,22 @@ export default function Profile() {
                     </div>
                   </div>
 
-                  {/* Listings Section */}
-                  <div>
-                    <Label className="text-sm font-medium">Δημοσιευμένες αγγελίες</Label>
-                    <div className="mt-2 p-4 bg-muted/50 rounded-lg text-center">
-                      <Users className="h-8 w-8 mx-auto mb-2 text-muted-foreground" />
-                      <p className="text-sm text-muted-foreground">
-                        Δεν έχετε δημοσιεύσει ακόμη αγγελίες
-                      </p>
-                      <Button variant="outline" size="sm" className="mt-2">
-                        <Plus className="h-4 w-4 mr-2" />
-                        Δημιουργία αγγελίας
-                      </Button>
+                  {/* Listings Section - Only show for listers */}
+                  {profile.role === 'lister' && (
+                    <div>
+                      <Label className="text-sm font-medium">Δημοσιευμένες αγγελίες</Label>
+                      <div className="mt-2 p-4 bg-muted/50 rounded-lg text-center">
+                        <Users className="h-8 w-8 mx-auto mb-2 text-muted-foreground" />
+                        <p className="text-sm text-muted-foreground">
+                          Δεν έχετε δημοσιεύσει ακόμη αγγελίες
+                        </p>
+                        <Button variant="outline" size="sm" className="mt-2">
+                          <Plus className="h-4 w-4 mr-2" />
+                          Δημιουργία αγγελίας
+                        </Button>
+                      </div>
                     </div>
-                  </div>
+                  )}
                 </CardContent>
               </Card>
             </div>
@@ -707,11 +712,13 @@ export default function Profile() {
       <ProfileCompletionModal 
         isOpen={showCompletionModal}
         onClose={() => setShowCompletionModal(false)}
+        data-testid="profile-completion-modal"
       />
       
       <ProfileEditModal 
         isOpen={showEditModal}
         onClose={() => setShowEditModal(false)}
+        data-testid="profile-edit-modal"
       />
     </>
   );

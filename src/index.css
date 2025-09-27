@@ -43,7 +43,7 @@
     --muted-darker: 220 15% 45%;
 
     /* Trust indicators */
-    --success: 145 65% 45%;
+    --success: 142 76% 36%;
     --success-foreground: 0 0% 100%;
     --success-light: 145 65% 95%;
 
@@ -141,5 +141,23 @@
 
   body {
     @apply bg-background text-foreground;
+  }
+}
+
+@layer utilities {
+  .text-success {
+    color: hsl(var(--success));
+  }
+
+  .text-success-foreground {
+    color: hsl(var(--success-foreground));
+  }
+
+  .bg-success {
+    background-color: hsl(var(--success));
+  }
+
+  .overflow-wrap-anywhere {
+    overflow-wrap: anywhere;
   }
 }
