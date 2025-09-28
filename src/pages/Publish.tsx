@@ -14,10 +14,10 @@ import { toast } from "@/hooks/use-toast";
 import { useListingValidation } from "@/hooks/useListingValidation";
 import { useVerifications } from "@/hooks/useVerifications";
 import { PublishWarningsBanner } from "@/components/publish/PublishWarningsBanner";
-import { VerificationPanel } from "@/components/verification/VerificationPanel";
-import { ProfileCompletionModal } from "@/components/onboarding/ProfileCompletionModal";
+import { PublishProfileModal } from "@/components/publish/PublishProfileModal";
+import { PublishVerificationModal } from "@/components/publish/PublishVerificationModal";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
+import { handleAmenitiesUpdate } from "@/components/publish/AmenitiesHandler";
 
 interface ListingDraft {
   id?: string;
@@ -171,9 +171,9 @@ export default function Publish() {
           i_live_here: existingDraft.i_live_here || false,
           orientation: (existingDraft.orientation as 'exterior' | 'interior') || 'exterior',
           bed_type: existingDraft.bed_type || undefined,
-          amenities_property: [], // Remove - this column doesn't exist
-          amenities_room: [], // Remove - this column doesn't exist
           house_rules: Array.isArray(existingDraft.house_rules) ? existingDraft.house_rules as string[] : [],
+          amenities_property: [], // Handle separately via listing_amenities table
+          amenities_room: [], // Handle separately via room_amenities table
           availability_date: existingDraft.availability_date ? new Date(existingDraft.availability_date) : undefined,
           availability_to: existingDraft.availability_to ? new Date(existingDraft.availability_to) : undefined,
           min_stay_months: existingDraft.min_stay_months || undefined,
@@ -227,9 +227,8 @@ export default function Publish() {
         i_live_here: updatedDraft.i_live_here,
         orientation: updatedDraft.orientation,
         bed_type: updatedDraft.bed_type,
-        amenities_property: updatedDraft.amenities_property,
-        amenities_room: updatedDraft.amenities_room,
-        house_rules: updatedDraft.house_rules,
+        // Don't save amenities to listing table - handle via separate tables
+        // amenities_property and amenities_room are stored in listing_amenities and room_amenities
         availability_date: updatedDraft.availability_date?.toISOString().split('T')[0],
         availability_to: updatedDraft.availability_to?.toISOString().split('T')[0],
         min_stay_months: updatedDraft.min_stay_months,
@@ -255,9 +254,9 @@ export default function Publish() {
           .update(draftData)
           .eq('id', updatedDraft.id);
           
-        // Update room amenities if amenities changed
-        if (updates.amenities_room) {
-          await updateRoomAmenities(updatedDraft.id, updatedDraft.amenities_room);
+        // Handle amenities via separate tables after save
+        if (updates.amenities_room || updates.amenities_property) {
+          await handleAmenitiesUpdate(updatedDraft.id, updatedDraft);
         }
       } else {
         const { data, error } = await supabase
@@ -269,8 +268,9 @@ export default function Publish() {
         if (data && !error) {
           setDraft(prev => ({ ...prev, id: data.id }));
           
-          // Create room entry for this listing
+          // Create room entry and handle amenities for this listing
           await createRoomForListing(data.id, updatedDraft);
+          await handleAmenitiesUpdate(data.id, updatedDraft);
           
           // Create lister profile if it doesn't exist
           await ensureListerProfile();
@@ -390,24 +390,6 @@ export default function Publish() {
         return;
       }
 
-      // Connect amenities to room
-      if (room && listingData.amenities_room?.length > 0) {
-        const { data: amenities } = await supabase
-          .from('amenities')
-          .select('id, name_en')
-          .in('name_en', listingData.amenities_room);
-
-        if (amenities?.length > 0) {
-          const roomAmenities = amenities.map(amenity => ({
-            room_id: room.id,
-            amenity_id: amenity.id
-          }));
-
-          await supabase
-            .from('room_amenities')
-            .insert(roomAmenities);
-        }
-      }
     } catch (error) {
       console.error('Error creating room:', error);
     }
@@ -431,7 +413,27 @@ export default function Publish() {
   };
 
   const publishListing = async () => {
-    if (!draft.id) return;
+    if (!draft.id) {
+      toast({
+        title: "Σφάλμα",
+        description: "Δεν υπάρχει αγγελία για δημοσίευση. Παρακαλώ αποθηκεύστε τα στοιχεία σας πρώτα.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    // Save current draft before checking requirements
+    await saveDraft({});
+
+    // Check profile completion first (80% is sufficient for publishing)  
+    if (!profile || profile.profile_completion_pct < 80) {
+      console.log('Profile completion check failed:', {
+        profile: !!profile,
+        completion: profile?.profile_completion_pct
+      });
+      setShowProfileModal(true);
+      return;
+    }
 
     // Check phone verification
     const phoneVerification = verifications.find(v => v.kind === 'phone');
@@ -442,16 +444,6 @@ export default function Publish() {
     });
     if (!phoneVerification || phoneVerification.status !== 'verified') {
       setShowVerificationModal(true);
-      return;
-    }
-
-    // Check profile completion (80% is sufficient for publishing)
-    if (!profile || profile.profile_completion_pct < 80) {
-      console.log('Profile completion check failed:', {
-        profile: !!profile,
-        completion: profile?.profile_completion_pct
-      });
-      setShowProfileModal(true);
       return;
     }
 
@@ -498,6 +490,26 @@ export default function Publish() {
         variant: "destructive"
       });
     }
+  };
+
+  const handleProfileCompleted = async () => {
+    setShowProfileModal(false);
+    // Refetch profile to get updated completion percentage
+    window.location.reload(); // Simple way to refresh profile data
+    // Then attempt to publish again
+    setTimeout(() => {
+      publishListing();
+    }, 1000);
+  };
+
+  const handleVerificationCompleted = async () => {
+    setShowVerificationModal(false);
+    // Refetch verifications to get updated status
+    await refetchVerifications();
+    // Then attempt to publish again
+    setTimeout(() => {
+      publishListing();
+    }, 500);
   };
 
   const handleFixField = (field: string) => {
@@ -608,62 +620,19 @@ export default function Publish() {
           )}
         </div>
 
-        {/* Verification Modal */}
-        <Dialog open={showVerificationModal} onOpenChange={setShowVerificationModal}>
-          <DialogContent className="max-w-2xl">
-            <DialogHeader>
-              <DialogTitle>Επαλήθευση τηλεφώνου απαιτείται</DialogTitle>
-            </DialogHeader>
-            <div className="py-4">
-              <p className="text-muted-foreground mb-4">
-                Για τη δημοσίευση της αγγελίας σας, απαιτείται επαλήθευση του τηλεφώνου σας.
-                Αυτό βοηθά στη διασφάλιση της ασφάλειας της κοινότητας μας.
-              </p>
-              <VerificationPanel />
-              <div className="flex justify-end space-x-2 mt-4">
-                <Button variant="outline" onClick={() => setShowVerificationModal(false)}>
-                  Κλείσιμο
-                </Button>
-                <Button onClick={async () => {
-                  await refetchVerifications();
-                  setShowVerificationModal(false);
-                  // Try to publish again after verification
-                  setTimeout(() => publishListing(), 500);
-                }}>
-                  Επανάληψη δημοσίευσης
-                </Button>
-              </div>
-            </div>
-          </DialogContent>
-        </Dialog>
+        {/* Enhanced Profile Completion Modal */}
+        <PublishProfileModal 
+          isOpen={showProfileModal}
+          onClose={() => setShowProfileModal(false)}
+          onSuccess={handleProfileCompleted}
+        />
 
-        {/* Profile Completion Modal - Custom implementation */}
-        <Dialog open={showProfileModal} onOpenChange={setShowProfileModal}>
-          <DialogContent className="max-w-lg">
-            <DialogHeader>
-              <DialogTitle>Ολοκληρώστε το προφίλ σας</DialogTitle>
-            </DialogHeader>
-            <div className="py-4 space-y-4">
-              <p className="text-muted-foreground">
-                Για να δημοσιεύσετε την αγγελία σας, χρειάζεται να ολοκληρώσετε το προφίλ σας τουλάχιστον κατά 80%.
-              </p>
-              <div className="bg-muted p-3 rounded-md">
-                <p className="text-sm font-medium">Τρέχουσα ολοκλήρωση: {profile?.profile_completion_pct || 0}%</p>
-              </div>
-              <p className="text-sm text-muted-foreground">
-                Παρακαλώ συμπληρώστε τα απαραίτητα στοιχεία στο προφίλ σας και προσπαθήστε ξανά.
-              </p>
-              <div className="flex justify-end space-x-2">
-                <Button variant="outline" onClick={() => setShowProfileModal(false)}>
-                  Άκυρο
-                </Button>
-                <Button onClick={() => { setShowProfileModal(false); navigate('/me'); }}>
-                  Μεταβάστε στο προφίλ
-                </Button>
-              </div>
-            </div>
-          </DialogContent>
-        </Dialog>
+        {/* Enhanced Verification Modal */}
+        <PublishVerificationModal 
+          isOpen={showVerificationModal}
+          onClose={() => setShowVerificationModal(false)}
+          onSuccess={handleVerificationCompleted}
+        />
       </div>
     </>
   );

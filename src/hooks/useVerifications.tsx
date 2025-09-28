@@ -96,15 +96,15 @@ export const useVerifications = () => {
     }
   };
 
-  const verifyPhone = async () => {
+  const verifyPhone = async (phoneNumber?: string) => {
     // For testing purposes, automatically verify phone number
     // In a real app, you'd integrate with SMS/phone verification service
     setLoading(true);
     
     try {
-      // Mock phone verification - automatically set to verified for testing
-      const mockPhoneNumber = '+30 69X XXX XXXX'; // Mock Greek phone number
-      const { error } = await createOrUpdateVerification('phone', mockPhoneNumber, 'verified');
+      // If phone number provided, use it; otherwise use mock for testing
+      const phone = phoneNumber || '+30 69X XXX XXXX'; // Mock Greek phone number
+      const { error } = await createOrUpdateVerification('phone', phone, 'verified');
       setLoading(false);
       return { error };
     } catch (error: any) {
