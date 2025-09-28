@@ -1507,6 +1507,10 @@ export type Database = {
       }
     }
     Functions: {
+      generate_greek_safe_slug: {
+        Args: { input_text: string; listing_id?: string }
+        Returns: string
+      }
       get_listing_amenities_grouped: {
         Args: { p_listing_id: string; p_locale?: string }
         Returns: {
@@ -1539,6 +1543,10 @@ export type Database = {
         Args: { room_uuid: string; user_uuid: string }
         Returns: boolean
       }
+      publish_listing_atomic: {
+        Args: { p_listing_id: string; p_room_slug?: string }
+        Returns: Json
+      }
       refresh_listing_amenity_facets: {
         Args: Record<PropertyKey, never>
         Returns: undefined
@@ -1565,7 +1573,7 @@ export type Database = {
     }
     Enums: {
       gender_enum: "male" | "female" | "other" | "prefer_not_to_say"
-      publish_status_enum: "draft" | "published" | "archived"
+      publish_status_enum: "draft" | "published" | "archived" | "publishing"
       thread_status_enum:
         | "pending"
         | "accepted"
@@ -1708,7 +1716,7 @@ export const Constants = {
   public: {
     Enums: {
       gender_enum: ["male", "female", "other", "prefer_not_to_say"],
-      publish_status_enum: ["draft", "published", "archived"],
+      publish_status_enum: ["draft", "published", "archived", "publishing"],
       thread_status_enum: [
         "pending",
         "accepted",
