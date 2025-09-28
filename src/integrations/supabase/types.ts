@@ -167,13 +167,6 @@ export type Database = {
             foreignKeyName: "applications_listing_id_fkey"
             columns: ["listing_id"]
             isOneToOne: false
-            referencedRelation: "room_search_cache"
-            referencedColumns: ["listing_id"]
-          },
-          {
-            foreignKeyName: "applications_listing_id_fkey"
-            columns: ["listing_id"]
-            isOneToOne: false
             referencedRelation: "v_listing_cards"
             referencedColumns: ["id"]
           },
@@ -234,13 +227,6 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "listings"
             referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "holds_listing_id_fkey"
-            columns: ["listing_id"]
-            isOneToOne: false
-            referencedRelation: "room_search_cache"
-            referencedColumns: ["listing_id"]
           },
           {
             foreignKeyName: "holds_listing_id_fkey"
@@ -340,13 +326,6 @@ export type Database = {
             foreignKeyName: "listing_amenities_listing_id_fkey"
             columns: ["listing_id"]
             isOneToOne: false
-            referencedRelation: "room_search_cache"
-            referencedColumns: ["listing_id"]
-          },
-          {
-            foreignKeyName: "listing_amenities_listing_id_fkey"
-            columns: ["listing_id"]
-            isOneToOne: false
             referencedRelation: "v_listing_cards"
             referencedColumns: ["id"]
           },
@@ -382,13 +361,6 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "listings"
             referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "listing_house_rules_listing_id_fkey"
-            columns: ["listing_id"]
-            isOneToOne: false
-            referencedRelation: "room_search_cache"
-            referencedColumns: ["listing_id"]
           },
           {
             foreignKeyName: "listing_house_rules_listing_id_fkey"
@@ -1074,13 +1046,6 @@ export type Database = {
             foreignKeyName: "fk_rooms_listing_id"
             columns: ["listing_id"]
             isOneToOne: false
-            referencedRelation: "room_search_cache"
-            referencedColumns: ["listing_id"]
-          },
-          {
-            foreignKeyName: "fk_rooms_listing_id"
-            columns: ["listing_id"]
-            isOneToOne: false
             referencedRelation: "v_listing_cards"
             referencedColumns: ["id"]
           },
@@ -1198,13 +1163,6 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "listings"
             referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "threads_listing_id_fkey"
-            columns: ["listing_id"]
-            isOneToOne: false
-            referencedRelation: "room_search_cache"
-            referencedColumns: ["listing_id"]
           },
           {
             foreignKeyName: "threads_listing_id_fkey"
@@ -1331,13 +1289,6 @@ export type Database = {
             foreignKeyName: "viewings_listing_id_fkey"
             columns: ["listing_id"]
             isOneToOne: false
-            referencedRelation: "room_search_cache"
-            referencedColumns: ["listing_id"]
-          },
-          {
-            foreignKeyName: "viewings_listing_id_fkey"
-            columns: ["listing_id"]
-            isOneToOne: false
             referencedRelation: "v_listing_cards"
             referencedColumns: ["id"]
           },
@@ -1376,35 +1327,24 @@ export type Database = {
       room_search_cache: {
         Row: {
           availability_date: string | null
-          availability_status: string | null
           city: string | null
           couples_accepted: boolean | null
           cover_photo_url: string | null
           created_at: string | null
           flatmates_count: number | null
-          last_active: string | null
-          last_viewed_at: string | null
           lat: number | null
-          listed_space: string | null
-          lister_avatar: string | null
+          lister_member_since: string | null
           lister_name: string | null
-          listing_id: string | null
+          lister_verification: string | null
           lng: number | null
-          max_stay_months: number | null
-          member_since: string | null
-          min_stay_months: number | null
           neighborhood: string | null
           pets_allowed: boolean | null
           price_month: number | null
-          property_type: string | null
-          request_count: number | null
           room_id: string | null
-          search_vector: unknown | null
+          search_tsv: unknown | null
           slug: string | null
+          smoking_allowed: boolean | null
           title: string | null
-          updated_at: string | null
-          verifications_json: Json | null
-          view_count: number | null
         }
         Relationships: []
       }
