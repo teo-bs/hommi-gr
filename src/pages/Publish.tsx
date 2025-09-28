@@ -3,6 +3,10 @@ import { Helmet } from "react-helmet-async";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { Progress } from "@/components/ui/progress";
+import { LoadingOverlay } from "@/components/ui/loading-overlay";
+import { AnimatedProgress } from "@/components/ui/animated-progress";
+import { StepTransition } from "@/components/ui/step-transition";
+import { useSearchCacheRefresh } from "@/hooks/useSearchCacheRefresh";
 import PublishStepZero from "@/components/publish/PublishStepZero";
 import PublishStepOne from "@/components/publish/PublishStepOne";
 import PublishStepTwo from "@/components/publish/PublishStepTwo";
@@ -86,6 +90,13 @@ export default function Publish() {
   const [publishWarnings, setPublishWarnings] = useState<any[]>([]);
   const [isPublishing, setIsPublishing] = useState(false);
   const [publishError, setPublishError] = useState<string | null>(null);
+  const [publishingStage, setPublishingStage] = useState<string>("");
+  const [publishProgress, setPublishProgress] = useState<number>(0);
+  const [isSaving, setIsSaving] = useState(false);
+  const [completedSteps, setCompletedSteps] = useState<number[]>([]);
+  
+  // Search cache refresh hook
+  const { mutateAsync: refreshSearchCache } = useSearchCacheRefresh();
   
   const currentStep = parseInt(searchParams.get('step') || '0');
   const [draft, setDraft] = useState<ListingDraft>({
@@ -202,10 +213,16 @@ export default function Publish() {
   const saveDraft = async (updates: Partial<ListingDraft>) => {
     if (!user || !profile) return;
 
+    setIsSaving(true);
     const updatedDraft = { ...draft, ...updates };
     setDraft(updatedDraft);
     
     console.log('Saving draft with updates:', updates, 'Full draft:', updatedDraft);
+
+    // Mark current step as completed
+    if (!completedSteps.includes(currentStep)) {
+      setCompletedSteps(prev => [...prev, currentStep]);
+    }
 
     try {
       const draftData = {
@@ -418,6 +435,7 @@ export default function Publish() {
     console.log('🚀 Starting publish process...');
     setIsPublishing(true);
     setPublishError(null);
+    setPublishProgress(0);
 
     try {
       if (!draft.id) {
@@ -431,12 +449,14 @@ export default function Publish() {
         return;
       }
 
+      setPublishingStage("Αποθήκευση αλλαγών...");
+      setPublishProgress(10);
       console.log('💾 Saving current draft before validation...');
-      // Save current draft before checking requirements
       await saveDraft({});
 
+      setPublishingStage("Έλεγχος προφίλ...");
+      setPublishProgress(20);
       console.log('👤 Checking profile completion...');
-      // Check profile completion first (80% is sufficient for publishing)  
       if (!profile || profile.profile_completion_pct < 80) {
         console.log('❌ Profile completion check failed:', {
           profile: !!profile,
@@ -447,8 +467,9 @@ export default function Publish() {
       }
       console.log('✅ Profile completion check passed');
 
+      setPublishingStage("Έλεγχος επαλήθευσης...");
+      setPublishProgress(30);
       console.log('📱 Checking phone verification...');
-      // Check phone verification
       const phoneVerification = verifications.find(v => v.kind === 'phone');
       console.log('📱 Phone verification status:', {
         hasVerification: !!phoneVerification,
@@ -462,9 +483,9 @@ export default function Publish() {
       }
       console.log('✅ Phone verification check passed');
 
+      setPublishingStage("Επικύρωση στοιχείων...");
+      setPublishProgress(40);
       console.log('🔍 Validating listing data...');
-      // Validate listing for outliers and mandatory fields
-      console.log('Listing data to validate:', draft);
       const validationResult = await validateListing(draft);
       
       console.log('🔍 Validation result:', validationResult);
@@ -472,7 +493,6 @@ export default function Publish() {
         setPublishWarnings(validationResult.warnings);
         console.log('⚠️ Validation warnings found:', validationResult.warnings);
         
-        // If there are errors, block publishing
         if (!validationResult.canPublish) {
           const errorFields = validationResult.warnings
             .filter(w => w.severity === 'error')
@@ -491,6 +511,8 @@ export default function Publish() {
       }
       console.log('✅ Validation passed');
 
+      setPublishingStage("Δημοσίευση αγγελίας...");
+      setPublishProgress(60);
       console.log('📝 Publishing listing to database...');
       const { error: publishError } = await supabase
         .from('listings')
@@ -501,17 +523,43 @@ export default function Publish() {
         throw publishError;
       }
 
+      setPublishingStage("Δημιουργία δωματίου...");
+      setPublishProgress(70);
+      console.log('🏠 Creating room for listing...');
+      await createRoomForListing(draft.id, draft);
+
+      setPublishingStage("Ενημέρωση αναζήτησης...");
+      setPublishProgress(85);
+      console.log('🔄 Refreshing search cache...');
+      try {
+        await refreshSearchCache();
+        console.log('✅ Search cache refreshed successfully');
+      } catch (error) {
+        // Don't fail the entire publish if cache refresh fails
+        console.warn('⚠️ Search cache refresh failed, but listing was published:', error);
+      }
+
+      setPublishingStage("Ολοκληρώθηκε!");
+      setPublishProgress(100);
+
       console.log('✅ Listing published successfully!');
+      
+      // Show success message with celebration
       toast({
-        title: "Επιτυχής δημοσίευση!",
-        description: "Η αγγελία σας έχει δημοσιευτεί επιτυχώς."
+        title: "🎉 Επιτυχής δημοσίευση!",
+        description: "Η αγγελία σας είναι τώρα διαθέσιμη στην αναζήτηση!"
       });
 
-      navigate('/my-listings');
+      // Small delay to show completion before navigating
+      setTimeout(() => {
+        navigate('/my-listings');
+      }, 1500);
+      
     } catch (error) {
       console.error('❌ Error publishing listing:', error);
       const errorMsg = error instanceof Error ? error.message : "Παρουσιάστηκε απρόσμενο σφάλμα κατά τη δημοσίευση";
       setPublishError(errorMsg);
+      setPublishingStage("Σφάλμα δημοσίευσης");
       toast({
         title: "Σφάλμα δημοσίευσης",
         description: errorMsg,
@@ -519,6 +567,8 @@ export default function Publish() {
       });
     } finally {
       setIsPublishing(false);
+      setPublishProgress(0);
+      setPublishingStage("");
     }
   };
 
@@ -602,72 +652,96 @@ export default function Publish() {
             </div>
           )}
 
-          {/* Progress Bar */}
+          {/* Enhanced Progress Bar */}
           <div className="mb-8">
-            <div className="flex justify-between items-center mb-2">
+            <div className="flex justify-between items-center mb-4">
               <h1 className="text-2xl font-bold">Δημιουργία αγγελίας</h1>
-              <span className="text-sm text-muted-foreground">
-                Βήμα {currentStep + 1} από {STEPS.length}
-              </span>
+              {isSaving && (
+                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                  <div className="w-4 h-4 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+                  Αποθήκευση...
+                </div>
+              )}
             </div>
-            <Progress value={progress} className="w-full" />
-            <p className="text-sm text-muted-foreground mt-2">
-              {STEPS[currentStep]?.title}
-            </p>
+            <AnimatedProgress
+              currentStep={currentStep}
+              totalSteps={STEPS.length}
+              stepTitles={STEPS.map(s => s.title)}
+              completedSteps={completedSteps}
+            />
           </div>
 
-          {/* Step Content */}
-          {currentStep === 0 && (
-            <PublishStepZero onRoleSelected={handleRoleSelected} />
-          )}
+          {/* Step Content with Transitions */}
+          <StepTransition isVisible={currentStep === 0}>
+            {currentStep === 0 && (
+              <PublishStepZero onRoleSelected={handleRoleSelected} />
+            )}
+          </StepTransition>
           
-          {currentStep === 1 && (
-            <PublishStepOne
-              draft={draft}
-              onUpdate={saveDraft}
-              onNext={nextStep}
-              onPrev={prevStep}
-            />
-          )}
+          <StepTransition isVisible={currentStep === 1} direction="forward">
+            {currentStep === 1 && (
+              <PublishStepOne
+                draft={draft}
+                onUpdate={saveDraft}
+                onNext={nextStep}
+                onPrev={prevStep}
+              />
+            )}
+          </StepTransition>
           
-          {currentStep === 2 && (
-            <PublishStepTwo
-              draft={draft}
-              onUpdate={saveDraft}
-              onNext={nextStep}
-              onPrev={prevStep}
-            />
-          )}
+          <StepTransition isVisible={currentStep === 2} direction="forward">
+            {currentStep === 2 && (
+              <PublishStepTwo
+                draft={draft}
+                onUpdate={saveDraft}
+                onNext={nextStep}
+                onPrev={prevStep}
+              />
+            )}
+          </StepTransition>
           
-          {currentStep === 3 && (
-            <PublishStepThree
-              draft={draft}
-              onUpdate={saveDraft}
-              onNext={nextStep}
-              onPrev={prevStep}
-            />
-          )}
+          <StepTransition isVisible={currentStep === 3} direction="forward">
+            {currentStep === 3 && (
+              <PublishStepThree
+                draft={draft}
+                onUpdate={saveDraft}
+                onNext={nextStep}
+                onPrev={prevStep}
+              />
+            )}
+          </StepTransition>
           
-          {currentStep === 4 && (
-            <PublishStepFour
-              draft={draft}
-              onUpdate={saveDraft}
-              onNext={draft.property_type === 'room' ? nextStep : publishListing}
-              onPrev={prevStep}
-              isLastStep={draft.property_type === 'apartment'}
-            />
-          )}
+          <StepTransition isVisible={currentStep === 4} direction="forward">
+            {currentStep === 4 && (
+              <PublishStepFour
+                draft={draft}
+                onUpdate={saveDraft}
+                onNext={draft.property_type === 'room' ? nextStep : publishListing}
+                onPrev={prevStep}
+                isLastStep={draft.property_type === 'apartment'}
+              />
+            )}
+          </StepTransition>
           
-          {currentStep === 5 && draft.property_type === 'room' && (
-            <PublishStepFive
-              draft={draft}
-              onUpdate={saveDraft}
-              onPublish={publishListing}
-              onPrev={prevStep}
-              isPublishing={isPublishing}
-            />
-          )}
+          <StepTransition isVisible={currentStep === 5 && draft.property_type === 'room'} direction="forward">
+            {currentStep === 5 && draft.property_type === 'room' && (
+              <PublishStepFive
+                draft={draft}
+                onUpdate={saveDraft}
+                onPublish={publishListing}
+                onPrev={prevStep}
+                isPublishing={isPublishing}
+              />
+            )}
+          </StepTransition>
         </div>
+
+        {/* Publishing Loading Overlay */}
+        <LoadingOverlay
+          isVisible={isPublishing}
+          message={publishingStage || "Δημοσίευση σε εξέλιξη..."}
+          progress={publishProgress}
+        />
 
         {/* Enhanced Profile Completion Modal */}
         <PublishProfileModal 
