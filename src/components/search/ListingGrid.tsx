@@ -54,7 +54,7 @@ export const ListingGrid = ({
   React.useEffect(() => {
     // Convert optimized listings to format expected by map
     const mapListings = listings.map(listing => ({
-      id: listing.listing_id,
+      id: listing.room_id, // Use room_id as id since listing_id doesn't exist
       room_id: listing.room_id,
       title: listing.title,
       price_month: listing.price_month,
@@ -109,12 +109,12 @@ export const ListingGrid = ({
           >
             <Card 
               className={`hover:shadow-moderate transition-all duration-200 cursor-pointer ${
-                hoveredListingId === listing.listing_id || selectedListingId === listing.listing_id
+                hoveredListingId === listing.room_id || selectedListingId === listing.room_id
                   ? 'ring-2 ring-primary shadow-moderate' 
                   : ''
               }`}
-              onMouseEnter={() => handleCardHover(listing.listing_id, true)}
-              onMouseLeave={() => handleCardHover(listing.listing_id, false)}
+              onMouseEnter={() => handleCardHover(listing.room_id, true)}
+              onMouseLeave={() => handleCardHover(listing.room_id, false)}
             >
             <CardContent className="p-0">
               <div className="flex flex-col md:flex-row">
@@ -155,7 +155,7 @@ export const ListingGrid = ({
                       </Badge>
                     )}
                     
-                    {listing.verifications_json && Object.keys(listing.verifications_json).length > 0 && (
+                    {listing.lister_verification === 'verified' && (
                       <Badge variant="secondary" className="text-xs text-success">
                         <Star className="h-3 w-3 mr-1" />
                         Verified
@@ -166,16 +166,14 @@ export const ListingGrid = ({
                   <div className="flex items-center justify-between">
                     <div className="flex items-center">
                       <div className="text-sm font-medium text-primary">
-                        {listing.availability_status === 'available_now' && 'Άμεσα διαθέσιμο'}
-                        {listing.availability_status === 'available_soon' && 'Διαθέσιμο σύντομα'}
-                        {listing.availability_status === 'available_later' && 'Νέα καταχώρηση'}
+                        {new Date(listing.availability_date) <= new Date() ? 'Άμεσα διαθέσιμο' : 'Διαθέσιμο σύντομα'}
                       </div>
                     </div>
                     
                     <Button 
                       variant="hero" 
                       size="sm"
-                      onClick={(e) => handleRequestChat(listing.listing_id, e)}
+                      onClick={(e) => handleRequestChat(listing.room_id, e)}
                     >
                       <MessageSquare className="h-4 w-4 mr-2" />
                       Request to chat

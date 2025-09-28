@@ -4,33 +4,22 @@ import { supabase } from '@/integrations/supabase/client';
 export interface OptimizedListing {
   room_id: string;
   slug: string;
-  listing_id: string;
   title: string;
   price_month: number;
   city: string;
   neighborhood: string;
   availability_date: string;
-  min_stay_months?: number;
-  max_stay_months?: number;
   flatmates_count: number;
   couples_accepted: boolean;
   pets_allowed: boolean;
-  property_type: string;
-  listed_space?: string;
+  smoking_allowed: boolean;
   lat?: number;
   lng?: number;
   cover_photo_url?: string;
   created_at: string;
-  updated_at: string;
   lister_name?: string;
-  lister_avatar?: string;
-  member_since?: string;
-  last_active?: string;
-  verifications_json: any;
-  view_count: number;
-  request_count: number;
-  last_viewed_at?: string;
-  availability_status: 'available_now' | 'available_soon' | 'available_later';
+  lister_verification?: string;
+  lister_member_since?: string;
 }
 
 export interface SearchFilters {
@@ -63,28 +52,25 @@ export const useOptimizedSearch = ({ filters, enabled = true }: UseOptimizedSear
         .from('room_search_cache')
         .select('*');
 
-      // Apply filters
-      if (filters.budget?.min) {
-        query = query.gte('price_month', filters.budget.min);
-      }
-      if (filters.budget?.max) {
-        query = query.lte('price_month', filters.budget.max);
-      }
-      if (filters.flatmates !== undefined) {
-        query = query.eq('flatmates_count', filters.flatmates);
-      }
-      if (filters.space) {
-        query = query.eq('listed_space', filters.space);
-      }
-      if (filters.couplesAccepted !== undefined) {
-        query = query.eq('couples_accepted', filters.couplesAccepted);
-      }
-      if (filters.petsAllowed !== undefined) {
-        query = query.eq('pets_allowed', filters.petsAllowed);
-      }
-      if (filters.city) {
-        query = query.eq('city', filters.city);
-      }
+  // Apply filters
+  if (filters.budget?.min) {
+    query = query.gte('price_month', filters.budget.min);
+  }
+  if (filters.budget?.max) {
+    query = query.lte('price_month', filters.budget.max);
+  }
+  if (filters.flatmates !== undefined) {
+    query = query.eq('flatmates_count', filters.flatmates);
+  }
+  if (filters.couplesAccepted !== undefined) {
+    query = query.eq('couples_accepted', filters.couplesAccepted);
+  }
+  if (filters.petsAllowed !== undefined) {
+    query = query.eq('pets_allowed', filters.petsAllowed);
+  }
+  if (filters.city) {
+    query = query.eq('city', filters.city);
+  }
 
       // Geographic bounds filtering
       if (filters.bounds) {
@@ -107,7 +93,7 @@ export const useOptimizedSearch = ({ filters, enabled = true }: UseOptimizedSear
           .join(' & ');
         
         if (searchQuery) {
-          query = query.textSearch('search_vector', searchQuery);
+          query = query.textSearch('search_tsv', searchQuery);
         }
       }
 
@@ -123,11 +109,11 @@ export const useOptimizedSearch = ({ filters, enabled = true }: UseOptimizedSear
           query = query.order('price_month', { ascending: false });
           break;
         case 'popular':
-          query = query.order('view_count', { ascending: false });
+          query = query.order('created_at', { ascending: false });
           break;
         default:
-          // Default: featured (mix of recent and popular)
-          query = query.order('view_count', { ascending: false }).order('created_at', { ascending: false });
+          // Default: featured - newest first
+          query = query.order('created_at', { ascending: false });
           break;
       }
 
@@ -141,10 +127,7 @@ export const useOptimizedSearch = ({ filters, enabled = true }: UseOptimizedSear
         throw error;
       }
 
-      return (data || []).map(item => ({
-        ...item,
-        availability_status: item.availability_status as 'available_now' | 'available_soon' | 'available_later'
-      }));
+      return data || [];
     },
     enabled,
     staleTime: 30000, // 30 seconds
