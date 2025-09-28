@@ -84,6 +84,8 @@ export default function Publish() {
   const [showVerificationModal, setShowVerificationModal] = useState(false);
   const [showProfileModal, setShowProfileModal] = useState(false);
   const [publishWarnings, setPublishWarnings] = useState<any[]>([]);
+  const [isPublishing, setIsPublishing] = useState(false);
+  const [publishError, setPublishError] = useState<string | null>(null);
   
   const currentStep = parseInt(searchParams.get('step') || '0');
   const [draft, setDraft] = useState<ListingDraft>({
@@ -413,69 +415,93 @@ export default function Publish() {
   };
 
   const publishListing = async () => {
-    if (!draft.id) {
-      toast({
-        title: "Σφάλμα",
-        description: "Δεν υπάρχει αγγελία για δημοσίευση. Παρακαλώ αποθηκεύστε τα στοιχεία σας πρώτα.",
-        variant: "destructive"
-      });
-      return;
-    }
+    console.log('🚀 Starting publish process...');
+    setIsPublishing(true);
+    setPublishError(null);
 
-    // Save current draft before checking requirements
-    await saveDraft({});
-
-    // Check profile completion first (80% is sufficient for publishing)  
-    if (!profile || profile.profile_completion_pct < 80) {
-      console.log('Profile completion check failed:', {
-        profile: !!profile,
-        completion: profile?.profile_completion_pct
-      });
-      setShowProfileModal(true);
-      return;
-    }
-
-    // Check phone verification
-    const phoneVerification = verifications.find(v => v.kind === 'phone');
-    console.log('Phone verification check:', {
-      hasVerification: !!phoneVerification,
-      status: phoneVerification?.status,
-      allVerifications: verifications
-    });
-    if (!phoneVerification || phoneVerification.status !== 'verified') {
-      setShowVerificationModal(true);
-      return;
-    }
-
-    // Validate listing for outliers and mandatory fields
-    console.log('Validating listing before publish:', draft);
-    const validationResult = await validateListing(draft);
-    
-    console.log('Validation result:', validationResult);
-    if (validationResult.warnings.length > 0) {
-      setPublishWarnings(validationResult.warnings);
-      
-      // If there are errors, block publishing
-      if (!validationResult.canPublish) {
-        const errorFields = validationResult.warnings
-          .filter(w => w.severity === 'error')
-          .map(w => w.message)
-          .join(', ');
+    try {
+      if (!draft.id) {
+        const error = "Δεν υπάρχει αγγελία για δημοσίευση. Παρακαλώ αποθηκεύστε τα στοιχεία σας πρώτα.";
+        setPublishError(error);
         toast({
-          title: "Απαιτούνται διορθώσεις",
-          description: `Παρακαλώ διορθώστε: ${errorFields}`,
+          title: "Σφάλμα",
+          description: error,
           variant: "destructive"
         });
         return;
       }
-    }
 
-    try {
-      await supabase
+      console.log('💾 Saving current draft before validation...');
+      // Save current draft before checking requirements
+      await saveDraft({});
+
+      console.log('👤 Checking profile completion...');
+      // Check profile completion first (80% is sufficient for publishing)  
+      if (!profile || profile.profile_completion_pct < 80) {
+        console.log('❌ Profile completion check failed:', {
+          profile: !!profile,
+          completion: profile?.profile_completion_pct
+        });
+        setShowProfileModal(true);
+        return;
+      }
+      console.log('✅ Profile completion check passed');
+
+      console.log('📱 Checking phone verification...');
+      // Check phone verification
+      const phoneVerification = verifications.find(v => v.kind === 'phone');
+      console.log('📱 Phone verification status:', {
+        hasVerification: !!phoneVerification,
+        status: phoneVerification?.status,
+        allVerifications: verifications
+      });
+      if (!phoneVerification || phoneVerification.status !== 'verified') {
+        console.log('❌ Phone verification required');
+        setShowVerificationModal(true);
+        return;
+      }
+      console.log('✅ Phone verification check passed');
+
+      console.log('🔍 Validating listing data...');
+      // Validate listing for outliers and mandatory fields
+      console.log('Listing data to validate:', draft);
+      const validationResult = await validateListing(draft);
+      
+      console.log('🔍 Validation result:', validationResult);
+      if (validationResult.warnings.length > 0) {
+        setPublishWarnings(validationResult.warnings);
+        console.log('⚠️ Validation warnings found:', validationResult.warnings);
+        
+        // If there are errors, block publishing
+        if (!validationResult.canPublish) {
+          const errorFields = validationResult.warnings
+            .filter(w => w.severity === 'error')
+            .map(w => w.message)
+            .join(', ');
+          const errorMsg = `Παρακαλώ διορθώστε: ${errorFields}`;
+          console.log('❌ Validation errors prevent publishing:', errorMsg);
+          setPublishError(errorMsg);
+          toast({
+            title: "Απαιτούνται διορθώσεις",
+            description: errorMsg,
+            variant: "destructive"
+          });
+          return;
+        }
+      }
+      console.log('✅ Validation passed');
+
+      console.log('📝 Publishing listing to database...');
+      const { error: publishError } = await supabase
         .from('listings')
         .update({ status: 'published' })
         .eq('id', draft.id);
 
+      if (publishError) {
+        throw publishError;
+      }
+
+      console.log('✅ Listing published successfully!');
       toast({
         title: "Επιτυχής δημοσίευση!",
         description: "Η αγγελία σας έχει δημοσιευτεί επιτυχώς."
@@ -483,12 +509,16 @@ export default function Publish() {
 
       navigate('/my-listings');
     } catch (error) {
-      console.error('Error publishing listing:', error);
+      console.error('❌ Error publishing listing:', error);
+      const errorMsg = error instanceof Error ? error.message : "Παρουσιάστηκε απρόσμενο σφάλμα κατά τη δημοσίευση";
+      setPublishError(errorMsg);
       toast({
         title: "Σφάλμα δημοσίευσης",
-        description: "Δεν ήταν δυνατή η δημοσίευση της αγγελίας.",
+        description: errorMsg,
         variant: "destructive"
       });
+    } finally {
+      setIsPublishing(false);
     }
   };
 
@@ -554,6 +584,24 @@ export default function Publish() {
             />
           )}
 
+          {/* Publish Errors */}
+          {publishError && (
+            <div className="mb-6">
+              <div className="bg-destructive/10 border border-destructive/20 rounded-lg p-4">
+                <div className="flex items-center gap-2">
+                  <div className="text-destructive font-medium">Σφάλμα δημοσίευσης</div>
+                </div>
+                <p className="text-sm text-destructive mt-1">{publishError}</p>
+                <button 
+                  onClick={() => setPublishError(null)}
+                  className="text-xs text-destructive/70 hover:text-destructive mt-2 underline"
+                >
+                  Απόκρυψη
+                </button>
+              </div>
+            </div>
+          )}
+
           {/* Progress Bar */}
           <div className="mb-8">
             <div className="flex justify-between items-center mb-2">
@@ -616,6 +664,7 @@ export default function Publish() {
               onUpdate={saveDraft}
               onPublish={publishListing}
               onPrev={prevStep}
+              isPublishing={isPublishing}
             />
           )}
         </div>

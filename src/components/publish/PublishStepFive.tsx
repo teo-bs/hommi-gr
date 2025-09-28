@@ -19,6 +19,7 @@ interface PublishStepFiveProps {
   onUpdate: (updates: Partial<ListingDraft>) => void;
   onPublish: () => void;
   onPrev: () => void;
+  isPublishing?: boolean;
 }
 
 const GENDER_OPTIONS = [
@@ -38,7 +39,8 @@ export default function PublishStepFive({
   draft, 
   onUpdate, 
   onPublish, 
-  onPrev 
+  onPrev,
+  isPublishing = false
 }: PublishStepFiveProps) {
   
   const toggleGender = (gender: string) => {
@@ -71,12 +73,14 @@ export default function PublishStepFive({
     });
   };
 
-  const isValid = (draft.preferred_gender && draft.preferred_gender.length > 0) ||
-    (draft.preferred_situation && draft.preferred_situation.length > 0);
+  // Roommate preferences are optional - user can publish without them
+  const isValid = true;
     
   console.log('PublishStepFive validation:', {
     preferred_gender: draft.preferred_gender,
     preferred_situation: draft.preferred_situation,
+    hasPreferences: (draft.preferred_gender && draft.preferred_gender.length > 0) ||
+      (draft.preferred_situation && draft.preferred_situation.length > 0),
     isValid
   });
 
@@ -248,10 +252,17 @@ export default function PublishStepFive({
         </Button>
         <Button 
           onClick={onPublish} 
-          disabled={!isValid}
+          disabled={isPublishing}
           size="lg"
         >
-          🚀 Δημοσίευση αγγελίας
+          {isPublishing ? (
+            <>
+              <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent mr-2" />
+              Δημοσίευση...
+            </>
+          ) : (
+            <>🚀 Δημοσίευση αγγελίας</>
+          )}
         </Button>
       </div>
     </div>
