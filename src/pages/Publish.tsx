@@ -535,6 +535,39 @@ export default function Publish() {
       }
 
       console.log('✅ Listing published atomically:', result);
+      
+      const atomicResult = result as { success: boolean; room_id: string; slug: string; listing_id: string; error?: string };
+
+      // Insert photos into room_photos table
+      if (draft.photos && draft.photos.length > 0 && atomicResult.room_id) {
+        console.log('📸 Inserting photos into room_photos...');
+        try {
+          const roomPhotos = draft.photos
+            .filter(photo => typeof photo === 'string' && photo.startsWith('http')) // Only proper URLs
+            .map((photo, index) => ({
+              room_id: atomicResult.room_id,
+              url: photo as string,
+              sort_order: index,
+              alt_text: `Room photo ${index + 1}`
+            }));
+
+          if (roomPhotos.length > 0) {
+            const { error: photosError } = await supabase
+              .from('room_photos')
+              .insert(roomPhotos);
+
+            if (photosError) {
+              console.error('Error inserting room photos:', photosError);
+              // Don't fail the publish for photo insertion errors
+            } else {
+              console.log('✅ Room photos inserted successfully');
+            }
+          }
+        } catch (error) {
+          console.error('Error handling room photos:', error);
+          // Don't fail the publish for photo errors
+        }
+      }
 
       setPublishingStage("Ενημέρωση αναζήτησης...");
       setPublishProgress(85);
