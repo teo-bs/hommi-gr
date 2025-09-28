@@ -11,7 +11,19 @@ import {
   Bed,
   Laptop,
   Lock,
-  Home
+  Home,
+  Bath,
+  Coffee,
+  Wind,
+  WashingMachine,
+  Refrigerator,
+  ChefHat,
+  Sofa,
+  TreePine,
+  Shield,
+  Camera,
+  Dumbbell,
+  Waves
 } from "lucide-react";
 
 interface AmenitiesGridProps {
@@ -26,20 +38,71 @@ interface AmenitiesGridProps {
 }
 
 const iconMap: Record<string, any> = {
+  // Connectivity & Tech
   wifi: Wifi,
-  snowflake: Snowflake,
-  flame: Flame,
-  'arrow-up-circle': ArrowUpCircle,
-  sun: Sun,
-  car: Car,
+  internet: Wifi,
+  
+  // Climate & Comfort
+  air_conditioning: Snowflake,
+  heating: Flame,
+  balcony: Sun,
+  garden: TreePine,
+  
+  // Transportation & Access
+  elevator: ArrowUpCircle,
+  parking: Car,
+  
+  // Entertainment
   tv: Tv,
+  television: Tv,
+  
+  // Kitchen & Dining
+  kitchen: ChefHat,
   utensils: UtensilsCrossed,
+  refrigerator: Refrigerator,
+  coffee_machine: Coffee,
+  
+  // Bedroom & Sleep
   bed: Bed,
+  bedroom: Bed,
+  
+  // Work & Study
   desk: Laptop,
+  workspace: Laptop,
+  
+  // Security & Safety
   lock: Lock,
+  security: Shield,
+  cctv: Camera,
+  
+  // Bathroom & Hygiene  
+  bathroom: Bath,
+  shower: Bath,
+  
+  // Laundry & Cleaning
+  washing_machine: WashingMachine,
+  washer: WashingMachine,
+  
+  // Living Areas
+  living_room: Sofa,
+  lounge: Sofa,
+  
+  // Outdoor & Recreation
   window: Home,
-  'washing-machine': Home,
-  cabinet: Home
+  terrace: Sun,
+  gym: Dumbbell,
+  fitness: Dumbbell,
+  pool: Waves,
+  swimming_pool: Waves,
+  
+  // Ventilation
+  ventilation: Wind,
+  fan: Wind,
+  
+  // Fallbacks
+  cabinet: Home,
+  storage: Home,
+  default: Home
 };
 
 export const AmenitiesGrid = ({ propertyAmenities, roomAmenities }: AmenitiesGridProps) => {

@@ -37,10 +37,6 @@ export const Gallery = ({ photos, title }: GalleryProps) => {
         </div>
         <div className="flex items-center space-x-2">
           <Button variant="outline" size="sm">
-            <Heart className="h-4 w-4 mr-1" />
-            Save
-          </Button>
-          <Button variant="outline" size="sm">
             <Share2 className="h-4 w-4 mr-1" />
             Share
           </Button>

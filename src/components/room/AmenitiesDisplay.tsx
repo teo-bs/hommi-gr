@@ -43,33 +43,40 @@ export const AmenitiesDisplay = ({ listingId }: AmenitiesDisplayProps) => {
         const { data: roomData } = await supabase
           .from('room_amenities')
           .select(`
-            amenities (name, icon),
+            amenities (name_en, name_el, icon, key),
             room_id,
             rooms!inner (listing_id)
           `)
           .eq('rooms.listing_id', listingId);
 
         if (roomData) {
-          const amenities = roomData.map((ra: any) => ra.amenities).filter(Boolean);
+          const amenities = roomData
+            .map((ra: any) => ra.amenities)
+            .filter(Boolean)
+            .map((amenity: any) => ({
+              name: amenity.name_en || amenity.name_el || 'Unknown',
+              icon: amenity.key || amenity.icon || 'home'
+            }));
           setRoomAmenities(amenities);
         }
 
-        // Fetch property amenities from listing
-        const { data: listingData } = await supabase
-          .from('listings')
-          .select('amenities_property')
-          .eq('id', listingId)
-          .single();
+        // Fetch property amenities from listing_amenities junction table
+        const { data: listingAmenitiesData } = await supabase
+          .from('listing_amenities')
+          .select(`
+            amenities (name_en, name_el, icon, key)
+          `)
+          .eq('listing_id', listingId);
 
-        if (listingData?.amenities_property && Array.isArray(listingData.amenities_property)) {
-          const { data: propertyData } = await supabase
-            .from('amenities')
-            .select('name, icon')
-            .in('name', listingData.amenities_property as string[]);
-
-          if (propertyData) {
-            setPropertyAmenities(propertyData);
-          }
+        if (listingAmenitiesData) {
+          const propertyData = listingAmenitiesData
+            .map((la: any) => la.amenities)
+            .filter(Boolean)
+            .map((amenity: any) => ({
+              name: amenity.name_en || amenity.name_el || 'Unknown',
+              icon: amenity.key || amenity.icon || 'home'
+            }));
+          setPropertyAmenities(propertyData);
         }
       } catch (error) {
         console.error('Error fetching amenities:', error);

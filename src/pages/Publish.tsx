@@ -154,8 +154,8 @@ export default function Publish() {
           i_live_here: existingDraft.i_live_here || false,
           orientation: (existingDraft.orientation as 'exterior' | 'interior') || 'exterior',
           bed_type: existingDraft.bed_type || undefined,
-          amenities_property: Array.isArray(existingDraft.amenities_property) ? existingDraft.amenities_property as string[] : [],
-          amenities_room: Array.isArray(existingDraft.amenities_room) ? existingDraft.amenities_room as string[] : [],
+          amenities_property: [], // Remove - this column doesn't exist
+          amenities_room: [], // Remove - this column doesn't exist
           house_rules: Array.isArray(existingDraft.house_rules) ? existingDraft.house_rules as string[] : [],
           availability_date: existingDraft.availability_date ? new Date(existingDraft.availability_date) : undefined,
           availability_to: existingDraft.availability_to ? new Date(existingDraft.availability_to) : undefined,
@@ -327,8 +327,8 @@ export default function Publish() {
       if (amenities.length > 0) {
         const { data: amenityRecords } = await supabase
           .from('amenities')
-          .select('id, name')
-          .in('name', amenities);
+          .select('id, name_en')
+          .in('name_en', amenities);
 
         if (amenityRecords?.length > 0) {
           const roomAmenities = amenityRecords.map(amenity => ({
@@ -377,8 +377,8 @@ export default function Publish() {
       if (room && listingData.amenities_room?.length > 0) {
         const { data: amenities } = await supabase
           .from('amenities')
-          .select('id, name')
-          .in('name', listingData.amenities_room);
+          .select('id, name_en')
+          .in('name_en', listingData.amenities_room);
 
         if (amenities?.length > 0) {
           const roomAmenities = amenities.map(amenity => ({
