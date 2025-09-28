@@ -396,6 +396,7 @@ export type Database = {
           bedrooms_single: number | null
           bills_note: string | null
           city: string
+          country: string | null
           couples_accepted: boolean | null
           created_at: string | null
           deposit: number | null
@@ -404,6 +405,7 @@ export type Database = {
           door: string | null
           flatmates_count: number | null
           floor: number | null
+          formatted_address: string | null
           geo: Json | null
           geo_point: unknown | null
           has_lift: boolean | null
@@ -421,6 +423,7 @@ export type Database = {
           owner_id: string
           pets_allowed: boolean | null
           photos: Json | null
+          postcode: string | null
           preferred_age_max: number | null
           preferred_age_min: number | null
           preferred_gender: string[] | null
@@ -430,13 +433,16 @@ export type Database = {
           property_size_m2: number | null
           property_type: string | null
           publish_warnings: Json | null
+          region: string | null
           room_size_m2: number | null
           search_tsv: unknown | null
           services: string[] | null
           smoking_allowed: boolean | null
           status: Database["public"]["Enums"]["publish_status_enum"]
           step_completed: number | null
+          street: string | null
           street_address: string | null
+          street_number: string | null
           title: string
           updated_at: string | null
           wc_count: number | null
@@ -451,6 +457,7 @@ export type Database = {
           bedrooms_single?: number | null
           bills_note?: string | null
           city: string
+          country?: string | null
           couples_accepted?: boolean | null
           created_at?: string | null
           deposit?: number | null
@@ -459,6 +466,7 @@ export type Database = {
           door?: string | null
           flatmates_count?: number | null
           floor?: number | null
+          formatted_address?: string | null
           geo?: Json | null
           geo_point?: unknown | null
           has_lift?: boolean | null
@@ -476,6 +484,7 @@ export type Database = {
           owner_id: string
           pets_allowed?: boolean | null
           photos?: Json | null
+          postcode?: string | null
           preferred_age_max?: number | null
           preferred_age_min?: number | null
           preferred_gender?: string[] | null
@@ -485,13 +494,16 @@ export type Database = {
           property_size_m2?: number | null
           property_type?: string | null
           publish_warnings?: Json | null
+          region?: string | null
           room_size_m2?: number | null
           search_tsv?: unknown | null
           services?: string[] | null
           smoking_allowed?: boolean | null
           status?: Database["public"]["Enums"]["publish_status_enum"]
           step_completed?: number | null
+          street?: string | null
           street_address?: string | null
+          street_number?: string | null
           title: string
           updated_at?: string | null
           wc_count?: number | null
@@ -506,6 +518,7 @@ export type Database = {
           bedrooms_single?: number | null
           bills_note?: string | null
           city?: string
+          country?: string | null
           couples_accepted?: boolean | null
           created_at?: string | null
           deposit?: number | null
@@ -514,6 +527,7 @@ export type Database = {
           door?: string | null
           flatmates_count?: number | null
           floor?: number | null
+          formatted_address?: string | null
           geo?: Json | null
           geo_point?: unknown | null
           has_lift?: boolean | null
@@ -531,6 +545,7 @@ export type Database = {
           owner_id?: string
           pets_allowed?: boolean | null
           photos?: Json | null
+          postcode?: string | null
           preferred_age_max?: number | null
           preferred_age_min?: number | null
           preferred_gender?: string[] | null
@@ -540,13 +555,16 @@ export type Database = {
           property_size_m2?: number | null
           property_type?: string | null
           publish_warnings?: Json | null
+          region?: string | null
           room_size_m2?: number | null
           search_tsv?: unknown | null
           services?: string[] | null
           smoking_allowed?: boolean | null
           status?: Database["public"]["Enums"]["publish_status_enum"]
           step_completed?: number | null
+          street?: string | null
           street_address?: string | null
+          street_number?: string | null
           title?: string
           updated_at?: string | null
           wc_count?: number | null

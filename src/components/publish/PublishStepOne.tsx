@@ -1,20 +1,39 @@
-import React, { useState, useEffect } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Badge } from "@/components/ui/badge";
-import { Info, Home, Building, MapPin } from "lucide-react";
-import { Alert, AlertDescription } from "@/components/ui/alert";
+import React, { useState, useCallback } from 'react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Label } from '@/components/ui/label';
+import { Badge } from '@/components/ui/badge';
+import { Info, Home, Building, MapPin } from 'lucide-react';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { AddressAutocomplete } from './AddressAutocomplete';
+import { PublishMap } from './PublishMap';
+
+interface LocationData {
+  city: string;
+  region: string;
+  postcode: string;
+  country: string;
+  street: string;
+  street_number: string;
+  lat: number;
+  lng: number;
+  formatted_address: string;
+}
 
 interface ListingDraft {
-  title: string;
-  city: string;
-  neighborhood: string;
+  title?: string;
+  city?: string;
+  neighborhood?: string;
   street_address?: string;
+  region?: string;
+  postcode?: string;
+  country?: string;
+  street?: string;
+  street_number?: string;
   lat?: number;
   lng?: number;
-  property_type: 'room' | 'apartment';
+  formatted_address?: string;
+  property_type?: 'room' | 'apartment';
   [key: string]: any;
 }
 
@@ -25,43 +44,35 @@ interface PublishStepOneProps {
   onPrev: () => void;
 }
 
-const GREEK_CITIES = [
-  'Αθήνα', 'Θεσσαλονίκη', 'Πάτρα', 'Ηράκλειο', 'Λάρισα', 'Βόλος', 'Ιωάννινα', 
-  'Καβάλα', 'Σέρρες', 'Ξάνθη', 'Κομοτηνή', 'Δράμα', 'Αλεξανδρούπολη', 'Κοζάνη', 
-  'Καστοριά', 'Φλώρινα', 'Γρεβενά', 'Κατερίνη', 'Βέροια', 'Έδεσσα', 'Νάουσα', 
-  'Χαλκίδα', 'Καρπενήσι', 'Λαμία', 'Αμφίσσα', 'Λειβαδιά', 'Θήβα', 'Τρίκαλα', 
-  'Καρδίτσα', 'Άρτα', 'Πρέβεζα', 'Ιγουμενίτσα', 'Κέρκυρα', 'Ζάκυνθος', 'Αργοστόλι', 
-  'Λευκάδα', 'Μυτιλήνη', 'Χίος', 'Σάμος', 'Σύρος', 'Μύκονος', 'Νάξος', 'Πάρος', 
-  'Σαντορίνη', 'Ρόδος', 'Κως', 'Καλύμνος', 'Καστελλόριζο', 'Καλαμάτα', 'Σπάρτη', 
-  'Άργος', 'Ναύπλιο', 'Τρίπολη', 'Πύργος', 'Μεσολόγγι', 'Αγρίνιο'
-];
-
 export default function PublishStepOne({ 
   draft, 
   onUpdate, 
   onNext, 
   onPrev 
 }: PublishStepOneProps) {
-  const [cityFilter, setCityFilter] = useState('');
-  const [showCitySuggestions, setShowCitySuggestions] = useState(false);
-  const [filteredCities, setFilteredCities] = useState<string[]>([]);
+  const [addressInput, setAddressInput] = useState(draft.formatted_address || '');
 
-  useEffect(() => {
-    if (cityFilter) {
-      const filtered = GREEK_CITIES.filter(city => 
-        city.toLowerCase().includes(cityFilter.toLowerCase())
-      ).slice(0, 5);
-      setFilteredCities(filtered);
-    } else {
-      setFilteredCities([]);
-    }
-  }, [cityFilter]);
+  const handleLocationSelect = useCallback((location: LocationData) => {
+    onUpdate({
+      city: location.city,
+      region: location.region,
+      postcode: location.postcode,
+      country: location.country,
+      street: location.street,
+      street_number: location.street_number,
+      lat: location.lat,
+      lng: location.lng,
+      formatted_address: location.formatted_address,
+      // Also update legacy fields for compatibility
+      street_address: location.formatted_address,
+      neighborhood: location.region || location.city
+    });
+  }, [onUpdate]);
 
-  const handleCitySelect = (city: string) => {
-    onUpdate({ city });
-    setCityFilter(city);
-    setShowCitySuggestions(false);
-  };
+  const handleMapLocationChange = useCallback((location: LocationData) => {
+    setAddressInput(location.formatted_address);
+    handleLocationSelect(location);
+  }, [handleLocationSelect]);
 
   const handleNextStep = () => {
     if (draft.city && draft.property_type) {
@@ -90,62 +101,34 @@ export default function PublishStepOne({
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="city">Πόλη *</Label>
-              <div className="relative">
-                <Input
-                  id="city"
-                  placeholder="Αρχίστε να πληκτρολογείτε..."
-                  value={draft.city || ''}
-                  onChange={(e) => {
-                    const value = e.target.value;
-                    setCityFilter(value);
-                    if (value) {
-                      onUpdate({ city: value });
-                      setShowCitySuggestions(true);
-                    } else {
-                      onUpdate({ city: '' });
-                      setShowCitySuggestions(false);
-                    }
-                  }}
-                  onFocus={() => setShowCitySuggestions(true)}
-                />
-                
-                {showCitySuggestions && filteredCities.length > 0 && (
-                  <div className="absolute top-full left-0 right-0 bg-background border border-border rounded-md shadow-md z-10 mt-1">
-                    {filteredCities.map((city) => (
-                      <button
-                        key={city}
-                        className="w-full text-left px-3 py-2 hover:bg-accent hover:text-accent-foreground first:rounded-t-md last:rounded-b-md"
-                        onClick={() => handleCitySelect(city)}
-                      >
-                        {city}
-                      </button>
-                    ))}
+            {/* Address Search */}
+            <AddressAutocomplete
+              value={addressInput}
+              onChange={setAddressInput}
+              onLocationSelect={handleLocationSelect}
+              label="Διεύθυνση"
+              placeholder="Αναζητήστε διεύθυνση ή τοποθεσία στην Ελλάδα..."
+              required
+              error={!draft.city}
+            />
+            
+            {!draft.city && (
+              <p className="text-sm text-destructive mt-1">Παρακαλώ επιλέξτε μια διεύθυνση</p>
+            )}
+
+            {/* Display selected location details */}
+            {draft.city && (
+              <div className="text-sm text-muted-foreground space-y-1 p-3 bg-accent/50 rounded">
+                <div><strong>Πόλη:</strong> {draft.city}</div>
+                {draft.region && <div><strong>Περιοχή:</strong> {draft.region}</div>}
+                {draft.postcode && <div><strong>Τ.Κ.:</strong> {draft.postcode}</div>}
+                {draft.street && (
+                  <div>
+                    <strong>Οδός:</strong> {draft.street_number} {draft.street}
                   </div>
                 )}
               </div>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="neighborhood">Γειτονιά</Label>
-              <Input
-                id="neighborhood"
-                placeholder="π.χ. Κολωνάκι, Εξάρχεια"
-                value={draft.neighborhood || ''}
-                onChange={(e) => onUpdate({ neighborhood: e.target.value })}
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="street">Οδός & Αριθμός</Label>
-              <Input
-                id="street"
-                placeholder="π.χ. Πανεπιστημίου 15"
-                value={draft.street_address || ''}
-                onChange={(e) => onUpdate({ street_address: e.target.value })}
-              />
-            </div>
+            )}
 
             <Alert>
               <Info className="h-4 w-4" />
@@ -156,7 +139,7 @@ export default function PublishStepOne({
           </CardContent>
         </Card>
 
-        {/* Right Column - Property Type & Map Placeholder */}
+        {/* Right Column - Property Type & Interactive Map */}
         <div className="space-y-6">
           <Card>
             <CardHeader>
@@ -191,19 +174,25 @@ export default function PublishStepOne({
             </CardContent>
           </Card>
 
-          {/* Map Placeholder */}
+          {/* Interactive Map */}
           <Card>
             <CardHeader>
               <CardTitle>Τοποθεσία στον χάρτη</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="h-48 bg-muted rounded-lg flex items-center justify-center">
-                <div className="text-center text-muted-foreground">
-                  <MapPin className="w-8 h-8 mx-auto mb-2" />
-                  <p className="text-sm">Χάρτης με δυνατότητα σύρσιμου pin</p>
-                  <p className="text-xs">(Θα ενεργοποιηθεί σύντομα)</p>
-                </div>
-              </div>
+              <PublishMap
+                location={draft.lat && draft.lng ? { lat: draft.lat, lng: draft.lng } : undefined}
+                onLocationChange={handleMapLocationChange}
+                className="h-48 w-full rounded-lg"
+              />
+              {!import.meta.env.VITE_MAPBOX_TOKEN && (
+                <Alert className="mt-2">
+                  <Info className="h-4 w-4" />
+                  <AlertDescription>
+                    ⚠️ VITE_MAPBOX_TOKEN δεν έχει ρυθμιστεί. Η λειτουργία χάρτη είναι απενεργοποιημένη.
+                  </AlertDescription>
+                </Alert>
+              )}
             </CardContent>
           </Card>
         </div>
