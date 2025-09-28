@@ -4,6 +4,9 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Upload, X, MapPin, Euro } from "lucide-react";
 import { ListingDraft } from "../ListingWizard";
+import { uploadListingPhoto } from "@/lib/photo-upload";
+import { useAuth } from "@/hooks/useAuth";
+import { useState } from "react";
 
 interface StepOneProps {
   draft: ListingDraft;
@@ -12,13 +15,30 @@ interface StepOneProps {
 }
 
 export const StepOne = ({ draft, onChange, role }: StepOneProps) => {
-  const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = e.target.files;
-    if (!files) return;
+  const { profile } = useAuth();
+  const [isUploading, setIsUploading] = useState(false);
 
-    // TODO: Implement actual photo upload to Supabase Storage
-    const newPhotos = Array.from(files).map(file => URL.createObjectURL(file));
-    onChange({ photos: [...draft.photos, ...newPhotos] });
+  const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || !profile?.user_id) return;
+
+    setIsUploading(true);
+    const uploadPromises = Array.from(files).map(file => 
+      uploadListingPhoto(file, profile.user_id)
+    );
+
+    try {
+      const results = await Promise.all(uploadPromises);
+      const successfulUploads = results
+        .filter(result => result.success && result.url)
+        .map(result => result.url!);
+      
+      onChange({ photos: [...draft.photos, ...successfulUploads] });
+    } catch (error) {
+      console.error('Photo upload failed:', error);
+    } finally {
+      setIsUploading(false);
+    }
   };
 
   const removePhoto = (index: number) => {
@@ -140,11 +160,12 @@ export const StepOne = ({ draft, onChange, role }: StepOneProps) => {
             onChange={handlePhotoUpload}
             className="hidden"
             id="photo-upload"
+            disabled={isUploading}
           />
-          <label htmlFor="photo-upload" className="cursor-pointer">
+          <label htmlFor="photo-upload" className={`cursor-pointer ${isUploading ? 'opacity-50' : ''}`}>
             <Upload className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
             <div className="text-lg font-medium mb-2">
-              Click to upload photos
+              {isUploading ? 'Uploading...' : 'Click to upload photos'}
             </div>
             <div className="text-sm text-muted-foreground">
               PNG, JPG up to 10MB each

@@ -1,10 +1,12 @@
-import React, { useRef } from "react";
+import React, { useRef, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Upload, X, Camera } from "lucide-react";
+import { uploadListingPhoto } from "@/lib/photo-upload";
+import { useAuth } from "@/hooks/useAuth";
 
 interface ListingDraft {
   photos: string[];
@@ -29,25 +31,29 @@ export default function PublishStepFour({
   isLastStep = false
 }: PublishStepFourProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const { profile } = useAuth();
+  const [isUploading, setIsUploading] = useState(false);
 
-  const handlePhotoUpload = (files: FileList) => {
-    const newPhotos: string[] = [];
-    
-    Array.from(files).forEach((file) => {
-      if (file.type.startsWith('image/')) {
-        const reader = new FileReader();
-        reader.onload = (e) => {
-          const result = e.target?.result as string;
-          if (result) {
-            newPhotos.push(result);
-            if (newPhotos.length === files.length) {
-              onUpdate({ photos: [...(draft.photos || []), ...newPhotos] });
-            }
-          }
-        };
-        reader.readAsDataURL(file);
-      }
-    });
+  const handlePhotoUpload = async (files: FileList) => {
+    if (!profile?.user_id) return;
+
+    setIsUploading(true);
+    const uploadPromises = Array.from(files)
+      .filter(file => file.type.startsWith('image/'))
+      .map(file => uploadListingPhoto(file, profile.user_id));
+
+    try {
+      const results = await Promise.all(uploadPromises);
+      const successfulUploads = results
+        .filter(result => result.success && result.url)
+        .map(result => result.url!);
+      
+      onUpdate({ photos: [...(draft.photos || []), ...successfulUploads] });
+    } catch (error) {
+      console.error('Photo upload failed:', error);
+    } finally {
+      setIsUploading(false);
+    }
   };
 
   const removePhoto = (index: number) => {
@@ -80,12 +86,14 @@ export default function PublishStepFour({
           <CardContent className="space-y-4">
             {/* Upload Area */}
             <div
-              className="border-2 border-dashed border-muted-foreground/25 rounded-lg p-8 text-center cursor-pointer hover:border-primary/50 transition-colors"
-              onClick={() => fileInputRef.current?.click()}
+              className={`border-2 border-dashed border-muted-foreground/25 rounded-lg p-8 text-center cursor-pointer hover:border-primary/50 transition-colors ${
+                isUploading ? 'opacity-50 cursor-not-allowed' : ''
+              }`}
+              onClick={() => !isUploading && fileInputRef.current?.click()}
             >
               <Upload className="w-8 h-8 mx-auto mb-4 text-muted-foreground" />
               <p className="text-sm text-muted-foreground mb-2">
-                Κάντε κλικ για να επιλέξετε φωτογραφίες
+                {isUploading ? 'Μεταφόρτωση...' : 'Κάντε κλικ για να επιλέξετε φωτογραφίες'}
               </p>
               <p className="text-xs text-muted-foreground">
                 JPG, PNG μέχρι 10MB ανά φωτογραφία
@@ -97,6 +105,7 @@ export default function PublishStepFour({
                 multiple
                 accept="image/*"
                 className="hidden"
+                disabled={isUploading}
                 onChange={(e) => e.target.files && handlePhotoUpload(e.target.files)}
               />
             </div>

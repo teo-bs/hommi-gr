@@ -16,11 +16,11 @@ export const Gallery = ({ photos, title }: GalleryProps) => {
   
   // Mock photos if none provided
   const mockPhotos = [
-    { url: "/api/placeholder/800/600", alt_text: "Main room view" },
-    { url: "/api/placeholder/800/600", alt_text: "Room detail 1" },
-    { url: "/api/placeholder/800/600", alt_text: "Room detail 2" },
-    { url: "/api/placeholder/800/600", alt_text: "Common area" },
-    { url: "/api/placeholder/800/600", alt_text: "Kitchen" }
+    { url: "https://images.unsplash.com/photo-1586023492125-27b2c045efd7?w=800&h=600&fit=crop", alt_text: "Main room view" },
+    { url: "https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=800&h=600&fit=crop", alt_text: "Room detail 1" },
+    { url: "https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?w=800&h=600&fit=crop", alt_text: "Room detail 2" },
+    { url: "https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=800&h=600&fit=crop", alt_text: "Common area" },
+    { url: "https://images.unsplash.com/photo-1556909075-f3e64e6b1065?w=800&h=600&fit=crop", alt_text: "Kitchen" }
   ];
   
   const displayPhotos = photos.length > 0 ? photos : mockPhotos;
