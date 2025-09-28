@@ -56,24 +56,74 @@ export type Database = {
       amenities: {
         Row: {
           category: string
+          category_id: string | null
           created_at: string | null
           icon: string
           id: string
-          name: string
+          is_active: boolean
+          key: string
+          name_el: string | null
+          name_en: string | null
+          sort_order: number
         }
         Insert: {
           category?: string
+          category_id?: string | null
           created_at?: string | null
           icon: string
           id?: string
-          name: string
+          is_active?: boolean
+          key: string
+          name_el?: string | null
+          name_en?: string | null
+          sort_order?: number
         }
         Update: {
           category?: string
+          category_id?: string | null
           created_at?: string | null
           icon?: string
           id?: string
-          name?: string
+          is_active?: boolean
+          key?: string
+          name_el?: string | null
+          name_en?: string | null
+          sort_order?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "amenities_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "amenity_categories"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      amenity_categories: {
+        Row: {
+          created_at: string
+          id: string
+          key: string
+          name_el: string | null
+          name_en: string
+          sort_order: number
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          key: string
+          name_el?: string | null
+          name_en: string
+          sort_order?: number
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          key?: string
+          name_el?: string | null
+          name_en?: string
+          sort_order?: number
         }
         Relationships: []
       }
@@ -118,6 +168,20 @@ export type Database = {
             columns: ["listing_id"]
             isOneToOne: false
             referencedRelation: "room_search_cache"
+            referencedColumns: ["listing_id"]
+          },
+          {
+            foreignKeyName: "applications_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "v_listing_cards"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "applications_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "v_room_detail_by_slug"
             referencedColumns: ["listing_id"]
           },
           {
@@ -179,6 +243,20 @@ export type Database = {
             referencedColumns: ["listing_id"]
           },
           {
+            foreignKeyName: "holds_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "v_listing_cards"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "holds_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "v_room_detail_by_slug"
+            referencedColumns: ["listing_id"]
+          },
+          {
             foreignKeyName: "holds_seeker_id_fkey"
             columns: ["seeker_id"]
             isOneToOne: false
@@ -187,10 +265,156 @@ export type Database = {
           },
         ]
       }
+      house_rule_types: {
+        Row: {
+          created_at: string
+          id: string
+          is_active: boolean
+          key: string
+          name_el: string | null
+          name_en: string
+          sort_order: number
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          key: string
+          name_el?: string | null
+          name_en: string
+          sort_order?: number
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          key?: string
+          name_el?: string | null
+          name_en?: string
+          sort_order?: number
+        }
+        Relationships: []
+      }
+      listing_amenities: {
+        Row: {
+          amenity_id: string
+          created_at: string
+          listing_id: string
+          scope: string | null
+        }
+        Insert: {
+          amenity_id: string
+          created_at?: string
+          listing_id: string
+          scope?: string | null
+        }
+        Update: {
+          amenity_id?: string
+          created_at?: string
+          listing_id?: string
+          scope?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "listing_amenities_amenity_id_fkey"
+            columns: ["amenity_id"]
+            isOneToOne: false
+            referencedRelation: "amenities"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "listing_amenities_amenity_id_fkey"
+            columns: ["amenity_id"]
+            isOneToOne: false
+            referencedRelation: "v_amenities"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "listing_amenities_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "listings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "listing_amenities_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "room_search_cache"
+            referencedColumns: ["listing_id"]
+          },
+          {
+            foreignKeyName: "listing_amenities_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "v_listing_cards"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "listing_amenities_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "v_room_detail_by_slug"
+            referencedColumns: ["listing_id"]
+          },
+        ]
+      }
+      listing_house_rules: {
+        Row: {
+          created_at: string
+          listing_id: string
+          rule_id: string
+        }
+        Insert: {
+          created_at?: string
+          listing_id: string
+          rule_id: string
+        }
+        Update: {
+          created_at?: string
+          listing_id?: string
+          rule_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "listing_house_rules_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "listings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "listing_house_rules_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "room_search_cache"
+            referencedColumns: ["listing_id"]
+          },
+          {
+            foreignKeyName: "listing_house_rules_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "v_listing_cards"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "listing_house_rules_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "v_room_detail_by_slug"
+            referencedColumns: ["listing_id"]
+          },
+          {
+            foreignKeyName: "listing_house_rules_rule_id_fkey"
+            columns: ["rule_id"]
+            isOneToOne: false
+            referencedRelation: "house_rule_types"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       listings: {
         Row: {
-          amenities_property: Json | null
-          amenities_room: Json | null
           audience_preferences: Json | null
           availability_date: string | null
           availability_to: string | null
@@ -209,6 +433,7 @@ export type Database = {
           flatmates_count: number | null
           floor: number | null
           geo: Json | null
+          geo_point: unknown | null
           has_lift: boolean | null
           house_rules: string[] | null
           i_live_here: boolean | null
@@ -232,11 +457,9 @@ export type Database = {
           price_per_m2: number | null
           property_size_m2: number | null
           property_type: string | null
-          publish_status:
-            | Database["public"]["Enums"]["publish_status_enum"]
-            | null
           publish_warnings: Json | null
           room_size_m2: number | null
+          search_tsv: unknown | null
           services: string[] | null
           smoking_allowed: boolean | null
           status: Database["public"]["Enums"]["publish_status_enum"]
@@ -247,8 +470,6 @@ export type Database = {
           wc_count: number | null
         }
         Insert: {
-          amenities_property?: Json | null
-          amenities_room?: Json | null
           audience_preferences?: Json | null
           availability_date?: string | null
           availability_to?: string | null
@@ -267,6 +488,7 @@ export type Database = {
           flatmates_count?: number | null
           floor?: number | null
           geo?: Json | null
+          geo_point?: unknown | null
           has_lift?: boolean | null
           house_rules?: string[] | null
           i_live_here?: boolean | null
@@ -290,11 +512,9 @@ export type Database = {
           price_per_m2?: number | null
           property_size_m2?: number | null
           property_type?: string | null
-          publish_status?:
-            | Database["public"]["Enums"]["publish_status_enum"]
-            | null
           publish_warnings?: Json | null
           room_size_m2?: number | null
+          search_tsv?: unknown | null
           services?: string[] | null
           smoking_allowed?: boolean | null
           status?: Database["public"]["Enums"]["publish_status_enum"]
@@ -305,8 +525,6 @@ export type Database = {
           wc_count?: number | null
         }
         Update: {
-          amenities_property?: Json | null
-          amenities_room?: Json | null
           audience_preferences?: Json | null
           availability_date?: string | null
           availability_to?: string | null
@@ -325,6 +543,7 @@ export type Database = {
           flatmates_count?: number | null
           floor?: number | null
           geo?: Json | null
+          geo_point?: unknown | null
           has_lift?: boolean | null
           house_rules?: string[] | null
           i_live_here?: boolean | null
@@ -348,11 +567,9 @@ export type Database = {
           price_per_m2?: number | null
           property_size_m2?: number | null
           property_type?: string | null
-          publish_status?:
-            | Database["public"]["Enums"]["publish_status_enum"]
-            | null
           publish_warnings?: Json | null
           room_size_m2?: number | null
+          search_tsv?: unknown | null
           services?: string[] | null
           smoking_allowed?: boolean | null
           status?: Database["public"]["Enums"]["publish_status_enum"]
@@ -639,6 +856,20 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "fk_room_amenities_amenity_id"
+            columns: ["amenity_id"]
+            isOneToOne: false
+            referencedRelation: "v_amenities"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_room_amenities_room_id"
+            columns: ["room_id"]
+            isOneToOne: false
+            referencedRelation: "mv_room_amenity_facets"
+            referencedColumns: ["room_id"]
+          },
+          {
             foreignKeyName: "fk_room_amenities_room_id"
             columns: ["room_id"]
             isOneToOne: false
@@ -651,6 +882,20 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "rooms"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_room_amenities_room_id"
+            columns: ["room_id"]
+            isOneToOne: false
+            referencedRelation: "v_room_amenities_grouped"
+            referencedColumns: ["room_id"]
+          },
+          {
+            foreignKeyName: "fk_room_amenities_room_id"
+            columns: ["room_id"]
+            isOneToOne: false
+            referencedRelation: "v_room_detail_by_slug"
+            referencedColumns: ["room_id"]
           },
         ]
       }
@@ -679,7 +924,43 @@ export type Database = {
           sort_order?: number | null
           url?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "room_photos_room_id_fkey"
+            columns: ["room_id"]
+            isOneToOne: false
+            referencedRelation: "mv_room_amenity_facets"
+            referencedColumns: ["room_id"]
+          },
+          {
+            foreignKeyName: "room_photos_room_id_fkey"
+            columns: ["room_id"]
+            isOneToOne: false
+            referencedRelation: "room_search_cache"
+            referencedColumns: ["room_id"]
+          },
+          {
+            foreignKeyName: "room_photos_room_id_fkey"
+            columns: ["room_id"]
+            isOneToOne: false
+            referencedRelation: "rooms"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "room_photos_room_id_fkey"
+            columns: ["room_id"]
+            isOneToOne: false
+            referencedRelation: "v_room_amenities_grouped"
+            referencedColumns: ["room_id"]
+          },
+          {
+            foreignKeyName: "room_photos_room_id_fkey"
+            columns: ["room_id"]
+            isOneToOne: false
+            referencedRelation: "v_room_detail_by_slug"
+            referencedColumns: ["room_id"]
+          },
+        ]
       }
       room_stats: {
         Row: {
@@ -709,7 +990,43 @@ export type Database = {
           updated_at?: string | null
           view_count?: number | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "room_stats_room_id_fkey"
+            columns: ["room_id"]
+            isOneToOne: true
+            referencedRelation: "mv_room_amenity_facets"
+            referencedColumns: ["room_id"]
+          },
+          {
+            foreignKeyName: "room_stats_room_id_fkey"
+            columns: ["room_id"]
+            isOneToOne: true
+            referencedRelation: "room_search_cache"
+            referencedColumns: ["room_id"]
+          },
+          {
+            foreignKeyName: "room_stats_room_id_fkey"
+            columns: ["room_id"]
+            isOneToOne: true
+            referencedRelation: "rooms"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "room_stats_room_id_fkey"
+            columns: ["room_id"]
+            isOneToOne: true
+            referencedRelation: "v_room_amenities_grouped"
+            referencedColumns: ["room_id"]
+          },
+          {
+            foreignKeyName: "room_stats_room_id_fkey"
+            columns: ["room_id"]
+            isOneToOne: true
+            referencedRelation: "v_room_detail_by_slug"
+            referencedColumns: ["room_id"]
+          },
+        ]
       }
       rooms: {
         Row: {
@@ -760,6 +1077,20 @@ export type Database = {
             referencedRelation: "room_search_cache"
             referencedColumns: ["listing_id"]
           },
+          {
+            foreignKeyName: "fk_rooms_listing_id"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "v_listing_cards"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_rooms_listing_id"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "v_room_detail_by_slug"
+            referencedColumns: ["listing_id"]
+          },
         ]
       }
       saved_rooms: {
@@ -786,6 +1117,13 @@ export type Database = {
             foreignKeyName: "saved_rooms_room_id_fkey"
             columns: ["room_id"]
             isOneToOne: false
+            referencedRelation: "mv_room_amenity_facets"
+            referencedColumns: ["room_id"]
+          },
+          {
+            foreignKeyName: "saved_rooms_room_id_fkey"
+            columns: ["room_id"]
+            isOneToOne: false
             referencedRelation: "room_search_cache"
             referencedColumns: ["room_id"]
           },
@@ -795,6 +1133,20 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "rooms"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "saved_rooms_room_id_fkey"
+            columns: ["room_id"]
+            isOneToOne: false
+            referencedRelation: "v_room_amenities_grouped"
+            referencedColumns: ["room_id"]
+          },
+          {
+            foreignKeyName: "saved_rooms_room_id_fkey"
+            columns: ["room_id"]
+            isOneToOne: false
+            referencedRelation: "v_room_detail_by_slug"
+            referencedColumns: ["room_id"]
           },
         ]
       }
@@ -806,6 +1158,7 @@ export type Database = {
           host_id: string
           id: string
           listing_id: string
+          room_id: string | null
           seeker_id: string
           status: Database["public"]["Enums"]["thread_status_enum"] | null
         }
@@ -816,6 +1169,7 @@ export type Database = {
           host_id: string
           id?: string
           listing_id: string
+          room_id?: string | null
           seeker_id: string
           status?: Database["public"]["Enums"]["thread_status_enum"] | null
         }
@@ -826,6 +1180,7 @@ export type Database = {
           host_id?: string
           id?: string
           listing_id?: string
+          room_id?: string | null
           seeker_id?: string
           status?: Database["public"]["Enums"]["thread_status_enum"] | null
         }
@@ -850,6 +1205,55 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "room_search_cache"
             referencedColumns: ["listing_id"]
+          },
+          {
+            foreignKeyName: "threads_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "v_listing_cards"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "threads_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "v_room_detail_by_slug"
+            referencedColumns: ["listing_id"]
+          },
+          {
+            foreignKeyName: "threads_room_id_fkey"
+            columns: ["room_id"]
+            isOneToOne: false
+            referencedRelation: "mv_room_amenity_facets"
+            referencedColumns: ["room_id"]
+          },
+          {
+            foreignKeyName: "threads_room_id_fkey"
+            columns: ["room_id"]
+            isOneToOne: false
+            referencedRelation: "room_search_cache"
+            referencedColumns: ["room_id"]
+          },
+          {
+            foreignKeyName: "threads_room_id_fkey"
+            columns: ["room_id"]
+            isOneToOne: false
+            referencedRelation: "rooms"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "threads_room_id_fkey"
+            columns: ["room_id"]
+            isOneToOne: false
+            referencedRelation: "v_room_amenities_grouped"
+            referencedColumns: ["room_id"]
+          },
+          {
+            foreignKeyName: "threads_room_id_fkey"
+            columns: ["room_id"]
+            isOneToOne: false
+            referencedRelation: "v_room_detail_by_slug"
+            referencedColumns: ["room_id"]
           },
           {
             foreignKeyName: "threads_seeker_id_fkey"
@@ -931,6 +1335,20 @@ export type Database = {
             referencedColumns: ["listing_id"]
           },
           {
+            foreignKeyName: "viewings_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "v_listing_cards"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "viewings_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "v_room_detail_by_slug"
+            referencedColumns: ["listing_id"]
+          },
+          {
             foreignKeyName: "viewings_seeker_id_fkey"
             columns: ["seeker_id"]
             isOneToOne: false
@@ -941,6 +1359,20 @@ export type Database = {
       }
     }
     Views: {
+      mv_listing_amenity_facets: {
+        Row: {
+          amenity_keys: string[] | null
+          listing_id: string | null
+        }
+        Relationships: []
+      }
+      mv_room_amenity_facets: {
+        Row: {
+          amenity_keys: string[] | null
+          room_id: string | null
+        }
+        Relationships: []
+      }
       room_search_cache: {
         Row: {
           availability_date: string | null
@@ -976,8 +1408,163 @@ export type Database = {
         }
         Relationships: []
       }
+      v_amenities: {
+        Row: {
+          category_id: string | null
+          created_at: string | null
+          icon: string | null
+          id: string | null
+          is_active: boolean | null
+          key: string | null
+          name: string | null
+          name_el: string | null
+          name_en: string | null
+          sort_order: number | null
+        }
+        Insert: {
+          category_id?: string | null
+          created_at?: string | null
+          icon?: string | null
+          id?: string | null
+          is_active?: boolean | null
+          key?: string | null
+          name?: never
+          name_el?: string | null
+          name_en?: string | null
+          sort_order?: number | null
+        }
+        Update: {
+          category_id?: string | null
+          created_at?: string | null
+          icon?: string | null
+          id?: string | null
+          is_active?: boolean | null
+          key?: string | null
+          name?: never
+          name_el?: string | null
+          name_en?: string | null
+          sort_order?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "amenities_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "amenity_categories"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      v_listing_amenities_grouped: {
+        Row: {
+          category_key: string | null
+          category_name: string | null
+          items: Json | null
+          listing_id: string | null
+        }
+        Relationships: []
+      }
+      v_listing_cards: {
+        Row: {
+          amenity_keys: string[] | null
+          availability_date: string | null
+          city: string | null
+          id: string | null
+          lat: number | null
+          lng: number | null
+          neighborhood: string | null
+          price_month: number | null
+          primary_photo: string | null
+          title: string | null
+        }
+        Insert: {
+          amenity_keys?: never
+          availability_date?: string | null
+          city?: string | null
+          id?: string | null
+          lat?: number | null
+          lng?: number | null
+          neighborhood?: string | null
+          price_month?: number | null
+          primary_photo?: never
+          title?: string | null
+        }
+        Update: {
+          amenity_keys?: never
+          availability_date?: string | null
+          city?: string | null
+          id?: string | null
+          lat?: number | null
+          lng?: number | null
+          neighborhood?: string | null
+          price_month?: number | null
+          primary_photo?: never
+          title?: string | null
+        }
+        Relationships: []
+      }
+      v_room_amenities_grouped: {
+        Row: {
+          category_key: string | null
+          category_name: string | null
+          items: Json | null
+          room_id: string | null
+        }
+        Relationships: []
+      }
+      v_room_detail_by_slug: {
+        Row: {
+          availability_date: string | null
+          bathrooms: number | null
+          bed_type: string | null
+          bedrooms_double: number | null
+          bedrooms_single: number | null
+          city: string | null
+          description: string | null
+          door: string | null
+          floor: number | null
+          has_bed: boolean | null
+          has_lift: boolean | null
+          is_interior: boolean | null
+          is_location_approx: boolean | null
+          lat: number | null
+          listing_amenity_keys: string[] | null
+          listing_id: string | null
+          lng: number | null
+          neighborhood: string | null
+          orientation: string | null
+          price_month: number | null
+          primary_photo: string | null
+          room_amenity_keys: string[] | null
+          room_id: string | null
+          room_photos: Json | null
+          room_size_m2: number | null
+          room_type: string | null
+          slug: string | null
+          street_address: string | null
+          title: string | null
+          wc_count: number | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
+      get_listing_amenities_grouped: {
+        Args: { p_listing_id: string; p_locale?: string }
+        Returns: {
+          category_key: string
+          category_name: string
+          items: Json
+        }[]
+      }
+      get_room_amenities_grouped: {
+        Args: { p_locale?: string; p_room_id: string }
+        Returns: {
+          category_key: string
+          category_name: string
+          items: Json
+        }[]
+      }
       get_user_saved_rooms_count: {
         Args: { user_uuid: string }
         Returns: number
@@ -994,8 +1581,20 @@ export type Database = {
         Args: { room_uuid: string; user_uuid: string }
         Returns: boolean
       }
+      refresh_listing_amenity_facets: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
+      }
       refresh_room_search_cache: {
         Args: Record<PropertyKey, never>
+        Returns: undefined
+      }
+      set_listing_amenities_by_keys: {
+        Args: { p_keys: string[]; p_listing_id: string; p_scope?: string }
+        Returns: undefined
+      }
+      set_room_amenities_by_keys: {
+        Args: { p_keys: string[]; p_room_id: string }
         Returns: undefined
       }
       update_thread_status: {
