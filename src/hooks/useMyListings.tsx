@@ -1,5 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/hooks/useAuth';
 
 export interface MyListing {
   id: string;
@@ -7,7 +8,7 @@ export interface MyListing {
   price_month: number;
   city: string;
   neighborhood: string;
-  status: string;
+  status: 'draft' | 'published' | 'archived';
   created_at: string;
   availability_date: string;
   flatmates_count: number;
@@ -19,11 +20,14 @@ export interface MyListing {
   request_count: number;
 }
 
-export const useMyListings = () => {
+export const useMyListings = (status?: 'draft' | 'published' | 'archived') => {
+  const { profile } = useAuth();
   return useQuery({
-    queryKey: ['my-listings'],
+    queryKey: ['my-listings', status, profile?.id],
     queryFn: async (): Promise<MyListing[]> => {
-      const { data: listings, error } = await supabase
+      if (!profile?.id) return [];
+
+      let query = supabase
         .from('listings')
         .select(`
           id,
@@ -49,7 +53,14 @@ export const useMyListings = () => {
             )
           )
         `)
+        .eq('owner_id', profile.id)
         .order('created_at', { ascending: false });
+
+      if (status) {
+        query = query.eq('status', status);
+      }
+
+      const { data: listings, error } = await query;
 
       if (error) {
         console.error('Error fetching my listings:', error);
@@ -62,7 +73,7 @@ export const useMyListings = () => {
         price_month: listing.price_month,
         city: listing.city,
         neighborhood: listing.neighborhood,
-        status: listing.status,
+        status: listing.status as 'draft' | 'published' | 'archived',
         created_at: listing.created_at,
         availability_date: listing.availability_date,
         flatmates_count: listing.flatmates_count,
@@ -74,6 +85,7 @@ export const useMyListings = () => {
         request_count: listing.rooms?.[0]?.room_stats?.[0]?.request_count || 0,
       }));
     },
+    enabled: !!profile?.id,
     staleTime: 60000, // 1 minute
     gcTime: 300000, // 5 minutes
   });

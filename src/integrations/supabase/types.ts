@@ -1547,7 +1547,7 @@ export type Database = {
     }
     Enums: {
       gender_enum: "male" | "female" | "other" | "prefer_not_to_say"
-      publish_status_enum: "draft" | "published"
+      publish_status_enum: "draft" | "published" | "archived"
       thread_status_enum:
         | "pending"
         | "accepted"
@@ -1690,7 +1690,7 @@ export const Constants = {
   public: {
     Enums: {
       gender_enum: ["male", "female", "other", "prefer_not_to_say"],
-      publish_status_enum: ["draft", "published"],
+      publish_status_enum: ["draft", "published", "archived"],
       thread_status_enum: [
         "pending",
         "accepted",

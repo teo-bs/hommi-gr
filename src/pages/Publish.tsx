@@ -79,6 +79,8 @@ export default function Publish() {
   const { validateListing, isValidating } = useListingValidation();
   const { verifications, refetch: refetchVerifications } = useVerifications();
   
+  const editingId = searchParams.get('id'); // Check if we're editing an existing listing
+  
   const [showVerificationModal, setShowVerificationModal] = useState(false);
   const [showProfileModal, setShowProfileModal] = useState(false);
   const [publishWarnings, setPublishWarnings] = useState<any[]>([]);
@@ -111,25 +113,40 @@ export default function Publish() {
     preferred_age_max: 35
   });
 
-  // Load existing draft
+  // Load existing draft or specific listing for editing
   useEffect(() => {
     if (user && profile) {
       loadDraft();
     }
-  }, [user, profile]);
+  }, [user, profile, editingId]);
 
   const loadDraft = async () => {
     if (!user || !profile) return;
 
     try {
-      const { data: existingDraft } = await supabase
-        .from('listings')
-        .select('*')
-        .eq('owner_id', profile.id)
-        .eq('status', 'draft')
-        .order('created_at', { ascending: false })
-        .limit(1)
-        .single();
+      let existingDraft = null;
+      
+      if (editingId) {
+        // Load specific listing for editing
+        const { data } = await supabase
+          .from('listings')
+          .select('*')
+          .eq('id', editingId)
+          .eq('owner_id', profile.id)
+          .single();
+        existingDraft = data;
+      } else {
+        // Load most recent draft
+        const { data } = await supabase
+          .from('listings')
+          .select('*')
+          .eq('owner_id', profile.id)
+          .eq('status', 'draft')
+          .order('created_at', { ascending: false })
+          .limit(1)
+          .maybeSingle();
+        existingDraft = data;
+      }
 
       if (existingDraft) {
           setDraft({
