@@ -513,20 +513,28 @@ export default function Publish() {
 
       setPublishingStage("Δημοσίευση αγγελίας...");
       setPublishProgress(60);
-      console.log('📝 Publishing listing to database...');
-      const { error: publishError } = await supabase
-        .from('listings')
-        .update({ status: 'published' })
-        .eq('id', draft.id);
+      console.log('📝 Using atomic publish function with transaction safety...');
+      
+      // Use atomic publishing function with transaction safety and Greek slug support
+      const { data: result, error: atomicError } = await supabase.rpc(
+        'publish_listing_atomic',
+        {
+          p_listing_id: draft.id!,
+          p_room_slug: null // Let function generate Greek-safe slug
+        }
+      );
 
-      if (publishError) {
-        throw publishError;
+      if (atomicError) {
+        console.error('Atomic publish error:', atomicError);
+        throw new Error(`Publication failed: ${atomicError.message}`);
       }
 
-      setPublishingStage("Δημιουργία δωματίου...");
-      setPublishProgress(70);
-      console.log('🏠 Creating room for listing...');
-      await createRoomForListing(draft.id, draft);
+      if (!result || typeof result !== 'object' || !(result as any).success) {
+        console.error('Atomic publish failed:', result);
+        throw new Error((result as any)?.error || 'Publication failed unexpectedly');
+      }
+
+      console.log('✅ Listing published atomically:', result);
 
       setPublishingStage("Ενημέρωση αναζήτησης...");
       setPublishProgress(85);

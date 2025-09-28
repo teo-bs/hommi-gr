@@ -27,7 +27,7 @@ Deno.serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '',
     )
 
-    // Call the refresh function
+    // Call the refresh function directly (simplified for immediate fix)
     const { error } = await supabaseClient.rpc('refresh_room_search_cache')
 
     if (error) {

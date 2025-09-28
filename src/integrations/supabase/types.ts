@@ -1508,7 +1508,7 @@ export type Database = {
     }
     Functions: {
       generate_greek_safe_slug: {
-        Args: { input_text: string; listing_id?: string }
+        Args: { input_text: string; p_listing_id?: string }
         Returns: string
       }
       get_listing_amenities_grouped: {
