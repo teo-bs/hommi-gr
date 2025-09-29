@@ -2,8 +2,7 @@ import React, { useState, useCallback } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
-import { Badge } from '@/components/ui/badge';
-import { Info, Home, Building, MapPin } from 'lucide-react';
+import { Info, MapPin } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { AddressAutocomplete } from './AddressAutocomplete';
 import { PublishMap } from './PublishMap';
@@ -33,7 +32,6 @@ interface ListingDraft {
   lat?: number;
   lng?: number;
   formatted_address?: string;
-  property_type?: 'room' | 'apartment';
   [key: string]: any;
 }
 
@@ -63,7 +61,6 @@ export default function PublishStepOne({
       lat: location.lat,
       lng: location.lng,
       formatted_address: location.formatted_address,
-      // Also update legacy fields for compatibility
       street_address: location.formatted_address,
       neighborhood: location.region || location.city
     });
@@ -74,46 +71,39 @@ export default function PublishStepOne({
     handleLocationSelect(location);
   }, [handleLocationSelect]);
 
-  const handleNextStep = () => {
-    if (draft.city && draft.property_type) {
-      onNext();
-    }
-  };
-
-  const isValid = draft.city && draft.property_type;
+  const isValid = draft.city && draft.lat && draft.lng;
 
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-2xl font-bold mb-2">Τοποθεσία και τύπος ακινήτου</h2>
+        <h2 className="text-2xl font-bold mb-2">Τοποθεσία</h2>
         <p className="text-muted-foreground">
-          Προσδιορίστε την τοποθεσία και τον τύπο του ακινήτου σας
+          Πείτε μας πού βρίσκεται το ακίνητο σας
         </p>
       </div>
 
-      <div className="grid md:grid-cols-2 gap-6">
-        {/* Left Column - Address */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <MapPin className="w-5 h-5" />
-              Διεύθυνση
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            {/* Address Search */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <MapPin className="w-5 h-5" />
+            Διεύθυνση και Χάρτης
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          {/* a) Dynamic Address */}
+          <div className="space-y-2">
+            <Label>α) Δυναμική διεύθυνση *</Label>
             <AddressAutocomplete
               value={addressInput}
               onChange={setAddressInput}
               onLocationSelect={handleLocationSelect}
-              label="Διεύθυνση"
               placeholder="Αναζητήστε διεύθυνση ή τοποθεσία στην Ελλάδα..."
               required
               error={!draft.city}
             />
             
             {!draft.city && (
-              <p className="text-sm text-destructive mt-1">Παρακαλώ επιλέξτε μια διεύθυνση</p>
+              <p className="text-sm text-destructive">Παρακαλώ επιλέξτε μια διεύθυνση</p>
             )}
 
             {/* Display selected location details */}
@@ -129,81 +119,38 @@ export default function PublishStepOne({
                 )}
               </div>
             )}
+          </div>
 
-            <Alert>
-              <Info className="h-4 w-4" />
-              <AlertDescription>
-                Η ακριβής διεύθυνση δεν θα είναι δημόσια. Θα εμφανίζεται μόνο η περιοχή.
-              </AlertDescription>
-            </Alert>
-          </CardContent>
-        </Card>
-
-        {/* Right Column - Property Type & Interactive Map */}
-        <div className="space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>Τύπος ακινήτου</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-2 gap-3">
-                <Button
-                  variant={draft.property_type === 'room' ? 'default' : 'outline'}
-                  className="h-auto p-4 flex flex-col items-center gap-2"
-                  onClick={() => onUpdate({ property_type: 'room' })}
-                >
-                  <Home className="w-6 h-6" />
-                  <div className="text-center">
-                    <div className="font-semibold">Δωμάτιο</div>
-                    <div className="text-xs text-muted-foreground">Κοινόχρηστοι χώροι</div>
-                  </div>
-                </Button>
-
-                <Button
-                  variant={draft.property_type === 'apartment' ? 'default' : 'outline'}
-                  className="h-auto p-4 flex flex-col items-center gap-2"
-                  onClick={() => onUpdate({ property_type: 'apartment' })}
-                >
-                  <Building className="w-6 h-6" />
-                  <div className="text-center">
-                    <div className="font-semibold">Διαμέρισμα</div>
-                    <div className="text-xs text-muted-foreground">Πλήρης κατοικία</div>
-                  </div>
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Interactive Map */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Τοποθεσία στον χάρτη</CardTitle>
-            </CardHeader>
-            <CardContent>
+          {/* b) Map Pin */}
+          <div className="space-y-2">
+            <Label>β) Πιν στον χάρτη</Label>
+            <div className="rounded-lg overflow-hidden border border-muted">
               <PublishMap
                 location={draft.lat && draft.lng ? { lat: draft.lat, lng: draft.lng } : undefined}
                 onLocationChange={handleMapLocationChange}
-                className="h-48 w-full rounded-lg"
+                className="h-64 w-full"
               />
-              {!import.meta.env.VITE_MAPBOX_TOKEN && (
-                <Alert className="mt-2">
-                  <Info className="h-4 w-4" />
-                  <AlertDescription>
-                    ⚠️ VITE_MAPBOX_TOKEN δεν έχει ρυθμιστεί. Η λειτουργία χάρτη είναι απενεργοποιημένη.
-                  </AlertDescription>
-                </Alert>
-              )}
-            </CardContent>
-          </Card>
-        </div>
-      </div>
+            </div>
+            <p className="text-xs text-muted-foreground">
+              💡 Σύρετε το δείκτη για να προσαρμόσετε την ακριβή τοποθεσία
+            </p>
+          </div>
+
+          <Alert>
+            <Info className="h-4 w-4" />
+            <AlertDescription>
+              Η ακριβής διεύθυνση δεν θα είναι δημόσια. Θα εμφανίζεται μόνο η περιοχή.
+            </AlertDescription>
+          </Alert>
+        </CardContent>
+      </Card>
 
       {/* Navigation */}
       <div className="flex justify-between pt-6">
         <Button variant="outline" onClick={onPrev}>
           Πίσω
         </Button>
-        <Button onClick={handleNextStep} disabled={!isValid}>
+        <Button onClick={onNext} disabled={!isValid}>
           Συνέχεια
         </Button>
       </div>

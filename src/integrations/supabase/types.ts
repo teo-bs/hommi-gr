@@ -434,6 +434,7 @@ export type Database = {
           property_type: string | null
           publish_warnings: Json | null
           region: string | null
+          required_verifications: string[] | null
           room_size_m2: number | null
           search_tsv: unknown | null
           services: string[] | null
@@ -495,6 +496,7 @@ export type Database = {
           property_type?: string | null
           publish_warnings?: Json | null
           region?: string | null
+          required_verifications?: string[] | null
           room_size_m2?: number | null
           search_tsv?: unknown | null
           services?: string[] | null
@@ -556,6 +558,7 @@ export type Database = {
           property_type?: string | null
           publish_warnings?: Json | null
           region?: string | null
+          required_verifications?: string[] | null
           room_size_m2?: number | null
           search_tsv?: unknown | null
           services?: string[] | null
