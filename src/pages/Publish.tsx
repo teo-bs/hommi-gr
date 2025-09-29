@@ -2,17 +2,21 @@ import React, { useState, useEffect } from "react";
 import { Helmet } from "react-helmet-async";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
-import { Progress } from "@/components/ui/progress";
 import { LoadingOverlay } from "@/components/ui/loading-overlay";
-import { AnimatedProgress } from "@/components/ui/animated-progress";
 import { StepTransition } from "@/components/ui/step-transition";
 import { useSearchCacheRefresh } from "@/hooks/useSearchCacheRefresh";
+import { useDebouncedCallback } from "use-debounce";
 import PublishStepZero from "@/components/publish/PublishStepZero";
+import PublishStepOverview from "@/components/publish/PublishStepOverview";
 import PublishStepOne from "@/components/publish/PublishStepOne";
-import PublishStepTwo from "@/components/publish/PublishStepTwo";
+import PublishStepApartmentDetails from "@/components/publish/PublishStepApartmentDetails";
+import PublishStepRoomDetails from "@/components/publish/PublishStepRoomDetails";
+import PublishStepPhotos from "@/components/publish/PublishStepPhotos";
+import PublishStepTitleDescription from "@/components/publish/PublishStepTitleDescription";
+import PublishStepVerifications from "@/components/publish/PublishStepVerifications";
 import PublishStepThree from "@/components/publish/PublishStepThree";
-import PublishStepFour from "@/components/publish/PublishStepFour";
-import PublishStepFive from "@/components/publish/PublishStepFive";
+import PublishStepReview from "@/components/publish/PublishStepReview";
+import PublishProgressStepper from "@/components/publish/PublishProgressStepper";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 import { useListingValidation } from "@/hooks/useListingValidation";
@@ -20,7 +24,6 @@ import { useVerifications } from "@/hooks/useVerifications";
 import { PublishWarningsBanner } from "@/components/publish/PublishWarningsBanner";
 import { PublishProfileModal } from "@/components/publish/PublishProfileModal";
 import { PublishVerificationModal } from "@/components/publish/PublishVerificationModal";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { handleAmenitiesUpdate } from "@/components/publish/AmenitiesHandler";
 
 interface ListingDraft {
@@ -34,6 +37,7 @@ interface ListingDraft {
   property_type: 'room' | 'apartment';
   property_size_m2?: number;
   room_size_m2?: number;
+  floor?: number;
   price_month?: number;
   deposit_required: boolean;
   has_lift: boolean;
@@ -65,15 +69,20 @@ interface ListingDraft {
   couples_accepted: boolean;
   pets_allowed: boolean;
   smoking_allowed: boolean;
+  required_verifications: string[];
 }
 
 const STEPS = [
-  { id: 0, title: "Τύπος λογαριασμού" },
-  { id: 1, title: "Τοποθεσία & Τύπος" },
-  { id: 2, title: "Λεπτομέρειες" },
-  { id: 3, title: "Όροι ενοικίασης" },
-  { id: 4, title: "Φωτογραφίες & Περιγραφή" },
-  { id: 5, title: "Προτιμήσεις συγκατοίκων" }
+  { id: 0, title: "Τύπος", key: "role" },
+  { id: 1, title: "Επισκόπηση", key: "overview" },
+  { id: 2, title: "Τοποθεσία", key: "location" },
+  { id: 3, title: "Ακίνητο", key: "apartment" },
+  { id: 4, title: "Δωμάτιο", key: "room" },
+  { id: 5, title: "Φωτογραφίες", key: "photos" },
+  { id: 6, title: "Τίτλος & Περιγραφή", key: "title" },
+  { id: 7, title: "Επαληθεύσεις", key: "verifications" },
+  { id: 8, title: "Διαθεσιμότητα & Τιμή", key: "availability" },
+  { id: 9, title: "Έλεγχος", key: "review" }
 ];
 
 export default function Publish() {
@@ -93,6 +102,7 @@ export default function Publish() {
   const [publishingStage, setPublishingStage] = useState<string>("");
   const [publishProgress, setPublishProgress] = useState<number>(0);
   const [isSaving, setIsSaving] = useState(false);
+  const [lastSaved, setLastSaved] = useState<Date | null>(null);
   const [completedSteps, setCompletedSteps] = useState<number[]>([]);
   
   // Search cache refresh hook
@@ -123,7 +133,8 @@ export default function Publish() {
     pets_allowed: false,
     smoking_allowed: false,
     preferred_age_min: 18,
-    preferred_age_max: 35
+    preferred_age_max: 35,
+    required_verifications: []
   });
 
   // Load existing draft or specific listing for editing
@@ -173,6 +184,7 @@ export default function Publish() {
           property_type: (existingDraft.property_type as 'room' | 'apartment') || 'room',
           property_size_m2: existingDraft.property_size_m2 || undefined,
           room_size_m2: existingDraft.room_size_m2 || undefined,
+          floor: existingDraft.floor || undefined,
           price_month: existingDraft.price_month || undefined,
           deposit_required: existingDraft.deposit_required ?? true,
           has_lift: existingDraft.has_lift || false,
@@ -202,7 +214,8 @@ export default function Publish() {
           step_completed: existingDraft.step_completed || 0,
           couples_accepted: existingDraft.couples_accepted || false,
           pets_allowed: existingDraft.pets_allowed || false,
-          smoking_allowed: existingDraft.smoking_allowed || false
+          smoking_allowed: existingDraft.smoking_allowed || false,
+          required_verifications: Array.isArray(existingDraft.required_verifications) ? existingDraft.required_verifications as string[] : []
         });
       }
     } catch (error) {
@@ -235,6 +248,7 @@ export default function Publish() {
         property_type: updatedDraft.property_type,
         property_size_m2: updatedDraft.property_size_m2,
         room_size_m2: updatedDraft.room_size_m2,
+        floor: updatedDraft.floor,
         price_month: updatedDraft.price_month,
         deposit_required: updatedDraft.deposit_required,
         has_lift: updatedDraft.has_lift,
@@ -246,8 +260,7 @@ export default function Publish() {
         i_live_here: updatedDraft.i_live_here,
         orientation: updatedDraft.orientation,
         bed_type: updatedDraft.bed_type,
-        // Don't save amenities to listing table - handle via separate tables
-        // amenities_property and amenities_room are stored in listing_amenities and room_amenities
+        house_rules: updatedDraft.house_rules,
         availability_date: updatedDraft.availability_date?.toISOString().split('T')[0],
         availability_to: updatedDraft.availability_to?.toISOString().split('T')[0],
         min_stay_months: updatedDraft.min_stay_months,
@@ -264,6 +277,7 @@ export default function Publish() {
         couples_accepted: updatedDraft.couples_accepted,
         pets_allowed: updatedDraft.pets_allowed,
         smoking_allowed: updatedDraft.smoking_allowed,
+        required_verifications: updatedDraft.required_verifications,
         status: 'draft' as const
       };
 
@@ -295,6 +309,8 @@ export default function Publish() {
           await ensureListerProfile();
         }
       }
+      
+      setLastSaved(new Date());
     } catch (error) {
       console.error('Error saving draft:', error);
       toast({
@@ -302,8 +318,18 @@ export default function Publish() {
         description: "Δεν ήταν δυνατή η αποθήκευση των αλλαγών.",
         variant: "destructive"
       });
+    } finally {
+      setIsSaving(false);
     }
   };
+
+  // Debounced auto-save for field changes
+  const debouncedSave = useDebouncedCallback(
+    (updates: Partial<ListingDraft>) => {
+      saveDraft(updates);
+    },
+    1000
+  );
 
   const nextStep = (updates?: Partial<ListingDraft>) => {
     if (updates) {
@@ -311,21 +337,21 @@ export default function Publish() {
     }
     
     let next = currentStep + 1;
-    // Skip step 5 for apartments
-    if (next === 5 && draft.property_type === 'apartment') {
-      next = 6;
+    // Skip room details step (4) for apartments
+    if (next === 4 && draft.property_type === 'apartment') {
+      next = 5;
     }
     
-    if (next <= 5) {
+    if (next <= 9) {
       setSearchParams({ step: next.toString() });
     }
   };
 
   const prevStep = () => {
     let prev = currentStep - 1;
-    // Skip step 5 for apartments when going back
-    if (prev === 5 && draft.property_type === 'apartment') {
-      prev = 4;
+    // Skip room details step (4) for apartments when going back
+    if (prev === 4 && draft.property_type === 'apartment') {
+      prev = 3;
     }
     
     if (prev >= 0) {
@@ -655,7 +681,6 @@ export default function Publish() {
   };
 
   const progress = ((currentStep + 1) / STEPS.length) * 100;
-  const maxStep = draft.property_type === 'apartment' ? 4 : 5;
 
   return (
     <>
@@ -693,24 +718,33 @@ export default function Publish() {
             </div>
           )}
 
-          {/* Enhanced Progress Bar */}
-          <div className="mb-8">
-            <div className="flex justify-between items-center mb-4">
-              <h1 className="text-2xl font-bold">Δημιουργία αγγελίας</h1>
-              {isSaving && (
-                <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                  <div className="w-4 h-4 border-2 border-primary border-t-transparent rounded-full animate-spin" />
-                  Αποθήκευση...
+          {/* Progress Stepper - Hidden on role and overview steps */}
+          {currentStep > 1 && (
+            <div className="mb-8">
+              <div className="flex justify-between items-center mb-2">
+                <h1 className="text-2xl font-bold">Δημιουργία αγγελίας</h1>
+                <div className="flex items-center gap-3 text-sm">
+                  {isSaving && (
+                    <div className="flex items-center gap-2 text-muted-foreground">
+                      <div className="w-4 h-4 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+                      Αποθήκευση...
+                    </div>
+                  )}
+                  {!isSaving && lastSaved && (
+                    <div className="text-muted-foreground flex items-center gap-1">
+                      <span className="text-green-500">✓</span>
+                      Αποθηκεύτηκε
+                    </div>
+                  )}
                 </div>
-              )}
+              </div>
+              <PublishProgressStepper 
+                steps={STEPS.slice(2)} 
+                currentStep={currentStep - 2}
+                completedSteps={completedSteps.filter(s => s >= 2).map(s => s - 2)}
+              />
             </div>
-            <AnimatedProgress
-              currentStep={currentStep}
-              totalSteps={STEPS.length}
-              stepTitles={STEPS.map(s => s.title)}
-              completedSteps={completedSteps}
-            />
-          </div>
+          )}
 
           {/* Step Content with Transitions */}
           <StepTransition isVisible={currentStep === 0}>
@@ -721,20 +755,18 @@ export default function Publish() {
           
           <StepTransition isVisible={currentStep === 1} direction="forward">
             {currentStep === 1 && (
-              <PublishStepOne
-                draft={draft}
-                onUpdate={saveDraft}
+              <PublishStepOverview
                 onNext={nextStep}
-                onPrev={prevStep}
+                hasDraft={!!draft.id}
               />
             )}
           </StepTransition>
           
           <StepTransition isVisible={currentStep === 2} direction="forward">
             {currentStep === 2 && (
-              <PublishStepTwo
+              <PublishStepOne
                 draft={draft}
-                onUpdate={saveDraft}
+                onUpdate={debouncedSave}
                 onNext={nextStep}
                 onPrev={prevStep}
               />
@@ -743,35 +775,79 @@ export default function Publish() {
           
           <StepTransition isVisible={currentStep === 3} direction="forward">
             {currentStep === 3 && (
-              <PublishStepThree
+              <PublishStepApartmentDetails
                 draft={draft}
-                onUpdate={saveDraft}
+                onUpdate={debouncedSave}
                 onNext={nextStep}
                 onPrev={prevStep}
               />
             )}
           </StepTransition>
           
-          <StepTransition isVisible={currentStep === 4} direction="forward">
-            {currentStep === 4 && (
-              <PublishStepFour
+          <StepTransition isVisible={currentStep === 4 && draft.property_type === 'room'} direction="forward">
+            {currentStep === 4 && draft.property_type === 'room' && (
+              <PublishStepRoomDetails
                 draft={draft}
-                onUpdate={saveDraft}
-                onNext={draft.property_type === 'room' ? nextStep : publishListing}
+                onUpdate={debouncedSave}
+                onNext={nextStep}
                 onPrev={prevStep}
-                isLastStep={draft.property_type === 'apartment'}
               />
             )}
           </StepTransition>
           
-          <StepTransition isVisible={currentStep === 5 && draft.property_type === 'room'} direction="forward">
-            {currentStep === 5 && draft.property_type === 'room' && (
-              <PublishStepFive
+          <StepTransition isVisible={currentStep === 5} direction="forward">
+            {currentStep === 5 && (
+              <PublishStepPhotos
                 draft={draft}
-                onUpdate={saveDraft}
+                onUpdate={debouncedSave}
+                onNext={nextStep}
+                onPrev={prevStep}
+              />
+            )}
+          </StepTransition>
+          
+          <StepTransition isVisible={currentStep === 6} direction="forward">
+            {currentStep === 6 && (
+              <PublishStepTitleDescription
+                draft={draft}
+                onUpdate={debouncedSave}
+                onNext={nextStep}
+                onPrev={prevStep}
+              />
+            )}
+          </StepTransition>
+          
+          <StepTransition isVisible={currentStep === 7} direction="forward">
+            {currentStep === 7 && (
+              <PublishStepVerifications
+                draft={draft}
+                onUpdate={debouncedSave}
+                onNext={nextStep}
+                onPrev={prevStep}
+              />
+            )}
+          </StepTransition>
+          
+          <StepTransition isVisible={currentStep === 8} direction="forward">
+            {currentStep === 8 && (
+              <PublishStepThree
+                draft={draft}
+                onUpdate={debouncedSave}
+                onNext={nextStep}
+                onPrev={prevStep}
+              />
+            )}
+          </StepTransition>
+          
+          <StepTransition isVisible={currentStep === 9} direction="forward">
+            {currentStep === 9 && (
+              <PublishStepReview
+                draft={draft}
                 onPublish={publishListing}
                 onPrev={prevStep}
                 isPublishing={isPublishing}
+                canPublish={true}
+                onJumpToStep={(step) => setSearchParams({ step: step.toString() })}
               />
             )}
           </StepTransition>
