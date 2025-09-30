@@ -26,8 +26,15 @@ export interface SearchFilters {
   budget?: { min?: number; max?: number };
   flatmates?: number;
   space?: string;
+  roomType?: string;
   couplesAccepted?: boolean;
   petsAllowed?: boolean;
+  billsIncluded?: boolean;
+  verifiedLister?: boolean;
+  listerType?: 'individual' | 'agency';
+  amenities?: string[];
+  moveInDate?: Date;
+  duration?: number;
   city?: string;
   searchText?: string;
   sort?: string;
@@ -62,11 +69,34 @@ export const useOptimizedSearch = ({ filters, enabled = true }: UseOptimizedSear
   if (filters.flatmates !== undefined) {
     query = query.eq('flatmates_count', filters.flatmates);
   }
+  if (filters.roomType) {
+    query = query.eq('room_type', filters.roomType);
+  }
   if (filters.couplesAccepted !== undefined) {
     query = query.eq('couples_accepted', filters.couplesAccepted);
   }
   if (filters.petsAllowed !== undefined) {
     query = query.eq('pets_allowed', filters.petsAllowed);
+  }
+  if (filters.billsIncluded !== undefined) {
+    query = query.eq('bills_included', filters.billsIncluded);
+  }
+  if (filters.verifiedLister) {
+    query = query.eq('lister_verification', 'verified');
+  }
+  if (filters.listerType) {
+    query = query.eq('lister_type', filters.listerType);
+  }
+  if (filters.moveInDate) {
+    query = query.gte('availability_date', filters.moveInDate.toISOString().split('T')[0]);
+  }
+  if (filters.duration) {
+    if (filters.duration > 0) {
+      query = query.lte('min_stay_months', filters.duration);
+    }
+  }
+  if (filters.amenities && filters.amenities.length > 0) {
+    query = query.contains('amenity_keys', filters.amenities);
   }
   if (filters.city) {
     query = query.eq('city', filters.city);

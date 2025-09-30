@@ -1,7 +1,9 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useSearchParams } from "react-router-dom";
 import { MapContainer } from "@/components/search/MapContainer";
-import { SearchFilters } from "@/components/search/SearchFilters";
+import { EnhancedSearchFilters } from "@/components/search/EnhancedSearchFilters";
+import { FilterChips } from "@/components/search/FilterChips";
+import { ResultsCounter } from "@/components/search/ResultsCounter";
 import { ListingGrid } from "@/components/search/ListingGrid";
 import { Button } from "@/components/ui/button";
 import { Map, List, SlidersHorizontal } from "lucide-react";
@@ -10,8 +12,15 @@ export interface FilterState {
   budget: [number, number];
   flatmates: string;
   space: string;
+  roomType: string;
   couplesAccepted: boolean;
-  dateRange: { from?: Date; to?: Date };
+  petsAllowed: boolean;
+  billsIncluded: boolean;
+  verifiedLister: boolean;
+  listerType: string;
+  amenities: string[];
+  moveInDate?: Date;
+  duration: string;
   sort: string;
 }
 
@@ -28,11 +37,64 @@ const Search = () => {
   const [filters, setFilters] = useState<FilterState>({
     budget: [300, 800],
     flatmates: "any",
-    space: "any", 
+    space: "any",
+    roomType: "any",
     couplesAccepted: false,
-    dateRange: {},
+    petsAllowed: false,
+    billsIncluded: false,
+    verifiedLister: false,
+    listerType: "any",
+    amenities: [],
+    duration: "any",
     sort: searchParams.get('sort') || 'featured'
   });
+
+  // Build active filter chips
+  const activeFilters = useMemo(() => {
+    const chips: Array<{ key: string; label: string; value: any }> = [];
+    
+    if (filters.budget[0] > 300 || filters.budget[1] < 800) {
+      chips.push({ key: 'budget', label: `€${filters.budget[0]}-€${filters.budget[1]}`, value: filters.budget });
+    }
+    if (filters.roomType !== 'any') {
+      const typeLabels: Record<string, string> = {
+        private: 'Ιδιωτικό',
+        shared: 'Κοινόχρηστο',
+        entire_place: 'Ολόκληρο'
+      };
+      chips.push({ key: 'roomType', label: typeLabels[filters.roomType] || filters.roomType, value: filters.roomType });
+    }
+    if (filters.couplesAccepted) {
+      chips.push({ key: 'couplesAccepted', label: 'Ζευγάρια', value: true });
+    }
+    if (filters.petsAllowed) {
+      chips.push({ key: 'petsAllowed', label: 'Κατοικίδια', value: true });
+    }
+    if (filters.billsIncluded) {
+      chips.push({ key: 'billsIncluded', label: 'Λογαριασμοί εντός', value: true });
+    }
+    if (filters.verifiedLister) {
+      chips.push({ key: 'verifiedLister', label: 'Επαληθευμένοι', value: true });
+    }
+    if (filters.listerType !== 'any') {
+      const listerLabels: Record<string, string> = {
+        individual: 'Ιδιώτες',
+        agency: 'Μεσιτικά'
+      };
+      chips.push({ key: 'listerType', label: listerLabels[filters.listerType] || filters.listerType, value: filters.listerType });
+    }
+    if (filters.amenities.length > 0) {
+      chips.push({ key: 'amenities', label: `${filters.amenities.length} ανέσεις`, value: filters.amenities });
+    }
+    if (filters.moveInDate) {
+      chips.push({ key: 'moveInDate', label: `Από ${filters.moveInDate.toLocaleDateString('el-GR')}`, value: filters.moveInDate });
+    }
+    if (filters.duration !== 'any') {
+      chips.push({ key: 'duration', label: `${filters.duration} μήνες`, value: filters.duration });
+    }
+    
+    return chips;
+  }, [filters]);
 
   // Extract search parameters
   const city = searchParams.get('city') || '';
@@ -80,6 +142,39 @@ const Search = () => {
     if (city) params.set('city', city);
     if (updatedFilters.sort !== 'featured') params.set('sort', updatedFilters.sort);
     setSearchParams(params);
+  };
+
+  const handleRemoveFilter = (key: string) => {
+    const defaults: Partial<FilterState> = {
+      budget: [300, 800],
+      roomType: 'any',
+      couplesAccepted: false,
+      petsAllowed: false,
+      billsIncluded: false,
+      verifiedLister: false,
+      listerType: 'any',
+      amenities: [],
+      moveInDate: undefined,
+      duration: 'any'
+    };
+    handleFilterChange({ [key]: defaults[key as keyof typeof defaults] });
+  };
+
+  const handleClearAllFilters = () => {
+    setFilters({
+      budget: [300, 800],
+      flatmates: "any",
+      space: "any",
+      roomType: "any",
+      couplesAccepted: false,
+      petsAllowed: false,
+      billsIncluded: false,
+      verifiedLister: false,
+      listerType: "any",
+      amenities: [],
+      duration: "any",
+      sort: 'featured'
+    });
   };
 
   return (
@@ -156,10 +251,24 @@ const Search = () => {
         </div>
       </div>
 
+      {/* Filter Chips */}
+      <FilterChips 
+        activeFilters={activeFilters}
+        onRemoveFilter={handleRemoveFilter}
+        onClearAll={handleClearAllFilters}
+      />
+
+      {/* Results Counter */}
+      <ResultsCounter count={listings.length} isLoading={false} />
+
       {/* Mobile Filters */}
       {showFilters && (
         <div className="lg:hidden border-b border-border bg-surface-elevated p-4">
-          <SearchFilters filters={filters} onFilterChange={handleFilterChange} />
+          <EnhancedSearchFilters 
+            filters={filters} 
+            onFilterChange={handleFilterChange}
+            resultCount={listings.length}
+          />
         </div>
       )}
 
@@ -168,7 +277,11 @@ const Search = () => {
         {/* Desktop Sidebar Filters */}
         <div className="hidden lg:block w-80 border-r border-border bg-surface-elevated">
           <div className="p-6 h-full overflow-y-auto">
-            <SearchFilters filters={filters} onFilterChange={handleFilterChange} />
+            <EnhancedSearchFilters 
+              filters={filters} 
+              onFilterChange={handleFilterChange}
+              resultCount={listings.length}
+            />
           </div>
         </div>
 

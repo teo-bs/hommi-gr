@@ -76,8 +76,14 @@ export const SearchFilters = ({ filters, onFilterChange }: SearchFiltersProps) =
       budget: [300, 800],
       flatmates: "any",
       space: "any",
+      roomType: "any",
       couplesAccepted: false,
-      dateRange: {},
+      petsAllowed: false,
+      billsIncluded: false,
+      verifiedLister: false,
+      listerType: "any",
+      amenities: [],
+      duration: "any",
       sort: "featured"
     });
     setActiveFilters([]);
@@ -166,25 +172,14 @@ export const SearchFilters = ({ filters, onFilterChange }: SearchFiltersProps) =
             <PopoverTrigger asChild>
               <Button variant="outline" className="w-full justify-start">
                 <CalendarIcon className="h-4 w-4 mr-2" />
-                {filters.dateRange.from ? (
-                  filters.dateRange.to ? (
-                    `${filters.dateRange.from.toLocaleDateString()} - ${filters.dateRange.to.toLocaleDateString()}`
-                  ) : (
-                    filters.dateRange.from.toLocaleDateString()
-                  )
-                ) : (
-                  "Επιλέξτε ημερομηνίες"
-                )}
+                {filters.moveInDate ? filters.moveInDate.toLocaleDateString('el-GR') : "Επιλέξτε ημερομηνία"}
               </Button>
             </PopoverTrigger>
             <PopoverContent className="w-auto p-0" align="start">
               <Calendar
-                mode="range"
-                selected={filters.dateRange.from ? { from: filters.dateRange.from, to: filters.dateRange.to } : undefined}
-                onSelect={(range) => {
-                  handleFilterChange('dateRange', range || {});
-                }}
-                numberOfMonths={2}
+                mode="single"
+                selected={filters.moveInDate}
+                onSelect={(date) => handleFilterChange('moveInDate', date)}
               />
             </PopoverContent>
           </Popover>

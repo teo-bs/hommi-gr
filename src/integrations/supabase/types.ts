@@ -394,6 +394,7 @@ export type Database = {
           bed_type: string | null
           bedrooms_double: number | null
           bedrooms_single: number | null
+          bills_included: boolean | null
           bills_note: string | null
           city: string
           country: string | null
@@ -456,6 +457,7 @@ export type Database = {
           bed_type?: string | null
           bedrooms_double?: number | null
           bedrooms_single?: number | null
+          bills_included?: boolean | null
           bills_note?: string | null
           city: string
           country?: string | null
@@ -518,6 +520,7 @@ export type Database = {
           bed_type?: string | null
           bedrooms_double?: number | null
           bedrooms_single?: number | null
+          bills_included?: boolean | null
           bills_note?: string | null
           city?: string
           country?: string | null
@@ -667,6 +670,7 @@ export type Database = {
           last_name: string | null
           lister_badges: Json | null
           lister_score: number | null
+          lister_type: Database["public"]["Enums"]["lister_type_enum"] | null
           marketing_opt_in: boolean | null
           member_since: string | null
           profession: string | null
@@ -703,6 +707,7 @@ export type Database = {
           last_name?: string | null
           lister_badges?: Json | null
           lister_score?: number | null
+          lister_type?: Database["public"]["Enums"]["lister_type_enum"] | null
           marketing_opt_in?: boolean | null
           member_since?: string | null
           profession?: string | null
@@ -739,6 +744,7 @@ export type Database = {
           last_name?: string | null
           lister_badges?: Json | null
           lister_score?: number | null
+          lister_type?: Database["public"]["Enums"]["lister_type_enum"] | null
           marketing_opt_in?: boolean | null
           member_since?: string | null
           profession?: string | null
@@ -1347,7 +1353,9 @@ export type Database = {
       }
       room_search_cache: {
         Row: {
+          amenity_keys: string[] | null
           availability_date: string | null
+          bills_included: boolean | null
           city: string | null
           couples_accepted: boolean | null
           cover_photo_url: string | null
@@ -1356,12 +1364,16 @@ export type Database = {
           lat: number | null
           lister_member_since: string | null
           lister_name: string | null
+          lister_type: Database["public"]["Enums"]["lister_type_enum"] | null
           lister_verification: string | null
           lng: number | null
+          max_stay_months: number | null
+          min_stay_months: number | null
           neighborhood: string | null
           pets_allowed: boolean | null
           price_month: number | null
           room_id: string | null
+          room_type: string | null
           search_tsv: unknown | null
           slug: string | null
           smoking_allowed: boolean | null
@@ -1576,6 +1588,7 @@ export type Database = {
     }
     Enums: {
       gender_enum: "male" | "female" | "other" | "prefer_not_to_say"
+      lister_type_enum: "individual" | "agency"
       publish_status_enum: "draft" | "published" | "archived" | "publishing"
       thread_status_enum:
         | "pending"
@@ -1719,6 +1732,7 @@ export const Constants = {
   public: {
     Enums: {
       gender_enum: ["male", "female", "other", "prefer_not_to_say"],
+      lister_type_enum: ["individual", "agency"],
       publish_status_enum: ["draft", "published", "archived", "publishing"],
       thread_status_enum: [
         "pending",
