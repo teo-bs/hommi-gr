@@ -167,6 +167,13 @@ export type Database = {
             foreignKeyName: "applications_listing_id_fkey"
             columns: ["listing_id"]
             isOneToOne: false
+            referencedRelation: "room_search_cache"
+            referencedColumns: ["listing_id"]
+          },
+          {
+            foreignKeyName: "applications_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
             referencedRelation: "v_listing_cards"
             referencedColumns: ["id"]
           },
@@ -227,6 +234,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "listings"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "holds_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "room_search_cache"
+            referencedColumns: ["listing_id"]
           },
           {
             foreignKeyName: "holds_listing_id_fkey"
@@ -326,6 +340,13 @@ export type Database = {
             foreignKeyName: "listing_amenities_listing_id_fkey"
             columns: ["listing_id"]
             isOneToOne: false
+            referencedRelation: "room_search_cache"
+            referencedColumns: ["listing_id"]
+          },
+          {
+            foreignKeyName: "listing_amenities_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
             referencedRelation: "v_listing_cards"
             referencedColumns: ["id"]
           },
@@ -366,6 +387,13 @@ export type Database = {
             foreignKeyName: "listing_house_rules_listing_id_fkey"
             columns: ["listing_id"]
             isOneToOne: false
+            referencedRelation: "room_search_cache"
+            referencedColumns: ["listing_id"]
+          },
+          {
+            foreignKeyName: "listing_house_rules_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
             referencedRelation: "v_listing_cards"
             referencedColumns: ["id"]
           },
@@ -385,6 +413,68 @@ export type Database = {
           },
         ]
       }
+      listing_photos: {
+        Row: {
+          alt_text: string | null
+          created_at: string
+          id: string
+          is_cover: boolean
+          listing_id: string
+          sort_order: number
+          updated_at: string
+          url: string
+        }
+        Insert: {
+          alt_text?: string | null
+          created_at?: string
+          id?: string
+          is_cover?: boolean
+          listing_id: string
+          sort_order?: number
+          updated_at?: string
+          url: string
+        }
+        Update: {
+          alt_text?: string | null
+          created_at?: string
+          id?: string
+          is_cover?: boolean
+          listing_id?: string
+          sort_order?: number
+          updated_at?: string
+          url?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "listing_photos_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "listings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "listing_photos_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "room_search_cache"
+            referencedColumns: ["listing_id"]
+          },
+          {
+            foreignKeyName: "listing_photos_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "v_listing_cards"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "listing_photos_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "v_room_detail_by_slug"
+            referencedColumns: ["listing_id"]
+          },
+        ]
+      }
       listings: {
         Row: {
           audience_preferences: Json | null
@@ -399,6 +489,7 @@ export type Database = {
           city: string
           country: string | null
           couples_accepted: boolean | null
+          cover_photo_id: string | null
           created_at: string | null
           deposit: number | null
           deposit_required: boolean | null
@@ -462,6 +553,7 @@ export type Database = {
           city: string
           country?: string | null
           couples_accepted?: boolean | null
+          cover_photo_id?: string | null
           created_at?: string | null
           deposit?: number | null
           deposit_required?: boolean | null
@@ -525,6 +617,7 @@ export type Database = {
           city?: string
           country?: string | null
           couples_accepted?: boolean | null
+          cover_photo_id?: string | null
           created_at?: string | null
           deposit?: number | null
           deposit_required?: boolean | null
@@ -576,6 +669,13 @@ export type Database = {
           wc_count?: number | null
         }
         Relationships: [
+          {
+            foreignKeyName: "listings_cover_photo_id_fkey"
+            columns: ["cover_photo_id"]
+            isOneToOne: false
+            referencedRelation: "listing_photos"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "listings_owner_id_fkey"
             columns: ["owner_id"]
@@ -1073,6 +1173,13 @@ export type Database = {
             foreignKeyName: "fk_rooms_listing_id"
             columns: ["listing_id"]
             isOneToOne: false
+            referencedRelation: "room_search_cache"
+            referencedColumns: ["listing_id"]
+          },
+          {
+            foreignKeyName: "fk_rooms_listing_id"
+            columns: ["listing_id"]
+            isOneToOne: false
             referencedRelation: "v_listing_cards"
             referencedColumns: ["id"]
           },
@@ -1149,10 +1256,13 @@ export type Database = {
           declined_at: string | null
           host_id: string
           id: string
+          last_message_at: string | null
           listing_id: string
           room_id: string | null
           seeker_id: string
           status: Database["public"]["Enums"]["thread_status_enum"] | null
+          unread_count_host: number | null
+          unread_count_seeker: number | null
         }
         Insert: {
           accepted_at?: string | null
@@ -1160,10 +1270,13 @@ export type Database = {
           declined_at?: string | null
           host_id: string
           id?: string
+          last_message_at?: string | null
           listing_id: string
           room_id?: string | null
           seeker_id: string
           status?: Database["public"]["Enums"]["thread_status_enum"] | null
+          unread_count_host?: number | null
+          unread_count_seeker?: number | null
         }
         Update: {
           accepted_at?: string | null
@@ -1171,10 +1284,13 @@ export type Database = {
           declined_at?: string | null
           host_id?: string
           id?: string
+          last_message_at?: string | null
           listing_id?: string
           room_id?: string | null
           seeker_id?: string
           status?: Database["public"]["Enums"]["thread_status_enum"] | null
+          unread_count_host?: number | null
+          unread_count_seeker?: number | null
         }
         Relationships: [
           {
@@ -1190,6 +1306,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "listings"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "threads_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "room_search_cache"
+            referencedColumns: ["listing_id"]
           },
           {
             foreignKeyName: "threads_listing_id_fkey"
@@ -1316,6 +1439,13 @@ export type Database = {
             foreignKeyName: "viewings_listing_id_fkey"
             columns: ["listing_id"]
             isOneToOne: false
+            referencedRelation: "room_search_cache"
+            referencedColumns: ["listing_id"]
+          },
+          {
+            foreignKeyName: "viewings_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
             referencedRelation: "v_listing_cards"
             referencedColumns: ["id"]
           },
@@ -1359,22 +1489,16 @@ export type Database = {
           city: string | null
           couples_accepted: boolean | null
           cover_photo_url: string | null
-          created_at: string | null
           flatmates_count: number | null
+          kyc_status: string | null
           lat: number | null
-          lister_member_since: string | null
-          lister_name: string | null
           lister_type: Database["public"]["Enums"]["lister_type_enum"] | null
-          lister_verification: string | null
+          listing_id: string | null
           lng: number | null
-          max_stay_months: number | null
-          min_stay_months: number | null
           neighborhood: string | null
           pets_allowed: boolean | null
           price_month: number | null
           room_id: string | null
-          room_type: string | null
-          search_tsv: unknown | null
           slug: string | null
           smoking_allowed: boolean | null
           title: string | null
@@ -1568,6 +1692,10 @@ export type Database = {
       }
       refresh_room_search_cache: {
         Args: Record<PropertyKey, never>
+        Returns: undefined
+      }
+      reset_unread_count: {
+        Args: { p_thread_id: string; p_user_role: string }
         Returns: undefined
       }
       set_listing_amenities_by_keys: {

@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "@/hooks/useAuth";
-import { ConversationView } from "@/components/room/ConversationView";
+import { ConversationViewEnhanced } from "@/components/room/ConversationViewEnhanced";
 import { PendingRequests } from "@/components/messaging/PendingRequests";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -138,8 +138,8 @@ const Inbox = () => {
   if (selectedConversation) {
     return (
       <div className="min-h-screen bg-background">
-        <ConversationView
-          roomId={selectedConversation.id}
+        <ConversationViewEnhanced
+          threadId={selectedConversation.id}
           listingTitle={selectedConversation.listing_title}
           listerName={selectedConversation.lister_name}
           listerAvatar={selectedConversation.lister_avatar}

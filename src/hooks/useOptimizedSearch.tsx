@@ -4,6 +4,7 @@ import { supabase } from '@/integrations/supabase/client';
 export interface OptimizedListing {
   room_id: string;
   slug: string;
+  listing_id: string;
   title: string;
   price_month: number;
   city: string;
@@ -13,13 +14,13 @@ export interface OptimizedListing {
   couples_accepted: boolean;
   pets_allowed: boolean;
   smoking_allowed: boolean;
+  bills_included: boolean;
   lat?: number;
   lng?: number;
   cover_photo_url?: string;
-  created_at: string;
-  lister_name?: string;
-  lister_verification?: string;
-  lister_member_since?: string;
+  kyc_status?: string;
+  lister_type?: string;
+  amenity_keys?: string[];
 }
 
 export interface SearchFilters {
@@ -69,9 +70,6 @@ export const useOptimizedSearch = ({ filters, enabled = true }: UseOptimizedSear
   if (filters.flatmates !== undefined) {
     query = query.eq('flatmates_count', filters.flatmates);
   }
-  if (filters.roomType) {
-    query = query.eq('room_type', filters.roomType);
-  }
   if (filters.couplesAccepted !== undefined) {
     query = query.eq('couples_accepted', filters.couplesAccepted);
   }
@@ -82,7 +80,7 @@ export const useOptimizedSearch = ({ filters, enabled = true }: UseOptimizedSear
     query = query.eq('bills_included', filters.billsIncluded);
   }
   if (filters.verifiedLister) {
-    query = query.eq('lister_verification', 'verified');
+    query = query.eq('kyc_status', 'approved');
   }
   if (filters.listerType) {
     query = query.eq('lister_type', filters.listerType);
@@ -112,38 +110,23 @@ export const useOptimizedSearch = ({ filters, enabled = true }: UseOptimizedSear
           .lte('lng', east);
       }
 
-      // Full-text search
+      // Full-text search on title/neighborhood
       if (filters.searchText && filters.searchText.trim()) {
-        // Convert search text to tsquery format
-        const searchQuery = filters.searchText
-          .trim()
-          .split(/\s+/)
-          .map(term => term.replace(/[^\w]/g, ''))
-          .filter(term => term.length > 0)
-          .join(' & ');
-        
-        if (searchQuery) {
-          query = query.textSearch('search_tsv', searchQuery);
-        }
+        const searchTerm = `%${filters.searchText.trim().toLowerCase()}%`;
+        query = query.or(`title.ilike.${searchTerm},neighborhood.ilike.${searchTerm},city.ilike.${searchTerm}`);
       }
 
       // Apply sorting
       switch (filters.sort) {
-        case 'newest':
-          query = query.order('created_at', { ascending: false });
-          break;
         case 'price_low':
           query = query.order('price_month', { ascending: true });
           break;
         case 'price_high':
           query = query.order('price_month', { ascending: false });
           break;
-        case 'popular':
-          query = query.order('created_at', { ascending: false });
-          break;
         default:
-          // Default: featured - newest first
-          query = query.order('created_at', { ascending: false });
+          // Default: featured
+          query = query.order('price_month', { ascending: true });
           break;
       }
 

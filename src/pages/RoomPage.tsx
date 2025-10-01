@@ -6,7 +6,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { AuthFlowManager } from "@/components/auth/AuthFlowManager";
 import { TermsPrivacyModal } from "@/components/auth/TermsPrivacyModal";
 import { MessageComposer } from "@/components/room/MessageComposer";
-import { ConversationView } from "@/components/room/ConversationView";
+import { ConversationViewEnhanced } from "@/components/room/ConversationViewEnhanced";
 import { useMessageFlow } from "@/hooks/useMessageFlow";
 import { Gallery } from "@/components/room/Gallery";
 import { PriceBox } from "@/components/room/PriceBox";
@@ -360,15 +360,14 @@ const RoomPage = () => {
         onAccept={messageFlow.handleTermsAccepted}
       />
       
-      {messageFlow.conversationOpen && roomData && (
+      {messageFlow.conversationOpen && roomData && messageFlow.threadId && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <div className="w-full max-w-md">
-            <ConversationView
-              roomId={roomIdentifier}
+            <ConversationViewEnhanced
+              threadId={messageFlow.threadId}
               listingTitle={roomData.listing.title}
               listerName={roomData.profile?.display_name || 'Ιδιοκτήτης'}
               listerAvatar={roomData.profile?.avatar_url}
-              initialMessage={messageFlow.messageToSend || undefined}
               onClose={messageFlow.closeConversation}
             />
           </div>

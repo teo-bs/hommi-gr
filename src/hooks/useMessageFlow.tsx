@@ -32,10 +32,15 @@ export const useMessageFlow = (listingId?: string) => {
   const [loading, setLoading] = useState(false);
 
   const createChatRequest = async () => {
-    if (!user || !profile || !listingId) return;
+    if (!user || !profile || !listingId) {
+      console.log('Missing required data:', { user: !!user, profile: !!profile, listingId });
+      setAuthModalOpen(true);
+      return;
+    }
 
     try {
       setLoading(true);
+      console.log('Creating chat request for listing:', listingId);
       
       // Get the listing to find the host
       const { data: listing, error: listingError } = await supabase
@@ -45,8 +50,11 @@ export const useMessageFlow = (listingId?: string) => {
         .single();
 
       if (listingError || !listing) {
+        console.error('Listing error:', listingError);
         throw new Error('Listing not found');
       }
+
+      console.log('Found listing owner:', listing.owner_id);
 
       // Check if thread already exists
       const { data: existingThread } = await supabase
@@ -55,19 +63,19 @@ export const useMessageFlow = (listingId?: string) => {
         .eq('listing_id', listingId)
         .eq('seeker_id', profile.id)
         .eq('host_id', listing.owner_id)
-        .single();
+        .maybeSingle();
 
       if (existingThread) {
+        console.log('Found existing thread:', existingThread);
         setThreadId(existingThread.id);
         setRequestStatus(existingThread.status === 'accepted' ? 'accepted' : 
                         existingThread.status === 'declined' ? 'declined' : 'pending');
-        if (existingThread.status === 'accepted') {
-          setShowConversation(true);
-        }
+        setShowConversation(true); // Always open conversation if thread exists
         return;
       }
 
       // Create new thread
+      console.log('Creating new thread');
       const { data: newThread, error: threadError } = await supabase
         .from('threads')
         .insert([{
@@ -80,12 +88,31 @@ export const useMessageFlow = (listingId?: string) => {
         .single();
 
       if (threadError || !newThread) {
+        console.error('Thread creation error:', threadError);
         throw new Error('Failed to create thread');
       }
 
+      console.log('Created new thread:', newThread);
       setThreadId(newThread.id);
       setRequestStatus('pending');
-      // Don't open conversation immediately - wait for host approval
+      setShowConversation(true); // Open conversation immediately
+      
+      // Send initial message if provided
+      if (messageToSend) {
+        console.log('Sending initial message');
+        const { error: msgError } = await supabase
+          .from('messages')
+          .insert({
+            thread_id: newThread.id,
+            sender_id: profile.id,
+            body: messageToSend
+          });
+        
+        if (msgError) {
+          console.error('Error sending initial message:', msgError);
+        }
+      }
+      
     } catch (error) {
       console.error('Error creating chat request:', error);
       setRequestStatus('none');
@@ -200,10 +227,36 @@ export const useMessageFlow = (listingId?: string) => {
     setTermsModalOpen(false);
   }, [acceptTerms, proceedWithMessage, messageToSend]);
 
-  const handleMessageSent = useCallback((message: string) => {
-    setShowConversation(true);
-    setMessageToSend(message);
-  }, []);
+  const handleMessageSent = useCallback(async (message: string) => {
+    console.log('handleMessageSent called with:', { message, threadId, profile: !!profile });
+    
+    if (!threadId || !profile) {
+      console.error('Cannot send message: missing thread or profile');
+      setMessageToSend(message);
+      return;
+    }
+
+    try {
+      console.log('Sending message to thread:', threadId);
+      const { error } = await supabase
+        .from('messages')
+        .insert({
+          thread_id: threadId,
+          sender_id: profile.id,
+          body: message
+        });
+
+      if (error) {
+        console.error('Error sending message:', error);
+        throw error;
+      }
+
+      console.log('Message sent successfully');
+      setShowConversation(true);
+    } catch (error) {
+      console.error('Failed to send message:', error);
+    }
+  }, [threadId, profile]);
 
   const closeAuth = useCallback(() => {
     setAuthModalOpen(false);

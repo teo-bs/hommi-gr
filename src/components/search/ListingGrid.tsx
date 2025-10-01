@@ -155,7 +155,7 @@ export const ListingGrid = ({
                       </Badge>
                     )}
                     
-                    {listing.lister_verification === 'verified' && (
+                    {listing.kyc_status === 'approved' && (
                       <Badge variant="secondary" className="text-xs text-success">
                         <Star className="h-3 w-3 mr-1" />
                         Verified

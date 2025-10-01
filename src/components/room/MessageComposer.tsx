@@ -60,14 +60,14 @@ export const MessageComposer = ({
     setSending(true);
     
     try {
-      // TODO: Implement actual message sending to Supabase
-      await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate API call
+      console.log('Sending message via onMessageSent callback');
+      
+      // Call the parent handler which will create thread and send message
+      onMessageSent(message);
       
       // Clear the draft after successful send
       localStorage.removeItem(`message-draft-${roomId}`);
       setMessage("");
-      
-      onMessageSent(message);
       
       toast({
         title: "Μήνυμα στάλθηκε!",
@@ -82,6 +82,7 @@ export const MessageComposer = ({
       });
       
     } catch (error) {
+      console.error('Error sending message:', error);
       toast({
         title: "Σφάλμα αποστολής",
         description: "Δοκιμάστε ξανά σε λίγο",
