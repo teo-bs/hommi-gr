@@ -1,6 +1,6 @@
 import { useEffect, useRef, useCallback } from "react";
-import maplibregl from 'maplibre-gl';
-import 'maplibre-gl/dist/maplibre-gl.css';
+import mapboxgl from 'mapbox-gl';
+import 'mapbox-gl/dist/mapbox-gl.css';
 import { useMapState } from "@/hooks/useMapState";
 import { Button } from "@/components/ui/button";
 import { RotateCcw } from "lucide-react";
@@ -34,8 +34,8 @@ export const MapContainer = ({
   selectedListingId
 }: MapContainerProps) => {
   const mapContainer = useRef<HTMLDivElement>(null);
-  const map = useRef<maplibregl.Map | null>(null);
-  const clustersSource = useRef<maplibregl.GeoJSONSource | null>(null);
+  const map = useRef<mapboxgl.Map | null>(null);
+  const clustersSource = useRef<mapboxgl.GeoJSONSource | null>(null);
   
   const { 
     mapState, 
@@ -79,38 +79,22 @@ export const MapContainer = ({
   useEffect(() => {
     if (!mapContainer.current) return;
 
-    console.log('Initializing MapLibre GL map');
+    console.log('Initializing Mapbox GL map');
 
-    map.current = new maplibregl.Map({
+    const MAPBOX_TOKEN = 'pk.eyJ1IjoibXBvdWZpc3RoIiwiYSI6ImNtZzNsaW02NjE3OHQycXF3aGp2ZmcyaDkifQ.3uU3F5ayX9teACIm7C9fxQ';
+    mapboxgl.accessToken = MAPBOX_TOKEN;
+
+    map.current = new mapboxgl.Map({
       container: mapContainer.current,
-      style: {
-        version: 8,
-        sources: {
-          'osm': {
-            type: 'raster',
-            tiles: ['https://tile.openstreetmap.org/{z}/{x}/{y}.png'],
-            tileSize: 256,
-            attribution: '© OpenStreetMap contributors'
-          }
-        },
-        layers: [
-          {
-            id: 'osm',
-            type: 'raster',
-            source: 'osm',
-            minzoom: 0,
-            maxzoom: 19
-          }
-        ]
-      },
+      style: 'mapbox://styles/mapbox/streets-v12',
       center: mapState.center,
       zoom: mapState.zoom,
       attributionControl: false
     });
 
     // Add navigation controls
-    map.current.addControl(new maplibregl.NavigationControl(), 'top-right');
-    map.current.addControl(new maplibregl.AttributionControl({ compact: true }), 'bottom-right');
+    map.current.addControl(new mapboxgl.NavigationControl(), 'top-right');
+    map.current.addControl(new mapboxgl.AttributionControl({ compact: true }), 'bottom-right');
 
     // Map event handlers
     map.current.on('movestart', () => {
@@ -140,18 +124,22 @@ export const MapContainer = ({
     map.current.on('load', () => {
       if (!map.current) return;
 
-      // Add clusters source
+      // Add clusters source with price aggregations
       map.current.addSource('listings', {
         type: 'geojson',
         data: createGeoJSONData(),
         cluster: true,
         clusterMaxZoom: 14,
-        clusterRadius: 50
+        clusterRadius: 50,
+        clusterProperties: {
+          avg_price: ['/', ['+', ['get', 'price']], ['get', 'point_count']],
+          min_price: ['min', ['get', 'price']]
+        }
       });
 
-      clustersSource.current = map.current.getSource('listings') as maplibregl.GeoJSONSource;
+      clustersSource.current = map.current.getSource('listings') as mapboxgl.GeoJSONSource;
 
-      // Cluster circles
+      // Cluster circles with price-based gradient
       map.current.addLayer({
         id: 'clusters',
         type: 'circle',
@@ -160,25 +148,25 @@ export const MapContainer = ({
         paint: {
           'circle-color': [
             'step',
-            ['get', 'point_count'],
-            'hsl(var(--primary))',
-            10,
-            'hsl(var(--primary))',
-            30,
-            'hsl(var(--primary))'
+            ['get', 'avg_price'],
+            '#51bbd6',
+            500,
+            '#f1f075',
+            700,
+            '#f28cb1'
           ],
           'circle-radius': [
             'step',
             ['get', 'point_count'],
-            15,
+            20,
             10,
-            25,
             30,
-            35
+            30,
+            40
           ],
           'circle-opacity': 0.8,
           'circle-stroke-width': 2,
-          'circle-stroke-color': 'hsl(var(--background))'
+          'circle-stroke-color': '#fff'
         }
       });
 
@@ -260,17 +248,16 @@ export const MapContainer = ({
         });
         const clusterId = features[0].properties?.cluster_id;
         if (clusterId) {
-          (map.current.getSource('listings') as maplibregl.GeoJSONSource).getClusterExpansionZoom(
-            clusterId
-          ).then((zoom) => {
-            if (!map.current) return;
-            map.current.easeTo({
-              center: (features[0].geometry as any).coordinates,
-              zoom: zoom
-            });
-          }).catch(err => {
-            console.error('Error getting cluster expansion zoom:', err);
-          });
+          (map.current.getSource('listings') as mapboxgl.GeoJSONSource).getClusterExpansionZoom(
+            clusterId,
+            (err, zoom) => {
+              if (err || !map.current) return;
+              map.current.easeTo({
+                center: (features[0].geometry as any).coordinates,
+                zoom: zoom
+              });
+            }
+          );
         }
       });
 

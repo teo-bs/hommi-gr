@@ -104,6 +104,7 @@ export const ListingGrid = ({
           <Link
             key={listing.room_id}
             to={`/listing/${listing.slug}`}
+            state={{ fromSearch: true }}
             className="block"
             onClick={() => handleCardClick(listing.room_id)}
           >

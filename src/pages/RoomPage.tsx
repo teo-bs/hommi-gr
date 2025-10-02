@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -22,7 +22,10 @@ import { AmenitiesGrid } from "@/components/room/AmenitiesGrid";
 import { LocationMiniMap } from "@/components/room/LocationMiniMap";
 import { ListerCard } from "@/components/room/ListerCard";
 import { SaveRoomButton } from "@/components/room/SaveRoomButton";
+import { ShareButton } from "@/components/room/ShareButton";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Button } from "@/components/ui/button";
+import { ArrowLeft } from "lucide-react";
 
 interface RoomData {
   room: any;
@@ -40,6 +43,7 @@ interface RoomData {
 const RoomPage = () => {
   const { slug, id } = useParams(); // Support both slug and legacy id
   const navigate = useNavigate();
+  const location = useLocation();
   const { user } = useAuth();
   const [roomData, setRoomData] = useState<RoomData | null>(null);
   const [loading, setLoading] = useState(true);
@@ -47,6 +51,20 @@ const RoomPage = () => {
   // Message flow management - use slug or id as identifier
   const roomIdentifier = slug || id || '';
   const messageFlow = useMessageFlow(roomIdentifier);
+
+  // Track referral from shared link
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const utmSource = urlParams.get('utm_source');
+    
+    if (utmSource === 'share') {
+      console.log('listing_viewed_from_share', {
+        listing_slug: slug,
+        utm_medium: urlParams.get('utm_medium'),
+        utm_campaign: urlParams.get('utm_campaign')
+      });
+    }
+  }, [slug]);
 
   useEffect(() => {
     if (!slug && !id) {
@@ -268,6 +286,20 @@ const RoomPage = () => {
       </Helmet>
 
       <div className="container mx-auto px-4 py-8">
+        {/* Back to Search Button */}
+        {location.state?.fromSearch && (
+          <div className="mb-4">
+            <Button 
+              variant="ghost" 
+              onClick={() => navigate('/search', { state: { fromListing: true } })}
+              className="gap-2"
+            >
+              <ArrowLeft className="h-4 w-4" />
+              Επιστροφή στα αποτελέσματα
+            </Button>
+          </div>
+        )}
+
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Main Content */}
           <div className="lg:col-span-2 space-y-8">
@@ -333,7 +365,13 @@ const RoomPage = () => {
                 deposit={listing.deposit || 0}
               />
               
-              <SaveRoomButton roomId={room.id} />
+              <div className="space-y-2">
+                <SaveRoomButton roomId={room.id} />
+                <ShareButton 
+                  listingSlug={slug || id || ''}
+                  listingTitle={listing.title}
+                />
+              </div>
               
               <CTAStack onRequestChat={handleRequestChat} />
               

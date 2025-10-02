@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from "react";
-import { useSearchParams } from "react-router-dom";
+import { useSearchParams, useLocation, useNavigate } from "react-router-dom";
 import { MapContainer } from "@/components/search/MapContainer";
 import { EnhancedSearchFilters } from "@/components/search/EnhancedSearchFilters";
 import { FilterChips } from "@/components/search/FilterChips";
@@ -7,6 +7,7 @@ import { ResultsCounter } from "@/components/search/ResultsCounter";
 import { ListingGrid } from "@/components/search/ListingGrid";
 import { Button } from "@/components/ui/button";
 import { Map, List, SlidersHorizontal } from "lucide-react";
+import { useSearchStateCache } from "@/hooks/useSearchStateCache";
 
 export interface FilterState {
   budget: [number, number];
@@ -26,6 +27,9 @@ export interface FilterState {
 
 const Search = () => {
   const [searchParams, setSearchParams] = useSearchParams();
+  const location = useLocation();
+  const navigate = useNavigate();
+  const { saveState, restoreState } = useSearchStateCache();
   const [viewMode, setViewMode] = useState<'list' | 'map' | 'split'>('split');
   const [showMobileMap, setShowMobileMap] = useState(false);
   const [showFilters, setShowFilters] = useState(false);
@@ -102,6 +106,24 @@ const Search = () => {
   const filtersParam = searchParams.get('filters') || '';
   const sort = searchParams.get('sort') || 'featured';
 
+  // Restore state when coming back from listing
+  useEffect(() => {
+    if (location.state?.fromListing) {
+      const cached = restoreState();
+      if (cached) {
+        setListings(cached.listings);
+        setFilters(cached.filters);
+        
+        // Restore scroll position after a brief delay to ensure DOM is ready
+        requestAnimationFrame(() => {
+          setTimeout(() => {
+            window.scrollTo(0, cached.scrollY);
+          }, 100);
+        });
+      }
+    }
+  }, [location.state, restoreState]);
+
   useEffect(() => {
     // Track analytics
     console.log('search_page_viewed', {
@@ -114,8 +136,6 @@ const Search = () => {
     // Listen for map bounds changes
     const handleMapBoundsChanged = (event: CustomEvent) => {
       console.log('Map bounds changed, refreshing results:', event.detail);
-      // This would trigger a refresh of the listing data based on new bounds
-      // For now, we'll just log it
     };
 
     // Listen for listings updates from ListingGrid
@@ -175,6 +195,12 @@ const Search = () => {
       duration: "any",
       sort: 'featured'
     });
+  };
+
+  const handleListingClick = (listingId: string) => {
+    // Save state before navigating
+    saveState(listings, window.scrollY, filters);
+    setSelectedListingId(listingId);
   };
 
   return (
@@ -304,7 +330,7 @@ const Search = () => {
                 <ListingGrid 
                   filters={filters} 
                   onListingHover={setHoveredListingId}
-                  onListingClick={setSelectedListingId}
+                  onListingClick={handleListingClick}
                   hoveredListingId={hoveredListingId}
                   selectedListingId={selectedListingId}
                 />
@@ -318,7 +344,7 @@ const Search = () => {
               <ListingGrid 
                 filters={filters} 
                 onListingHover={setHoveredListingId}
-                onListingClick={setSelectedListingId}
+                onListingClick={handleListingClick}
                 hoveredListingId={hoveredListingId}
                 selectedListingId={selectedListingId}
               />
@@ -332,7 +358,7 @@ const Search = () => {
                 <ListingGrid 
                   filters={filters} 
                   onListingHover={setHoveredListingId}
-                  onListingClick={setSelectedListingId}
+                  onListingClick={handleListingClick}
                   hoveredListingId={hoveredListingId}
                   selectedListingId={selectedListingId}
                 />
