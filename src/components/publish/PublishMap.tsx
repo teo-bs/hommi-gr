@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import mapboxgl from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
+import { useDebouncedCallback } from 'use-debounce';
 
 interface LocationData {
   city: string;
@@ -70,7 +71,7 @@ export const PublishMap = ({
       if (!marker.current) return;
       
       const lngLat = marker.current.getLngLat();
-      reverseGeocode(lngLat.lng, lngLat.lat);
+      debouncedReverseGeocode(lngLat.lng, lngLat.lat);
     });
 
     return () => {
@@ -167,6 +168,9 @@ export const PublishMap = ({
       setIsReverseGeocoding(false);
     }
   };
+
+  // Debounced version to prevent excessive API calls during drag
+  const debouncedReverseGeocode = useDebouncedCallback(reverseGeocode, 500);
 
   return (
     <div className="relative">

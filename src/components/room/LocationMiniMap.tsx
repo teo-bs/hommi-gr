@@ -10,9 +10,19 @@ interface LocationMiniMapProps {
   } | null;
   neighborhood: string;
   city: string;
+  formatted_address?: string;
+  street_address?: string;
+  is_location_approx?: boolean;
 }
 
-export const LocationMiniMap = ({ geo, neighborhood, city }: LocationMiniMapProps) => {
+export const LocationMiniMap = ({ 
+  geo, 
+  neighborhood, 
+  city,
+  formatted_address,
+  street_address,
+  is_location_approx = true
+}: LocationMiniMapProps) => {
   const mapRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<any>(null);
   const [shouldLoadMap, setShouldLoadMap] = useState(false);
@@ -141,14 +151,16 @@ export const LocationMiniMap = ({ geo, neighborhood, city }: LocationMiniMapProp
       
       <CardContent>
         <div className="space-y-4">
-          <div className="text-sm">
-            <p className="font-medium">{neighborhood}</p>
-            <p className="text-muted-foreground">{city}</p>
+          <div className="text-sm space-y-1">
+            <p className="font-medium">
+              {formatted_address || street_address || `${neighborhood || city}, Greece`}
+            </p>
+            {is_location_approx && (
+              <Badge variant="outline" className="text-xs">
+                📍 Προσεγγιστική τοποθεσία (ακτίνα 500μ)
+              </Badge>
+            )}
           </div>
-
-          <Badge variant="outline" className="mb-2">
-            📍 Προσεγγιστική τοποθεσία (ακτίνα 500μ)
-          </Badge>
           
           <div 
             ref={mapRef}
@@ -165,7 +177,9 @@ export const LocationMiniMap = ({ geo, neighborhood, city }: LocationMiniMapProp
           </div>
           
           <p className="text-xs text-muted-foreground">
-            Η ακριβής διεύθυνση θα εμφανιστεί μετά την επιβεβαίωση κράτησης
+            {is_location_approx 
+              ? 'Η ακριβής διεύθυνση θα εμφανιστεί μετά την επιβεβαίωση κράτησης'
+              : 'Τοποθεσία ακινήτου'}
           </p>
         </div>
       </CardContent>

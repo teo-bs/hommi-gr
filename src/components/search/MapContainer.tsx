@@ -16,6 +16,7 @@ export interface Listing {
   photos?: string[];
   city: string;
   neighborhood?: string;
+  formatted_address?: string;
 }
 
 interface MapContainerProps {
@@ -62,6 +63,7 @@ export const MapContainer = ({
           city: listing.city,
           neighborhood: listing.neighborhood,
           photo: listing.photos?.[0] || null,
+          formatted_address: listing.formatted_address || `${listing.neighborhood || listing.city}, Greece`
         },
         geometry: {
           type: 'Point' as const,
@@ -265,9 +267,25 @@ export const MapContainer = ({
         const features = e.features;
         if (features && features[0]) {
           const listingId = features[0].properties?.id;
+          const title = features[0].properties?.title;
+          const formattedAddress = features[0].properties?.formatted_address;
+          
           if (listingId) {
             setSelectedPinId(listingId);
             onListingClick?.(listingId);
+          }
+          
+          // Show popup with address on click
+          if (title && formattedAddress && map.current) {
+            new mapboxgl.Popup({ closeButton: true, closeOnClick: true })
+              .setLngLat((features[0].geometry as any).coordinates)
+              .setHTML(`
+                <div style="padding: 8px; max-width: 200px;">
+                  <strong style="display: block; margin-bottom: 4px; font-size: 14px;">${title}</strong>
+                  <span style="font-size: 12px; color: #666;">${formattedAddress}</span>
+                </div>
+              `)
+              .addTo(map.current);
           }
         }
       });

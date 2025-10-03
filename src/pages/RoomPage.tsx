@@ -339,6 +339,9 @@ const RoomPage = () => {
                 geo={listing.geo}
                 neighborhood={listing.neighborhood}
                 city={listing.city}
+                formatted_address={listing.formatted_address}
+                street_address={listing.street_address}
+                is_location_approx={listing.is_location_approx}
               />
             </div>
           </div>

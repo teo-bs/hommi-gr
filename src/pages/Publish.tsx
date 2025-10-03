@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { Helmet } from "react-helmet-async";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
@@ -333,13 +333,22 @@ export default function Publish() {
     }
   };
 
-  // Debounced auto-save for field changes
+  // Debounced auto-save for field changes - reduced from 1000ms to 400ms for faster responsiveness
   const debouncedSave = useDebouncedCallback(
-    (updates: Partial<ListingDraft>) => {
-      saveDraft(updates);
+    (draftToSave: ListingDraft) => {
+      saveDraft(draftToSave);
     },
-    1000
+    400
   );
+
+  // Optimistic update - UI responds immediately
+  const updateDraft = useCallback((updates: Partial<ListingDraft>) => {
+    setDraft(prev => {
+      const updated = { ...prev, ...updates };
+      debouncedSave(updated);
+      return updated;
+    });
+  }, [debouncedSave]);
 
   const nextStep = (updates?: Partial<ListingDraft>) => {
     if (updates) {

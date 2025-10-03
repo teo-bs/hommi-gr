@@ -8,6 +8,7 @@ import { ListingGrid } from "@/components/search/ListingGrid";
 import { Button } from "@/components/ui/button";
 import { Map, List, SlidersHorizontal } from "lucide-react";
 import { useSearchStateCache } from "@/hooks/useSearchStateCache";
+import { useDebouncedCallback } from 'use-debounce';
 
 export interface FilterState {
   budget: [number, number];
@@ -124,6 +125,11 @@ const Search = () => {
     }
   }, [location.state, restoreState]);
 
+  // Debounced handler for map bounds changes to prevent query spam
+  const debouncedBoundsUpdate = useDebouncedCallback((bounds: any) => {
+    setFilters(prev => ({ ...prev, bounds }));
+  }, 300);
+
   useEffect(() => {
     // Track analytics
     console.log('search_page_viewed', {
@@ -133,14 +139,15 @@ const Search = () => {
       timestamp: Date.now()
     });
 
-    // Listen for map bounds changes
     const handleMapBoundsChanged = (event: CustomEvent) => {
-      console.log('Map bounds changed, refreshing results:', event.detail);
+      const { bounds } = event.detail;
+      if (bounds) {
+        debouncedBoundsUpdate(bounds);
+      }
     };
 
     // Listen for listings updates from ListingGrid
     const handleListingsUpdated = (event: CustomEvent) => {
-      console.log('Listings updated:', event.detail.listings.length);
       setListings(event.detail.listings);
     };
 
@@ -150,8 +157,9 @@ const Search = () => {
     return () => {
       window.removeEventListener('mapBoundsChanged', handleMapBoundsChanged as EventListener);
       window.removeEventListener('listingsUpdated', handleListingsUpdated as EventListener);
+      debouncedBoundsUpdate.cancel();
     };
-  }, [city, filtersParam, sort]);
+  }, [debouncedBoundsUpdate, city, filtersParam, sort]);
 
   const handleFilterChange = (newFilters: Partial<FilterState>) => {
     const updatedFilters = { ...filters, ...newFilters };
