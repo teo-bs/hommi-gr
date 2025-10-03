@@ -1,6 +1,6 @@
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
-import { Home, Maximize2, ArrowUp, Bed } from "lucide-react";
+import { Home, Maximize2, ArrowUp, Bed, Building } from "lucide-react";
 
 interface QuickFactsProps {
   room: {
@@ -11,6 +11,7 @@ interface QuickFactsProps {
   };
   listing: {
     amenities_property?: any[];
+    floor?: number | null;
   };
 }
 
@@ -19,6 +20,16 @@ export const QuickFacts = ({ room, listing }: QuickFactsProps) => {
     amenity.name?.toLowerCase().includes('ασανσέρ') || 
     amenity.name?.toLowerCase().includes('lift')
   );
+
+  const getFloorLabel = (floor: number | null | undefined) => {
+    if (floor === null || floor === undefined) return null;
+    if (floor === -1) return 'Υπόγειο';
+    if (floor === 0) return 'Ισόγειο';
+    if (floor === 0.5) return 'Ημιώροφος';
+    return `${floor}ος Όροφος`;
+  };
+
+  const floorLabel = getFloorLabel(listing.floor);
 
   const facts = [
     {
@@ -36,6 +47,11 @@ export const QuickFacts = ({ room, listing }: QuickFactsProps) => {
       label: room.is_interior ? 'Interior' : 'Exterior',
       variant: room.is_interior ? 'secondary' : 'default'
     },
+    ...(floorLabel ? [{
+      icon: Building,
+      label: floorLabel,
+      variant: 'secondary' as const
+    }] : []),
     {
       icon: ArrowUp,
       label: hasLift ? 'Lift' : 'No lift',

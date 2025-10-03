@@ -4,6 +4,7 @@ import { TermsPrivacyModal } from "./TermsPrivacyModal";
 import { OnboardingChoiceModal } from "@/components/onboarding/OnboardingChoiceModal";
 import { IndividualAgencyModal } from "./IndividualAgencyModal";
 import { useAuth } from "@/hooks/useAuth";
+import { supabase } from "@/integrations/supabase/client";
 
 export const GlobalTermsHandler = () => {
   const { user, profile, needsTermsAcceptance, acceptTerms } = useAuth();
@@ -65,8 +66,24 @@ export const GlobalTermsHandler = () => {
     }
   };
 
-  const handleIndividualAgencyChoice = (choice: 'individual' | 'agency') => {
+  const handleIndividualAgencyChoice = async (choice: 'individual' | 'agency') => {
     setShowIndividualAgencyModal(false);
+    
+    // Persist lister_type to profile
+    if (user && profile) {
+      const { error } = await supabase
+        .from('profiles')
+        .update({ 
+          lister_type: choice,
+          role: 'lister',
+          can_switch_roles: choice === 'individual' // Lock for agencies
+        })
+        .eq('user_id', user.id);
+      
+      if (error) {
+        console.error('Failed to update lister_type:', error);
+      }
+    }
     
     // Clear the intent parameter from URL
     if (hasListingIntent) {

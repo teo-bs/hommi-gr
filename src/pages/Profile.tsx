@@ -10,7 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
-import { Camera, MapPin, Calendar, Star, Users, ExternalLink, Plus, X, Check } from "lucide-react";
+import { Camera, MapPin, Calendar, Star, Users, ExternalLink, Plus, X, Check, Home } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { OnboardingModal } from "@/components/onboarding/OnboardingModal";
 import { ProfileCompletionBanner } from "@/components/onboarding/ProfileCompletionBanner";
@@ -641,6 +641,65 @@ export default function Profile() {
                       />
                     </div>
                   </div>
+
+                  {/* Role Switching Section */}
+                  {profile?.can_switch_roles ? (
+                    <div className="pt-4 border-t">
+                      <Label className="text-sm font-medium mb-2 block">Ρόλος</Label>
+                      <div className="flex items-center justify-between p-4 bg-muted/50 rounded-lg">
+                        <div>
+                          <p className="font-medium text-foreground">
+                            {profile.role === 'tenant' ? 'Ενοικιαστής' : 'Ιδιοκτήτης'}
+                          </p>
+                          <p className="text-sm text-muted-foreground">
+                            Μπορείτε να εναλλάξετε ρόλους οποτεδήποτε
+                          </p>
+                        </div>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={async () => {
+                            const newRole = profile.role === 'tenant' ? 'lister' : 'tenant';
+                            const { error } = await supabase
+                              .from('profiles')
+                              .update({ role: newRole })
+                              .eq('user_id', user.id);
+                            
+                            if (error) {
+                              toast({
+                                title: "Σφάλμα",
+                                description: error.message || "Δεν ήταν δυνατή η αλλαγή ρόλου",
+                                variant: "destructive"
+                              });
+                            } else {
+                              toast({
+                                title: "Επιτυχία",
+                                description: "Ο ρόλος άλλαξε επιτυχώς"
+                              });
+                              window.location.reload();
+                            }
+                          }}
+                        >
+                          Αλλαγή σε {profile.role === 'tenant' ? 'Ιδιοκτήτη' : 'Ενοικιαστή'}
+                        </Button>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="pt-4 border-t">
+                      <Label className="text-sm font-medium mb-2 block">Τύπος Λογαριασμού</Label>
+                      <div className="flex items-center gap-3 p-4 bg-muted/50 rounded-lg">
+                        <Home className="h-5 w-5 text-muted-foreground" />
+                        <div>
+                          <p className="font-medium text-foreground">
+                            {profile?.lister_type === 'agency' ? 'Μεσιτικό Γραφείο' : 'Λογαριασμός Ιδιώτη'}
+                          </p>
+                          <p className="text-sm text-muted-foreground">
+                            Η εναλλαγή ρόλου δεν είναι διαθέσιμη για αυτόν τον τύπο λογαριασμού
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  )}
 
                   {/* Listings Section - Only show for listers */}
                   {profile.role === 'lister' && (

@@ -94,6 +94,9 @@ export default function Publish() {
   
   const editingId = searchParams.get('id'); // Check if we're editing an existing listing
   
+  // Skip step 0 if user already has lister_type
+  const shouldShowStepZero = !profile?.lister_type;
+  
   const [showVerificationModal, setShowVerificationModal] = useState(false);
   const [showProfileModal, setShowProfileModal] = useState(false);
   const [publishWarnings, setPublishWarnings] = useState<any[]>([]);
@@ -143,6 +146,13 @@ export default function Publish() {
       loadDraft();
     }
   }, [user, profile, editingId]);
+
+  // Auto-advance from step 0 if it should be skipped
+  useEffect(() => {
+    if (!shouldShowStepZero && currentStep === 0 && !searchParams.get('step')) {
+      setSearchParams({ step: '1' });
+    }
+  }, [shouldShowStepZero, currentStep, searchParams, setSearchParams]);
 
   const loadDraft = async () => {
     if (!user || !profile) return;
@@ -739,16 +749,16 @@ export default function Publish() {
                 </div>
               </div>
               <PublishProgressStepper 
-                steps={STEPS.slice(2)} 
-                currentStep={currentStep - 2}
-                completedSteps={completedSteps.filter(s => s >= 2).map(s => s - 2)}
+                steps={shouldShowStepZero ? STEPS.slice(2) : STEPS.slice(2)} 
+                currentStep={shouldShowStepZero ? currentStep - 2 : currentStep - 1}
+                completedSteps={completedSteps.filter(s => s >= 2).map(s => shouldShowStepZero ? s - 2 : s - 1)}
               />
             </div>
           )}
 
           {/* Step Content with Transitions */}
-          <StepTransition isVisible={currentStep === 0}>
-            {currentStep === 0 && (
+          <StepTransition isVisible={currentStep === 0 && shouldShowStepZero}>
+            {currentStep === 0 && shouldShowStepZero && (
               <PublishStepZero onRoleSelected={handleRoleSelected} />
             )}
           </StepTransition>
