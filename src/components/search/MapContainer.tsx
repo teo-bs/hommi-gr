@@ -291,16 +291,44 @@ export const MapContainer = ({
         }
       });
 
-      // Hover handlers
+      // Hover handlers with preview popup
       map.current.on('mouseenter', 'unclustered-point-bg', (e) => {
         if (!map.current) return;
         map.current.getCanvas().style.cursor = 'pointer';
         const features = e.features;
         if (features && features[0]) {
           const listingId = features[0].properties?.id;
+          const title = features[0].properties?.title;
+          const price = features[0].properties?.price;
+          const photo = features[0].properties?.photo;
+          const coords = (features[0].geometry as any).coordinates;
+          
           if (listingId) {
             setHoveredPinId(listingId);
             onListingHover?.(listingId);
+            
+            // Show hover preview popup
+            if (hoverPopup.current) {
+              hoverPopup.current.remove();
+            }
+            
+            hoverPopup.current = new mapboxgl.Popup({
+              closeButton: false,
+              closeOnClick: false,
+              offset: 15,
+              className: 'map-hover-popup'
+            })
+              .setLngLat(coords)
+              .setHTML(`
+                <div style="width: 280px; border-radius: 12px; overflow: hidden; animation: fadeIn 0.2s ease-out;">
+                  <img src="${photo || '/placeholder.svg'}" alt="${title}" style="width: 100%; height: 180px; object-fit: cover;" />
+                  <div style="padding: 12px;">
+                    <div style="font-weight: 600; font-size: 14px; margin-bottom: 4px; color: hsl(var(--foreground));">${title}</div>
+                    <div style="font-size: 14px; color: hsl(var(--foreground));"><span style="font-weight: 600;">€${price}</span> <span style="color: hsl(var(--muted-foreground)); font-size: 13px;">μήνα</span></div>
+                  </div>
+                </div>
+              `)
+              .addTo(map.current);
           }
         }
       });
@@ -310,6 +338,12 @@ export const MapContainer = ({
         map.current.getCanvas().style.cursor = '';
         setHoveredPinId(null);
         onListingHover?.(null);
+        
+        // Remove hover popup
+        if (hoverPopup.current) {
+          hoverPopup.current.remove();
+          hoverPopup.current = null;
+        }
       });
 
       map.current.on('mouseenter', 'clusters', () => {

@@ -153,7 +153,31 @@ const Search = () => {
   }, [debouncedBoundsUpdate]);
 
   const handleFilterChange = (newFilters: Partial<FilterState>) => {
-    setFilters(prev => ({ ...prev, ...newFilters }));
+    const updatedFilters = { ...filters, ...newFilters };
+    setFilters(updatedFilters);
+    
+    // Persist to URL
+    const params = new URLSearchParams(searchParams);
+    if (updatedFilters.budget[0] !== 300 || updatedFilters.budget[1] !== 800) {
+      params.set('budget', `${updatedFilters.budget[0]}-${updatedFilters.budget[1]}`);
+    } else {
+      params.delete('budget');
+    }
+    if (updatedFilters.verifiedLister) params.set('verified', '1'); else params.delete('verified');
+    if (updatedFilters.couplesAccepted) params.set('couples', '1'); else params.delete('couples');
+    if (updatedFilters.petsAllowed) params.set('pets', '1'); else params.delete('pets');
+    if (updatedFilters.sort !== 'featured') params.set('sort', updatedFilters.sort); else params.delete('sort');
+    setSearchParams(params);
+  };
+
+  const handleRemoveFilter = (key: string) => {
+    const defaults: Partial<FilterState> = {
+      budget: [300, 800],
+      verifiedLister: false,
+      couplesAccepted: false,
+      petsAllowed: false,
+    };
+    handleFilterChange({ [key]: defaults[key as keyof typeof defaults] });
   };
 
   const handleListingHover = (listingId: string, isEntering: boolean) => {
@@ -174,6 +198,7 @@ const Search = () => {
       <SearchBar 
         filters={filters} 
         onFilterChange={handleFilterChange}
+        onRemoveFilter={handleRemoveFilter}
         resultCount={listings.length}
       />
 

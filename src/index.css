@@ -7,6 +7,28 @@
 /* Hommi.gr Design System - Mediterranean-inspired colors and modern aesthetics */
 
 @layer base {
+  /* Map hover popup animations */
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+      transform: translateY(-5px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .mapboxgl-popup-content {
+    padding: 0 !important;
+    border-radius: 12px !important;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.15) !important;
+  }
+
+  .mapboxgl-popup-tip {
+    display: none;
+  }
+
   :root {
     /* Core Mediterranean palette */
     --background: 0 0% 100%;
