@@ -21,6 +21,7 @@ export interface OptimizedListing {
   kyc_status?: string;
   lister_type?: string;
   amenity_keys?: string[];
+  formatted_address?: string;
 }
 
 export interface SearchFilters {

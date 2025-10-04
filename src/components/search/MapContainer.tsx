@@ -188,9 +188,9 @@ export const MapContainer = ({
         }
       });
 
-      // Individual pins
+      // Individual pin markers with price background
       map.current.addLayer({
-        id: 'unclustered-point',
+        id: 'unclustered-point-bg',
         type: 'circle',
         source: 'listings',
         filter: ['!', ['has', 'point_count']],
@@ -198,29 +198,22 @@ export const MapContainer = ({
           'circle-color': [
             'case',
             ['==', ['get', 'id'], selectedListingId || ''],
-            'hsl(var(--primary))',
+            'hsl(var(--foreground))',
             ['==', ['get', 'id'], hoveredListingId || ''],
-            'hsl(var(--primary))',
-            'hsl(var(--primary))'
+            'hsl(var(--foreground))',
+            'hsl(var(--background))'
           ],
-          'circle-radius': [
+          'circle-radius': 18,
+          'circle-stroke-width': 1,
+          'circle-stroke-color': [
             'case',
             ['==', ['get', 'id'], selectedListingId || ''],
-            12,
+            'hsl(var(--foreground))',
             ['==', ['get', 'id'], hoveredListingId || ''],
-            10,
-            8
+            'hsl(var(--foreground))',
+            'hsl(var(--border))'
           ],
-          'circle-stroke-width': [
-            'case',
-            ['==', ['get', 'id'], selectedListingId || ''],
-            3,
-            ['==', ['get', 'id'], hoveredListingId || ''],
-            2,
-            1
-          ],
-          'circle-stroke-color': 'hsl(var(--background))',
-          'circle-opacity': 0.9
+          'circle-opacity': 1
         }
       });
 
@@ -233,12 +226,19 @@ export const MapContainer = ({
         layout: {
           'text-field': '€{price}',
           'text-font': ['Open Sans Semibold', 'Arial Unicode MS Bold'],
-          'text-size': 10,
+          'text-size': 13,
           'text-offset': [0, 0],
           'text-anchor': 'center'
         },
         paint: {
-          'text-color': 'hsl(var(--primary-foreground))'
+          'text-color': [
+            'case',
+            ['==', ['get', 'id'], selectedListingId || ''],
+            'hsl(var(--background))',
+            ['==', ['get', 'id'], hoveredListingId || ''],
+            'hsl(var(--background))',
+            'hsl(var(--foreground))'
+          ]
         }
       });
 
@@ -263,7 +263,7 @@ export const MapContainer = ({
         }
       });
 
-      map.current.on('click', 'unclustered-point', (e) => {
+      map.current.on('click', 'unclustered-point-bg', (e) => {
         const features = e.features;
         if (features && features[0]) {
           const listingId = features[0].properties?.id;
@@ -291,7 +291,7 @@ export const MapContainer = ({
       });
 
       // Hover handlers
-      map.current.on('mouseenter', 'unclustered-point', (e) => {
+      map.current.on('mouseenter', 'unclustered-point-bg', (e) => {
         if (!map.current) return;
         map.current.getCanvas().style.cursor = 'pointer';
         const features = e.features;
@@ -304,7 +304,7 @@ export const MapContainer = ({
         }
       });
 
-      map.current.on('mouseleave', 'unclustered-point', () => {
+      map.current.on('mouseleave', 'unclustered-point-bg', () => {
         if (!map.current) return;
         map.current.getCanvas().style.cursor = '';
         setHoveredPinId(null);
@@ -339,23 +339,34 @@ export const MapContainer = ({
     if (!map.current) return;
     
     // Update pin styles when external hover/selection changes
-    if (map.current.getLayer('unclustered-point')) {
-      map.current.setPaintProperty('unclustered-point', 'circle-color', [
+    if (map.current.getLayer('unclustered-point-bg')) {
+      map.current.setPaintProperty('unclustered-point-bg', 'circle-color', [
         'case',
         ['==', ['get', 'id'], selectedListingId || ''],
-        'hsl(var(--primary))',
+        'hsl(var(--foreground))',
         ['==', ['get', 'id'], hoveredListingId || ''],
-        'hsl(var(--primary))',
-        'hsl(var(--primary))'
+        'hsl(var(--foreground))',
+        'hsl(var(--background))'
       ]);
       
-      map.current.setPaintProperty('unclustered-point', 'circle-radius', [
+      map.current.setPaintProperty('unclustered-point-bg', 'circle-stroke-color', [
         'case',
         ['==', ['get', 'id'], selectedListingId || ''],
-        12,
+        'hsl(var(--foreground))',
         ['==', ['get', 'id'], hoveredListingId || ''],
-        10,
-        8
+        'hsl(var(--foreground))',
+        'hsl(var(--border))'
+      ]);
+    }
+    
+    if (map.current.getLayer('unclustered-point-label')) {
+      map.current.setPaintProperty('unclustered-point-label', 'text-color', [
+        'case',
+        ['==', ['get', 'id'], selectedListingId || ''],
+        'hsl(var(--background))',
+        ['==', ['get', 'id'], hoveredListingId || ''],
+        'hsl(var(--background))',
+        'hsl(var(--foreground))'
       ]);
     }
   }, [hoveredListingId, selectedListingId]);
