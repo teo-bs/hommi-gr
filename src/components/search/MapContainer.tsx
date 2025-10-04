@@ -37,6 +37,7 @@ export const MapContainer = ({
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<mapboxgl.Map | null>(null);
   const clustersSource = useRef<mapboxgl.GeoJSONSource | null>(null);
+  const hoverPopup = useRef<mapboxgl.Popup | null>(null);
   
   const { 
     mapState, 

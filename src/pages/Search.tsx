@@ -4,8 +4,9 @@ import { MapContainer } from "@/components/search/MapContainer";
 import { SearchBar } from "@/components/search/SearchBar";
 import { useSearchStateCache } from "@/hooks/useSearchStateCache";
 import { useDebouncedCallback } from 'use-debounce';
-import { useOptimizedSearch, OptimizedListing } from '@/hooks/useOptimizedSearch';
+import { useOptimizedSearch } from '@/hooks/useOptimizedSearch';
 import { ListingCard } from "@/components/search/ListingCard";
+import { supabase } from '@/integrations/supabase/client';
 
 export interface FilterState {
   budget: [number, number];
@@ -72,6 +73,30 @@ const Search = () => {
     }
   });
 
+  // Fetch all photos for visible listings
+  const [photosByListing, setPhotosByListing] = useState<Record<string, string[]>>({});
+  useEffect(() => {
+    const run = async () => {
+      const listingIds = Array.from(new Set(listings.map(l => l.listing_id).filter(Boolean)));
+      if (listingIds.length === 0) { setPhotosByListing({}); return; }
+      const { data, error } = await supabase
+        .from('listing_photos')
+        .select('listing_id,url,sort_order,is_cover')
+        .in('listing_id', listingIds)
+        .order('is_cover', { ascending: false })
+        .order('sort_order', { ascending: true });
+      if (error) { console.error('photo query error', error); return; }
+      const grouped: Record<string, string[]> = {};
+      (data || []).forEach((p: any) => {
+        const id = p.listing_id as string;
+        if (!grouped[id]) grouped[id] = [];
+        grouped[id].push(p.url as string);
+      });
+      setPhotosByListing(grouped);
+    };
+    run();
+  }, [listings]);
+
   // Convert listings to map format
   const mapListings = useMemo(() => {
     return listings.map(listing => ({
@@ -83,12 +108,12 @@ const Search = () => {
       city: listing.city,
       flatmates_count: listing.flatmates_count,
       couples_accepted: listing.couples_accepted,
-      photos: listing.cover_photo_url ? [listing.cover_photo_url] : ['/placeholder.svg'],
+      photos: photosByListing[listing.listing_id]?.length ? photosByListing[listing.listing_id] : (listing.cover_photo_url ? [listing.cover_photo_url] : ['/placeholder.svg']),
       room_slug: listing.slug,
       geo: listing.lat && listing.lng ? { lat: listing.lat, lng: listing.lng } : undefined,
-      formatted_address: listing.formatted_address
+      formatted_address: (listing as any).formatted_address
     }));
-  }, [listings]);
+  }, [listings, photosByListing]);
 
   // Restore state when coming back from listing
   useEffect(() => {
@@ -180,6 +205,7 @@ const Search = () => {
                   <ListingCard
                     key={listing.room_id}
                     listing={listing}
+                    photos={photosByListing[listing.listing_id]}
                     hoveredListingId={hoveredListingId}
                     selectedListingId={selectedListingId}
                     onHover={handleListingHover}

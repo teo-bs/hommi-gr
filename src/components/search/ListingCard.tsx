@@ -2,9 +2,11 @@ import { Link } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
 import { Heart, Star } from "lucide-react";
 import { OptimizedListing } from "@/hooks/useOptimizedSearch";
+import { Carousel, CarouselContent, CarouselItem } from "@/components/ui/carousel";
 
 interface ListingCardProps {
   listing: OptimizedListing;
+  photos?: string[];
   hoveredListingId?: string | null;
   selectedListingId?: string | null;
   onHover?: (listingId: string, isEntering: boolean) => void;
@@ -13,32 +15,43 @@ interface ListingCardProps {
 
 export const ListingCard = ({ 
   listing, 
+  photos,
   hoveredListingId, 
   selectedListingId,
   onHover,
   onClick
 }: ListingCardProps) => {
   const isHighlighted = hoveredListingId === listing.room_id || selectedListingId === listing.room_id;
+  const images = photos && photos.length > 0 ? photos : [listing.cover_photo_url || '/placeholder.svg'];
 
   return (
     <Link
       to={`/listing/${listing.slug}`}
       state={{ fromSearch: true }}
-      className="block group"
+      className="block group animate-fade-in"
       onClick={() => onClick?.(listing.room_id)}
       onMouseEnter={() => onHover?.(listing.room_id, true)}
       onMouseLeave={() => onHover?.(listing.room_id, false)}
     >
       <div className={`transition-all duration-200 ${isHighlighted ? 'scale-[1.02]' : ''}`}>
-        {/* Image */}
+        {/* Image carousel */}
         <div className="relative aspect-[4/3] mb-3 rounded-xl overflow-hidden">
-          <img
-            src={listing.cover_photo_url || '/placeholder.svg'}
-            alt={listing.title}
-            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-          />
+          <Carousel className="w-full h-full">
+            <CarouselContent>
+              {images.map((src, idx) => (
+                <CarouselItem key={idx} className="w-full h-full">
+                  <img
+                    src={src}
+                    alt={`${listing.title} – φωτο ${idx+1}`}
+                    loading="lazy"
+                    className="w-full h-full object-cover hover-scale"
+                  />
+                </CarouselItem>
+              ))}
+            </CarouselContent>
+          </Carousel>
           <button 
-            className="absolute top-3 right-3 p-2 rounded-full bg-background/80 hover:bg-background hover:scale-110 transition-all"
+            className="absolute top-3 right-3 p-2 rounded-full bg-background/80 hover:bg-background transition-all"
             onClick={(e) => {
               e.preventDefault();
               e.stopPropagation();
@@ -48,7 +61,7 @@ export const ListingCard = ({
           </button>
           {listing.kyc_status === 'approved' && (
             <Badge className="absolute top-3 left-3 bg-background/90 text-foreground border-0">
-              <Star className="h-3 w-3 mr-1 fill-yellow-500 text-yellow-500" />
+              <Star className="h-3 w-3 mr-1" />
               Επαληθευμένος
             </Badge>
           )}
@@ -61,7 +74,7 @@ export const ListingCard = ({
               {listing.neighborhood || listing.city}
             </h3>
             <div className="flex items-center gap-1 text-sm">
-              <Star className="h-3 w-3 fill-current" />
+              <Star className="h-3 w-3" />
               <span className="font-semibold">4.9</span>
             </div>
           </div>
