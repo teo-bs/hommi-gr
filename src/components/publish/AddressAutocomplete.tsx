@@ -84,7 +84,6 @@ export const AddressAutocomplete = ({
         new URLSearchParams({
           access_token: mapboxToken,
           country: 'GR',
-          language: 'el',
           limit: '5',
           types: 'place,locality,neighborhood,address,poi'
         }),

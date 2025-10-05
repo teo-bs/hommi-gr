@@ -1,10 +1,11 @@
-import React from "react";
+import React, { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Info } from "lucide-react";
 
 interface ListingDraft {
@@ -49,6 +50,8 @@ export default function PublishStepApartmentDetails({
   onNext, 
   onPrev 
 }: PublishStepApartmentDetailsProps) {
+  // Local state for text inputs to prevent lag
+  const [propertySize, setPropertySize] = useState(draft.property_size_m2?.toString() || '');
   
   const toggleAmenity = (amenity: string) => {
     const current = draft.amenities_property || [];
@@ -91,20 +94,31 @@ export default function PublishStepApartmentDetails({
                 id="property_size"
                 type="number"
                 placeholder="80"
-                value={draft.property_size_m2 || ''}
-                onChange={(e) => onUpdate({ property_size_m2: parseInt(e.target.value) || undefined })}
+                defaultValue={draft.property_size_m2 || ''}
+                onBlur={(e) => onUpdate({ property_size_m2: parseInt(e.target.value) || undefined })}
               />
             </div>
 
             <div className="space-y-2">
               <Label htmlFor="floor">Όροφος</Label>
-              <Input
-                id="floor"
-                type="number"
-                placeholder="3"
-                value={draft.floor || ''}
-                onChange={(e) => onUpdate({ floor: parseInt(e.target.value) || undefined })}
-              />
+              <Select
+                value={draft.floor?.toString() || ''}
+                onValueChange={(value) => onUpdate({ floor: value === '' ? undefined : parseFloat(value) })}
+              >
+                <SelectTrigger id="floor">
+                  <SelectValue placeholder="Επιλέξτε όροφο..." />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="-1">Υπόγειο</SelectItem>
+                  <SelectItem value="-0.5">Ημιυπόγειο</SelectItem>
+                  <SelectItem value="0">Ισόγειο</SelectItem>
+                  {Array.from({ length: 10 }, (_, i) => i + 1).map(floor => (
+                    <SelectItem key={floor} value={floor.toString()}>
+                      {floor}ο
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
           </div>
 
@@ -120,24 +134,38 @@ export default function PublishStepApartmentDetails({
           <div className="grid md:grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="bathrooms">Κοινόχρηστα μπάνια *</Label>
-              <Input
-                id="bathrooms"
-                type="number"
-                min="1"
-                value={draft.bathrooms}
-                onChange={(e) => onUpdate({ bathrooms: parseInt(e.target.value) || 1 })}
-              />
+              <Select
+                value={draft.bathrooms?.toString() || '1'}
+                onValueChange={(value) => onUpdate({ bathrooms: parseInt(value) })}
+              >
+                <SelectTrigger id="bathrooms">
+                  <SelectValue placeholder="Επιλέξτε αριθμό..." />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="0">0</SelectItem>
+                  <SelectItem value="1">1</SelectItem>
+                  <SelectItem value="2">2</SelectItem>
+                  <SelectItem value="3">3+</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
 
             <div className="space-y-2">
               <Label htmlFor="wc_count">Κοινόχρηστα WC</Label>
-              <Input
-                id="wc_count"
-                type="number"
-                min="0"
-                value={draft.wc_count}
-                onChange={(e) => onUpdate({ wc_count: parseInt(e.target.value) || 1 })}
-              />
+              <Select
+                value={draft.wc_count?.toString() || '1'}
+                onValueChange={(value) => onUpdate({ wc_count: parseInt(value) })}
+              >
+                <SelectTrigger id="wc_count">
+                  <SelectValue placeholder="Επιλέξτε αριθμό..." />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="0">0</SelectItem>
+                  <SelectItem value="1">1</SelectItem>
+                  <SelectItem value="2">2</SelectItem>
+                  <SelectItem value="3">3+</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
           </div>
 
@@ -152,14 +180,22 @@ export default function PublishStepApartmentDetails({
 
           <div className="space-y-2">
             <Label htmlFor="flatmates">Συγκάτοικοι</Label>
-            <Input
-              id="flatmates"
-              type="number"
-              min="0"
-              placeholder="0"
-              value={draft.flatmates_count || 0}
-              onChange={(e) => onUpdate({ flatmates_count: parseInt(e.target.value) || 0 })}
-            />
+            <Select
+              value={draft.flatmates_count?.toString() || '0'}
+              onValueChange={(value) => onUpdate({ flatmates_count: parseInt(value) })}
+            >
+              <SelectTrigger id="flatmates">
+                <SelectValue placeholder="Επιλέξτε αριθμό..." />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="0">0</SelectItem>
+                <SelectItem value="1">1</SelectItem>
+                <SelectItem value="2">2</SelectItem>
+                <SelectItem value="3">3</SelectItem>
+                <SelectItem value="4">4</SelectItem>
+                <SelectItem value="5">5</SelectItem>
+              </SelectContent>
+            </Select>
             {totalFlatmates > 0 && (
               <p className="text-sm text-muted-foreground flex items-center gap-2">
                 <Info className="w-4 h-4" />

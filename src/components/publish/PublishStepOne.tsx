@@ -143,32 +143,6 @@ export default function PublishStepOne({
               Η ακριβής διεύθυνση δεν θα είναι δημόσια. Θα εμφανίζεται μόνο η περιοχή.
             </AlertDescription>
           </Alert>
-
-          {/* Floor Input */}
-          <div className="space-y-2 mt-4">
-            <Label htmlFor="floor">Όροφος</Label>
-            <Select
-              value={draft.floor?.toString() || ''}
-              onValueChange={(value) => onUpdate({ floor: value === '' ? null : parseFloat(value) })}
-            >
-              <SelectTrigger id="floor">
-                <SelectValue placeholder="Επιλέξτε όροφο..." />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="-1">Υπόγειο</SelectItem>
-                <SelectItem value="0">Ισόγειο</SelectItem>
-                <SelectItem value="0.5">Ημιώροφος</SelectItem>
-                {Array.from({ length: 10 }, (_, i) => i + 1).map(floor => (
-                  <SelectItem key={floor} value={floor.toString()}>
-                    {floor}ος Όροφος
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            <p className="text-xs text-muted-foreground">
-              💡 Υποστηρίζονται: Υπόγειο, Ισόγειο, Ημιώροφος, και ορόφοι 1-10
-            </p>
-          </div>
         </CardContent>
       </Card>
 

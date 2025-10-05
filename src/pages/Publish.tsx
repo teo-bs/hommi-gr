@@ -721,7 +721,7 @@ export default function Publish() {
       </Helmet>
 
       <div className="min-h-screen bg-background">
-        <div className="container mx-auto px-4 py-6 max-w-4xl">
+        <div className="container mx-auto px-4 py-6">{/* Full-width layout */}
           {/* Publish Warnings */}
           {publishWarnings.length > 0 && (
             <PublishWarningsBanner
@@ -770,9 +770,15 @@ export default function Publish() {
                 </div>
               </div>
               <PublishProgressStepper 
-                steps={shouldShowStepZero ? STEPS.slice(2) : STEPS.slice(2)} 
-                currentStep={shouldShowStepZero ? currentStep - 2 : currentStep - 1}
-                completedSteps={completedSteps.filter(s => s >= 2).map(s => shouldShowStepZero ? s - 2 : s - 1)}
+                steps={STEPS.filter(s => {
+                  // Skip step 0 (role selection) and step 1 (overview)
+                  if (s.id <= 1) return false;
+                  // Skip room step for apartments
+                  if (s.id === 4 && draft.property_type === 'apartment') return false;
+                  return true;
+                })}
+                currentStep={currentStep}
+                completedSteps={completedSteps}
               />
             </div>
           )}
