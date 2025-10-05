@@ -18,10 +18,18 @@ interface ListingCardProps {
   onClick?: (roomId: string) => void;
 }
 
-// Helper to optimize Supabase images
+// Helper to optimize Supabase images with responsive sizes
 const getOptimizedImageUrl = (url: string, width: number = 600): string => {
   if (url.includes('supabase.co') && url.includes('/storage/v1/object/public/')) {
-    return `${url}?width=${width}&quality=80`;
+    return `${url}?width=${width}&quality=70&format=webp`;
+  }
+  return url;
+};
+
+// Generate srcset for responsive images
+const getImageSrcSet = (url: string): string => {
+  if (url.includes('supabase.co') && url.includes('/storage/v1/object/public/')) {
+    return `${getOptimizedImageUrl(url, 360)} 360w, ${getOptimizedImageUrl(url, 540)} 540w, ${getOptimizedImageUrl(url, 720)} 720w`;
   }
   return url;
 };
@@ -43,6 +51,7 @@ export const ListingCard = ({
   const [canScrollPrev, setCanScrollPrev] = useState(false);
   const [canScrollNext, setCanScrollNext] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
+  const [isDragging, setIsDragging] = useState(false);
 
   useEffect(() => {
     if (!api) return;
@@ -52,15 +61,41 @@ export const ListingCard = ({
       setCanScrollNext(api.canScrollNext());
     };
 
+    const handlePointerDown = () => setIsDragging(false);
+    const handlePointerUp = () => {
+      // Small delay to detect if it was a drag
+      setTimeout(() => setIsDragging(false), 50);
+    };
+    const handleSettle = () => setIsDragging(true);
+
     updateScrollability();
     api.on('select', updateScrollability);
     api.on('reInit', updateScrollability);
+    api.on('pointerDown', handlePointerDown);
+    api.on('pointerUp', handlePointerUp);
+    api.on('settle', handleSettle);
 
     return () => {
       api.off('select', updateScrollability);
       api.off('reInit', updateScrollability);
+      api.off('pointerDown', handlePointerDown);
+      api.off('pointerUp', handlePointerUp);
+      api.off('settle', handleSettle);
     };
   }, [api]);
+
+  // Preload adjacent images on hover
+  useEffect(() => {
+    if (!api || !isHovered || images.length <= 1) return;
+    
+    const currentIndex = api.selectedScrollSnap();
+    const preloadIndexes = [currentIndex - 1, currentIndex + 1].filter(i => i >= 0 && i < images.length);
+    
+    preloadIndexes.forEach(idx => {
+      const img = document.createElement('img');
+      img.src = getOptimizedImageUrl(images[idx], 720);
+    });
+  }, [api, isHovered, images]);
 
   // Calculate match score
   const { isGoodFit, matchPercentage } = calculateMatchScore(
@@ -90,7 +125,13 @@ export const ListingCard = ({
       to={`/listing/${listing.slug}`}
       state={{ fromSearch: true }}
       className="block group animate-fade-in"
-      onClick={() => onClick?.(listing.room_id)}
+      onClick={(e) => {
+        if (isDragging) {
+          e.preventDefault();
+          return;
+        }
+        onClick?.(listing.room_id);
+      }}
       onMouseEnter={() => {
         onHover?.(listing.room_id, true);
         setIsHovered(true);
@@ -103,15 +144,28 @@ export const ListingCard = ({
       <div className={`transition-all duration-200 ${isHighlighted ? 'scale-[1.02]' : ''}`}>
         {/* Image carousel */}
         <div className="relative aspect-[4/3] mb-3 rounded-xl overflow-hidden group/carousel">
-          <Carousel className="w-full h-full" setApi={setApi}>
+          <Carousel 
+            className="w-full h-full" 
+            setApi={setApi}
+            opts={{
+              containScroll: 'trimSnaps',
+              align: 'start',
+              dragFree: false,
+              loop: false
+            }}
+          >
             <CarouselContent>
               {images.map((src, idx) => (
                 <CarouselItem key={idx} className="w-full h-full">
                   <img
-                    src={getOptimizedImageUrl(src)}
+                    src={getOptimizedImageUrl(src, 720)}
+                    srcSet={getImageSrcSet(src)}
+                    sizes="(min-width: 1024px) 320px, 100vw"
                     alt={`${listing.title} – φωτο ${idx+1}`}
                     loading={idx === 0 ? "eager" : "lazy"}
+                    fetchPriority={idx === 0 ? "high" : "low"}
                     decoding="async"
+                    draggable={false}
                     className="w-full h-full object-cover"
                   />
                 </CarouselItem>
