@@ -273,7 +273,7 @@ const MyListings = () => {
 
                             {/* Actions */}
                             <div className="flex flex-col gap-2 flex-shrink-0">
-                              <Link to={`/publish?id=${listing.id}`}>
+                              <Link to={hasBrokenPhotos ? `/publish?id=${listing.id}&step=4` : `/publish?id=${listing.id}`}>
                                 <Button 
                                   variant={hasBrokenPhotos ? "destructive" : "outline"} 
                                   size="sm" 

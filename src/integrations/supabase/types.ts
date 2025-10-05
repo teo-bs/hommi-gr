@@ -210,6 +210,8 @@ export type Database = {
           id: string
           lister_id: string | null
           photo_url: string
+          resolution_action: string | null
+          resolved_at: string | null
           room_id: string | null
         }
         Insert: {
@@ -218,6 +220,8 @@ export type Database = {
           id?: string
           lister_id?: string | null
           photo_url: string
+          resolution_action?: string | null
+          resolved_at?: string | null
           room_id?: string | null
         }
         Update: {
@@ -226,6 +230,8 @@ export type Database = {
           id?: string
           lister_id?: string | null
           photo_url?: string
+          resolution_action?: string | null
+          resolved_at?: string | null
           room_id?: string | null
         }
         Relationships: [

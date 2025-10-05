@@ -1,11 +1,14 @@
-import React, { useRef, useState } from "react";
+import React, { useRef, useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Upload, X, Camera, AlertCircle } from "lucide-react";
+import { Upload, X, Camera, AlertCircle, AlertTriangle } from "lucide-react";
 import { uploadListingPhoto } from "@/lib/photo-upload";
 import { useAuth } from "@/hooks/useAuth";
 import { validatePhotoUrl } from "@/lib/photo-validation";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
+import { resolveBrokenPhoto } from "@/lib/resolve-broken-photo";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 interface ListingDraft {
   photos: string[];
@@ -28,6 +31,26 @@ export default function PublishStepPhotos({
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { profile } = useAuth();
   const [isUploading, setIsUploading] = useState(false);
+  const [brokenPhotoUrls, setBrokenPhotoUrls] = useState<Set<string>>(new Set());
+
+  // Fetch broken photos for this listing
+  useEffect(() => {
+    const fetchBrokenPhotos = async () => {
+      if (!draft.id) return;
+
+      const { data } = await supabase
+        .from('broken_photos_log')
+        .select('photo_url')
+        .eq('room_id', draft.id)
+        .is('resolved_at', null);
+
+      if (data) {
+        setBrokenPhotoUrls(new Set(data.map(row => row.photo_url)));
+      }
+    };
+
+    fetchBrokenPhotos();
+  }, [draft.id]);
 
   const handlePhotoUpload = async (files: FileList) => {
     if (!profile?.user_id) return;
@@ -73,9 +96,63 @@ export default function PublishStepPhotos({
     }
   };
 
-  const removePhoto = (index: number) => {
+  const removePhoto = async (index: number) => {
+    const photoUrl = draft.photos?.[index];
     const updatedPhotos = (draft.photos || []).filter((_, i) => i !== index);
     onUpdate({ photos: updatedPhotos });
+
+    // Mark as resolved if it was a broken photo
+    if (photoUrl && brokenPhotoUrls.has(photoUrl)) {
+      await resolveBrokenPhoto(photoUrl, 'deleted');
+      setBrokenPhotoUrls(prev => {
+        const next = new Set(prev);
+        next.delete(photoUrl);
+        return next;
+      });
+      toast.success('✅ Broken photo removed');
+    }
+  };
+
+  const replacePhoto = async (index: number, files: FileList) => {
+    if (!profile?.user_id || files.length === 0) return;
+
+    const oldPhotoUrl = draft.photos?.[index];
+    setIsUploading(true);
+
+    try {
+      const file = files[0];
+      const result = await uploadListingPhoto(file, profile.user_id);
+      
+      if (result.success && result.url) {
+        const isValid = await validatePhotoUrl(result.url, 8000);
+        
+        if (isValid) {
+          const updatedPhotos = [...(draft.photos || [])];
+          updatedPhotos[index] = result.url;
+          onUpdate({ photos: updatedPhotos });
+
+          // Mark old photo as resolved if it was broken
+          if (oldPhotoUrl && brokenPhotoUrls.has(oldPhotoUrl)) {
+            await resolveBrokenPhoto(oldPhotoUrl, 'replaced');
+            setBrokenPhotoUrls(prev => {
+              const next = new Set(prev);
+              next.delete(oldPhotoUrl);
+              return next;
+            });
+            toast.success('✅ Photo replaced successfully!');
+          } else {
+            toast.success('Photo replaced');
+          }
+        } else {
+          toast.error('New photo failed to load. Please try another image.');
+        }
+      }
+    } catch (error) {
+      console.error('Photo replacement failed:', error);
+      toast.error('Failed to replace photo');
+    } finally {
+      setIsUploading(false);
+    }
   };
 
   const isValid = draft.photos && draft.photos.length > 0;
@@ -126,31 +203,81 @@ export default function PublishStepPhotos({
           {/* Photo Grid */}
           {draft.photos && draft.photos.length > 0 && (
             <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-              {draft.photos.map((photo, index) => (
-                <div key={index} className="relative group">
-                  <img
-                    src={photo}
-                    alt={`Φωτογραφία ${index + 1}`}
-                    className="w-full h-32 object-cover rounded-lg"
-                    onError={(e) => {
-                      e.currentTarget.classList.add('border-2', 'border-destructive');
-                      e.currentTarget.src = '/placeholder.svg';
-                    }}
-                  />
-                  <button
-                    type="button"
-                    onClick={() => removePhoto(index)}
-                    className="absolute -top-2 -right-2 bg-destructive text-destructive-foreground rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
+              {draft.photos.map((photo, index) => {
+                const isBroken = brokenPhotoUrls.has(photo);
+                
+                return (
+                  <div 
+                    key={index} 
+                    className={`relative group ${isBroken ? 'ring-2 ring-destructive rounded-lg' : ''}`}
                   >
-                    <X className="w-4 h-4" />
-                  </button>
-                  {index === 0 && (
-                    <div className="absolute bottom-2 left-2 bg-primary text-primary-foreground text-xs px-2 py-1 rounded">
-                      Κύρια φωτογραφία
-                    </div>
-                  )}
-                </div>
-              ))}
+                    <img
+                      src={photo}
+                      alt={`Φωτογραφία ${index + 1}`}
+                      className="w-full h-32 object-cover rounded-lg"
+                      onError={(e) => {
+                        e.currentTarget.classList.add('border-2', 'border-destructive');
+                        e.currentTarget.src = '/placeholder.svg';
+                      }}
+                    />
+                    
+                    {/* Broken photo badge */}
+                    {isBroken && (
+                      <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <div className="absolute top-2 left-2 bg-destructive text-destructive-foreground text-xs px-2 py-1 rounded-md flex items-center gap-1">
+                              <AlertTriangle className="w-3 h-3" />
+                              Broken
+                            </div>
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <p>This photo failed to load. Replace it for better results</p>
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
+                    )}
+                    
+                    {/* Replace button for broken photos */}
+                    {isBroken && (
+                      <label 
+                        htmlFor={`replace-${index}`}
+                        className="absolute inset-0 flex items-center justify-center bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer rounded-lg"
+                      >
+                        <Button
+                          type="button"
+                          variant="secondary"
+                          size="sm"
+                          className="pointer-events-none"
+                        >
+                          Replace
+                        </Button>
+                        <input
+                          id={`replace-${index}`}
+                          type="file"
+                          accept="image/*"
+                          className="hidden"
+                          onChange={(e) => e.target.files && replacePhoto(index, e.target.files)}
+                        />
+                      </label>
+                    )}
+                    
+                    <button
+                      type="button"
+                      onClick={() => removePhoto(index)}
+                      className="absolute -top-2 -right-2 bg-destructive text-destructive-foreground rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity z-10"
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
+                    
+                    {index === 0 && !isBroken && (
+                      <div className="absolute bottom-2 left-2 bg-primary text-primary-foreground text-xs px-2 py-1 rounded">
+                        Κύρια φωτογραφία
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
             </div>
           )}
 
