@@ -862,6 +862,33 @@ export type Database = {
         }
         Relationships: []
       }
+      photo_health_check_status: {
+        Row: {
+          broken_found: number | null
+          created_at: string | null
+          id: string
+          last_run_at: string | null
+          photos_checked: number | null
+          run_duration_ms: number | null
+        }
+        Insert: {
+          broken_found?: number | null
+          created_at?: string | null
+          id?: string
+          last_run_at?: string | null
+          photos_checked?: number | null
+          run_duration_ms?: number | null
+        }
+        Update: {
+          broken_found?: number | null
+          created_at?: string | null
+          id?: string
+          last_run_at?: string | null
+          photos_checked?: number | null
+          run_duration_ms?: number | null
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           about_me: string | null

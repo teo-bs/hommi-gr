@@ -2,3 +2,9 @@ project_id = "grtanmuzjwmuayhljoqj"
 
 [functions.submit-agency-lead]
 verify_jwt = false
+
+[functions.validate-listing-photos]
+verify_jwt = false
+
+[functions.send-broken-photos-digest]
+verify_jwt = false
