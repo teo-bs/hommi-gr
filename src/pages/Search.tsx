@@ -1,27 +1,14 @@
 import { useState, useEffect, useMemo } from "react";
 import { useSearchParams, useLocation } from "react-router-dom";
 import { MapContainer } from "@/components/search/MapContainer";
-import { SearchBar } from "@/components/search/SearchBar";
+import { FilterBar, FilterBarState } from "@/components/search/FilterBar";
 import { useSearchStateCache } from "@/hooks/useSearchStateCache";
 import { useDebouncedCallback } from 'use-debounce';
 import { useOptimizedSearch } from '@/hooks/useOptimizedSearch';
 import { ListingCard } from "@/components/search/ListingCard";
 import { supabase } from '@/integrations/supabase/client';
 
-export interface FilterState {
-  budget: [number, number];
-  flatmates: string;
-  space: string;
-  roomType: string;
-  couplesAccepted: boolean;
-  petsAllowed: boolean;
-  billsIncluded: boolean;
-  verifiedLister: boolean;
-  listerType: string;
-  amenities: string[];
-  moveInDate?: Date;
-  duration: string;
-  sort: string;
+export interface FilterState extends FilterBarState {
   bounds?: {
     north: number;
     south: number;
@@ -40,17 +27,18 @@ const Search = () => {
   // Filter state management
   const [filters, setFilters] = useState<FilterState>({
     budget: [300, 800],
-    flatmates: "any",
-    space: "any",
-    roomType: "any",
-    couplesAccepted: false,
-    petsAllowed: false,
-    billsIncluded: false,
-    verifiedLister: false,
-    listerType: "any",
-    amenities: [],
-    duration: "any",
     sort: searchParams.get('sort') || 'featured',
+    listerType: "any",
+    moveInDate: undefined,
+    duration: "any",
+    flatmatesCount: undefined,
+    flatmatesGender: [],
+    bedType: [],
+    roomAmenities: [],
+    services: [],
+    flatAmenities: [],
+    houseRules: [],
+    propertySize: [0, 1000],
     bounds: undefined
   });
 
@@ -58,18 +46,24 @@ const Search = () => {
   const { data: listings = [], isLoading } = useOptimizedSearch({
     filters: {
       budget: { min: filters.budget[0], max: filters.budget[1] },
-      flatmates: filters.flatmates && filters.flatmates !== "any" ? 
-        (filters.flatmates === "4+" ? 4 : parseInt(filters.flatmates)) : undefined,
-      couplesAccepted: filters.couplesAccepted,
-      petsAllowed: filters.petsAllowed,
-      billsIncluded: filters.billsIncluded,
-      verifiedLister: filters.verifiedLister,
+      flatmates: filters.flatmatesCount,
+      couplesAccepted: filters.houseRules.includes('couples'),
+      petsAllowed: filters.houseRules.includes('pets'),
       listerType: filters.listerType !== 'any' ? filters.listerType as 'individual' | 'agency' : undefined,
-      amenities: filters.amenities,
+      amenities: [...filters.roomAmenities, ...filters.flatAmenities],
       moveInDate: filters.moveInDate,
-      duration: filters.duration !== 'any' ? parseInt(filters.duration) : undefined,
+      duration: filters.duration !== 'any' ? (
+        filters.duration === 'short' ? 5 :
+        filters.duration === 'medium' ? 11 :
+        filters.duration === 'long' ? 12 : undefined
+      ) : undefined,
       sort: filters.sort,
       bounds: filters.bounds,
+      bedType: filters.bedType,
+      services: filters.services,
+      houseRules: filters.houseRules,
+      propertySize: filters.propertySize[0] !== 0 || filters.propertySize[1] !== 1000 ? 
+        { min: filters.propertySize[0], max: filters.propertySize[1] } : undefined,
     }
   });
 
@@ -163,21 +157,8 @@ const Search = () => {
     } else {
       params.delete('budget');
     }
-    if (updatedFilters.verifiedLister) params.set('verified', '1'); else params.delete('verified');
-    if (updatedFilters.couplesAccepted) params.set('couples', '1'); else params.delete('couples');
-    if (updatedFilters.petsAllowed) params.set('pets', '1'); else params.delete('pets');
     if (updatedFilters.sort !== 'featured') params.set('sort', updatedFilters.sort); else params.delete('sort');
     setSearchParams(params);
-  };
-
-  const handleRemoveFilter = (key: string) => {
-    const defaults: Partial<FilterState> = {
-      budget: [300, 800],
-      verifiedLister: false,
-      couplesAccepted: false,
-      petsAllowed: false,
-    };
-    handleFilterChange({ [key]: defaults[key as keyof typeof defaults] });
   };
 
   const handleListingHover = (listingId: string, isEntering: boolean) => {
@@ -194,12 +175,10 @@ const Search = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Search Bar */}
-      <SearchBar 
+      {/* Filter Bar */}
+      <FilterBar 
         filters={filters} 
         onFilterChange={handleFilterChange}
-        onRemoveFilter={handleRemoveFilter}
-        resultCount={listings.length}
       />
 
       {/* Results Counter */}

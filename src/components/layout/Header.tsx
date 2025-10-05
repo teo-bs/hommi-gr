@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
@@ -16,6 +16,7 @@ export const Header = () => {
   const listingFlow = useListingFlow();
   const { count: listingsCount } = useListingsCount();
   const navigate = useNavigate();
+  const location = useLocation();
   const { toast } = useToast();
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -149,8 +150,16 @@ export const Header = () => {
   // Determine user role - default to 'tenant' if not set
   const userRole = profile?.role || 'tenant';
 
+  // Check if we're on the search page
+  const isSearchPage = location.pathname === '/search';
+
   // Define navigation items based on role
   const tenantNavItems = [
+    { 
+      href: "/search", 
+      label: language === 'el' ? 'Αναζήτηση' : 'Search',
+      icon: Search
+    },
     { 
       href: "/favourites", 
       label: language === 'el' ? 'Αγαπημένα' : 'Favourites',
@@ -213,8 +222,8 @@ export const Header = () => {
             {/* Desktop Navigation */}
             {user ? (
               <nav className="hidden lg:flex items-center space-x-6">
-                {/* Search Box - Only for tenants */}
-                {currentRole === 'tenant' && (
+                {/* Search Box - Only for tenants and NOT on search page */}
+                {currentRole === 'tenant' && !isSearchPage && (
                   <form onSubmit={handleSearchSubmit} className="relative">
                     <div className="relative">
                       <MapPin className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />

@@ -27,8 +27,6 @@ export interface OptimizedListing {
 export interface SearchFilters {
   budget?: { min?: number; max?: number };
   flatmates?: number;
-  space?: string;
-  roomType?: string;
   couplesAccepted?: boolean;
   petsAllowed?: boolean;
   billsIncluded?: boolean;
@@ -40,6 +38,10 @@ export interface SearchFilters {
   city?: string;
   searchText?: string;
   sort?: string;
+  bedType?: string[];
+  services?: string[];
+  houseRules?: string[];
+  propertySize?: { min: number; max: number };
   bounds?: {
     north: number;
     south: number;
@@ -99,6 +101,10 @@ export const useOptimizedSearch = ({ filters, enabled = true }: UseOptimizedSear
   }
   if (filters.city) {
     query = query.eq('city', filters.city);
+  }
+  if (filters.propertySize) {
+    query = query.gte('property_size_m2', filters.propertySize.min);
+    query = query.lte('property_size_m2', filters.propertySize.max);
   }
 
       // Geographic bounds filtering
