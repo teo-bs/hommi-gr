@@ -25,6 +25,7 @@ export const Header = () => {
 
   // Get current user role, default to 'tenant'
   const currentRole = profile?.role || 'tenant';
+  const isPendingAgency = profile?.account_status === 'pending_qualification';
 
   // Auto-detect location on component mount
   useEffect(() => {
@@ -241,8 +242,8 @@ export const Header = () => {
                   </Link>
                 ))}
 
-                {/* Publish Listing Button - Only show for listers */}
-                {currentRole === 'lister' && (
+                {/* Publish Listing Button - Only show for listers who are not pending */}
+                {currentRole === 'lister' && !isPendingAgency && (
                   <Button 
                     variant="outline" 
                     size="sm" 
@@ -410,8 +411,8 @@ export const Header = () => {
                   {language === 'el' ? 'English' : 'Ελληνικά'}
                 </Button>
                 
-                {/* Publish listing button - Only show for listers or logged out users */}
-                {(currentRole === 'lister' || !user) && (
+                {/* Publish listing button - Only show for listers (non-pending) or logged out users */}
+                {((currentRole === 'lister' && !isPendingAgency) || !user) && (
                   <Button 
                     variant="outline" 
                     size="sm" 

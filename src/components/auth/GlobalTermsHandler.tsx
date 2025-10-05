@@ -71,17 +71,36 @@ export const GlobalTermsHandler = () => {
     
     // Persist lister_type to profile
     if (user && profile) {
-      const { error } = await supabase
-        .from('profiles')
-        .update({ 
-          lister_type: choice,
-          role: 'lister',
-          can_switch_roles: choice === 'individual' // Lock for agencies
-        })
-        .eq('user_id', user.id);
-      
-      if (error) {
-        console.error('Failed to update lister_type:', error);
+      if (choice === 'agency') {
+        // Agency flow: Create lightweight account in pending state
+        const { error } = await supabase
+          .from('profiles')
+          .update({ 
+            lister_type: 'agency',
+            account_status: 'pending_qualification',
+            can_switch_roles: false,
+            // DO NOT set role: 'lister' - keep as 'tenant'
+          })
+          .eq('user_id', user.id);
+        
+        if (error) {
+          console.error('Failed to update agency profile:', error);
+        }
+      } else {
+        // Individual flow: Full access immediately
+        const { error } = await supabase
+          .from('profiles')
+          .update({ 
+            lister_type: 'individual',
+            role: 'lister',
+            account_status: 'active',
+            can_switch_roles: true
+          })
+          .eq('user_id', user.id);
+        
+        if (error) {
+          console.error('Failed to update individual profile:', error);
+        }
       }
     }
     
@@ -98,8 +117,8 @@ export const GlobalTermsHandler = () => {
       // Start listing wizard flow
       navigate('/publish');
     } else {
-      // Navigate to agencies page
-      navigate('/agencies');
+      // Navigate to agencies page with flag
+      navigate('/agencies?from_signup=true');
     }
   };
 

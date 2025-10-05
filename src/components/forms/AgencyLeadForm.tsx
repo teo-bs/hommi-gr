@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
@@ -9,6 +9,7 @@ import { Label } from '@/components/ui/label';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/hooks/useAuth';
 import { Loader2, Building2, User, Mail, Phone, Globe, MessageSquare } from 'lucide-react';
 
 const agencyLeadSchema = z.object({
@@ -46,17 +47,28 @@ type AgencyLeadFormData = z.infer<typeof agencyLeadSchema>;
 
 export const AgencyLeadForm = () => {
   const { toast } = useToast();
+  const { user, profile } = useAuth();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const isPendingAgency = profile?.account_status === 'pending_qualification';
 
   const {
     register,
     handleSubmit,
     formState: { errors },
-    reset
+    reset,
+    setValue
   } = useForm<AgencyLeadFormData>({
     resolver: zodResolver(agencyLeadSchema)
   });
+
+  // Pre-fill form values if authenticated
+  useEffect(() => {
+    if (user && profile) {
+      setValue('email', profile.email);
+      setValue('contact_name', profile.display_name || '');
+    }
+  }, [user, profile, setValue]);
 
   const onSubmit = async (data: AgencyLeadFormData) => {
     setIsSubmitting(true);
@@ -69,7 +81,8 @@ export const AgencyLeadForm = () => {
           email: data.email,
           phone: data.phone || null,
           website: data.website || null,
-          message: data.message || null
+          message: data.message || null,
+          user_id: user?.id || null, // NEW: Pass user_id if authenticated
         }
       });
 
@@ -187,8 +200,14 @@ export const AgencyLeadForm = () => {
                 type="email"
                 {...register('email')}
                 placeholder="π.χ. info@company.gr"
-                disabled={isSubmitting}
+                disabled={isSubmitting || !!user}
+                className={user ? 'bg-muted' : ''}
               />
+              {user && (
+                <p className="text-xs text-muted-foreground mt-1">
+                  Email από τον λογαριασμό σας
+                </p>
+              )}
               {errors.email && (
                 <p className="text-sm text-destructive mt-1">
                   {errors.email.message}

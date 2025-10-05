@@ -25,6 +25,7 @@ export type Database = {
           phone: string | null
           status: string
           updated_at: string
+          user_id: string | null
           website: string | null
         }
         Insert: {
@@ -37,6 +38,7 @@ export type Database = {
           phone?: string | null
           status?: string
           updated_at?: string
+          user_id?: string | null
           website?: string | null
         }
         Update: {
@@ -49,6 +51,7 @@ export type Database = {
           phone?: string | null
           status?: string
           updated_at?: string
+          user_id?: string | null
           website?: string | null
         }
         Relationships: []
@@ -751,6 +754,7 @@ export type Database = {
       profiles: {
         Row: {
           about_me: string | null
+          account_status: Database["public"]["Enums"]["account_status_enum"]
           avatar_url: string | null
           can_switch_roles: boolean | null
           country: string | null
@@ -788,6 +792,7 @@ export type Database = {
         }
         Insert: {
           about_me?: string | null
+          account_status?: Database["public"]["Enums"]["account_status_enum"]
           avatar_url?: string | null
           can_switch_roles?: boolean | null
           country?: string | null
@@ -825,6 +830,7 @@ export type Database = {
         }
         Update: {
           about_me?: string | null
+          account_status?: Database["public"]["Enums"]["account_status_enum"]
           avatar_url?: string | null
           can_switch_roles?: boolean | null
           country?: string | null
@@ -1743,6 +1749,7 @@ export type Database = {
       }
     }
     Enums: {
+      account_status_enum: "active" | "pending_qualification" | "suspended"
       app_role: "admin" | "user"
       gender_enum: "male" | "female" | "other" | "prefer_not_to_say"
       lister_type_enum: "individual" | "agency"
@@ -1888,6 +1895,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
+      account_status_enum: ["active", "pending_qualification", "suspended"],
       app_role: ["admin", "user"],
       gender_enum: ["male", "female", "other", "prefer_not_to_say"],
       lister_type_enum: ["individual", "agency"],

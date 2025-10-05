@@ -94,6 +94,18 @@ export default function Publish() {
   
   const editingId = searchParams.get('id'); // Check if we're editing an existing listing
   
+  // Redirect pending agencies to /agencies page
+  useEffect(() => {
+    if (profile?.account_status === 'pending_qualification') {
+      toast({
+        title: "Ο λογαριασμός σας ελέγχεται",
+        description: "Δεν μπορείτε να δημοσιεύσετε αγγελίες μέχρι να εγκριθεί ο λογαριασμός σας.",
+        variant: "destructive"
+      });
+      navigate('/agencies');
+    }
+  }, [profile, navigate]);
+  
   // Skip step 0 if user already has lister_type
   const shouldShowStepZero = !profile?.lister_type;
   

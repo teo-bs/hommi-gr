@@ -13,6 +13,7 @@ interface AgencyLeadData {
   phone?: string;
   website?: string;
   message?: string;
+  user_id?: string; // NEW: Optional user_id
 }
 
 serve(async (req) => {
@@ -68,20 +69,75 @@ serve(async (req) => {
       );
     }
 
-    // Insert agency lead into database
-    const { data, error } = await supabase
-      .from('agency_leads')
-      .insert({
-        company_name: leadData.company_name.trim(),
-        contact_name: leadData.contact_name.trim(),
-        email: leadData.email.trim().toLowerCase(),
-        phone: leadData.phone?.trim() || null,
-        website: leadData.website?.trim() || null,
-        message: leadData.message?.trim() || null,
-        status: 'new'
-      })
-      .select()
-      .single();
+    // Check if user_id exists and has an existing lead (UPSERT logic)
+    let data, error;
+    
+    if (leadData.user_id) {
+      // Check for existing lead by user_id
+      const { data: existingLead } = await supabase
+        .from('agency_leads')
+        .select('id')
+        .eq('user_id', leadData.user_id)
+        .maybeSingle();
+      
+      if (existingLead) {
+        // Update existing lead
+        const result = await supabase
+          .from('agency_leads')
+          .update({
+            company_name: leadData.company_name.trim(),
+            contact_name: leadData.contact_name.trim(),
+            email: leadData.email.trim().toLowerCase(),
+            phone: leadData.phone?.trim() || null,
+            website: leadData.website?.trim() || null,
+            message: leadData.message?.trim() || null,
+            updated_at: new Date().toISOString()
+          })
+          .eq('id', existingLead.id)
+          .select()
+          .single();
+        
+        data = result.data;
+        error = result.error;
+      } else {
+        // Insert new lead with user_id
+        const result = await supabase
+          .from('agency_leads')
+          .insert({
+            company_name: leadData.company_name.trim(),
+            contact_name: leadData.contact_name.trim(),
+            email: leadData.email.trim().toLowerCase(),
+            phone: leadData.phone?.trim() || null,
+            website: leadData.website?.trim() || null,
+            message: leadData.message?.trim() || null,
+            user_id: leadData.user_id,
+            status: 'new'
+          })
+          .select()
+          .single();
+        
+        data = result.data;
+        error = result.error;
+      }
+    } else {
+      // Insert without user_id (anonymous submission)
+      const result = await supabase
+        .from('agency_leads')
+        .insert({
+          company_name: leadData.company_name.trim(),
+          contact_name: leadData.contact_name.trim(),
+          email: leadData.email.trim().toLowerCase(),
+          phone: leadData.phone?.trim() || null,
+          website: leadData.website?.trim() || null,
+          message: leadData.message?.trim() || null,
+          status: 'new'
+        })
+        .select()
+        .single();
+      
+      data = result.data;
+      error = result.error;
+    }
 
     if (error) {
       console.error('Error inserting agency lead:', error);

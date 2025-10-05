@@ -1,12 +1,28 @@
-import React, { useState } from "react";
+import { useState, useEffect } from "react";
+import { useSearchParams } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { CheckCircle, Calendar, Users, TrendingUp, Mail, Phone } from "lucide-react";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { CheckCircle, Calendar, Users, TrendingUp, Mail, Phone, AlertCircle } from "lucide-react";
 import { AgencyLeadForm } from "@/components/forms/AgencyLeadForm";
+import { useAuth } from "@/hooks/useAuth";
 
 export default function Agencies() {
+  const [searchParams] = useSearchParams();
+  const { user, profile } = useAuth();
   const [showForm, setShowForm] = useState(false);
+  
+  const fromSignup = searchParams.get('from_signup') === 'true';
+  const isPendingAgency = profile?.account_status === 'pending_qualification';
+  
+  // Auto-show form for pending agencies
+  useEffect(() => {
+    if (fromSignup && isPendingAgency) {
+      setShowForm(true);
+    }
+  }, [fromSignup, isPendingAgency]);
+
   const features = [
     {
       icon: <Users className="h-5 w-5" />,
@@ -43,6 +59,18 @@ export default function Agencies() {
 
       <div className="min-h-screen bg-background">
         <div className="container mx-auto px-4 py-12 max-w-4xl">
+          {/* Pending Qualification Banner */}
+          {isPendingAgency && (
+            <Alert className="mb-8 border-primary bg-primary/5">
+              <AlertCircle className="h-4 w-4" />
+              <AlertTitle>Ο λογαριασμός σας ελέγχεται</AlertTitle>
+              <AlertDescription>
+                Η ομάδα μας θα επικοινωνήσει σύντομα μαζί σας για να ολοκληρώσει την εγγραφή σας.
+                Ευχαριστούμε για την υπομονή σας!
+              </AlertDescription>
+            </Alert>
+          )}
+
           {/* Hero Section */}
           <div className="text-center mb-12">
             <h1 className="text-4xl font-bold mb-4">
@@ -52,9 +80,14 @@ export default function Agencies() {
               Εξειδικευμένες υπηρεσίες για κτηματομεσιτικά γραφεία που θέλουν να 
               μεγιστοποιήσουν τη διαχείριση και την απόδοση των ιδιοκτησιών τους.
             </p>
-            <Button size="lg" onClick={handleBookCall} className="text-lg px-8 py-3">
+            <Button 
+              size="lg" 
+              onClick={handleBookCall} 
+              disabled={isPendingAgency}
+              className="text-lg px-8 py-3"
+            >
               <Calendar className="mr-2 h-5 w-5" />
-              Κλείστε συνάντηση
+              {isPendingAgency ? 'Αίτημα σε εξέλιξη' : 'Κλείστε συνάντηση'}
             </Button>
           </div>
 
@@ -97,9 +130,13 @@ export default function Agencies() {
                 μπορεί να βελτιώσει τις επιδόσεις του γραφείου σας.
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-                <Button size="lg" onClick={handleBookCall}>
+                <Button 
+                  size="lg" 
+                  onClick={handleBookCall} 
+                  disabled={isPendingAgency}
+                >
                   <Calendar className="mr-2 h-4 w-4" />
-                  Κλείστε συνάντηση
+                  {isPendingAgency ? 'Αίτημα σε εξέλιξη' : 'Κλείστε συνάντηση'}
                 </Button>
                 <div className="flex items-center text-sm text-muted-foreground">
                   <Phone className="mr-2 h-4 w-4" />
