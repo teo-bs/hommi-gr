@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -25,9 +25,27 @@ export default function PublishStepTitleDescription({
   onNext, 
   onPrev
 }: PublishStepTitleDescriptionProps) {
+  // Local state for instant typing
+  const [title, setTitle] = useState(draft.title || '');
+  const [description, setDescription] = useState(draft.description || '');
 
-  const isValid = draft.title && draft.title.length >= 10 && 
-    draft.description && draft.description.length >= 90;
+  // Sync with draft when it changes externally
+  useEffect(() => {
+    setTitle(draft.title || '');
+    setDescription(draft.description || '');
+  }, [draft.title, draft.description]);
+
+  const handleBlur = () => {
+    onUpdate({ title, description });
+  };
+
+  const handleNext = () => {
+    onUpdate({ title, description });
+    onNext();
+  };
+
+  const isValid = title && title.length >= 10 && 
+    description && description.length >= 90;
 
   return (
     <div className="space-y-6 max-w-3xl mx-auto">
@@ -51,12 +69,13 @@ export default function PublishStepTitleDescription({
             <Input
               id="title"
               placeholder="π.χ. Φωτεινό δωμάτιο στο κέντρο της Αθήνας με θέα"
-              value={draft.title || ''}
-              onChange={(e) => onUpdate({ title: e.target.value })}
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              onBlur={handleBlur}
               maxLength={80}
             />
             <p className="text-xs text-muted-foreground">
-              {draft.title?.length || 0}/80 χαρακτήρες (ελάχιστα 10)
+              {title?.length || 0}/80 χαρακτήρες (ελάχιστα 10)
             </p>
           </div>
 
@@ -81,12 +100,13 @@ export default function PublishStepTitleDescription({
             <Textarea
               id="description"
               placeholder="Περιγράψτε το χώρο σας, τη γειτονιά, τις ανέσεις και τι κάνει τη διαμονή ιδιαίτερη...&#10;&#10;Αναφέρετε:&#10;- Τα κύρια πλεονεκτήματα του χώρου&#10;- Τη γειτονιά και τις συγκοινωνίες&#10;- Τον τρόπο ζωής των συγκατοίκων&#10;- Τυχόν ειδικούς όρους"
-              value={draft.description || ''}
-              onChange={(e) => onUpdate({ description: e.target.value })}
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              onBlur={handleBlur}
               rows={12}
             />
             <p className="text-xs text-muted-foreground">
-              {draft.description?.length || 0} χαρακτήρες (ελάχιστα 90)
+              {description?.length || 0} χαρακτήρες (ελάχιστα 90)
             </p>
           </div>
 
@@ -110,10 +130,10 @@ export default function PublishStepTitleDescription({
               Συμπληρώστε τα παρακάτω για να συνεχίσετε:
             </p>
             <ul className="text-sm text-destructive space-y-1">
-              {(!draft.title || draft.title.length < 10) && (
+              {(!title || title.length < 10) && (
                 <li>• Τίτλος τουλάχιστον 10 χαρακτήρες</li>
               )}
-              {(!draft.description || draft.description.length < 90) && (
+              {(!description || description.length < 90) && (
                 <li>• Περιγραφή τουλάχιστον 90 χαρακτήρες</li>
               )}
             </ul>
@@ -126,7 +146,7 @@ export default function PublishStepTitleDescription({
         <Button variant="outline" onClick={onPrev}>
           Πίσω
         </Button>
-        <Button onClick={onNext} disabled={!isValid}>
+        <Button onClick={handleNext} disabled={!isValid}>
           Συνέχεια
         </Button>
       </div>

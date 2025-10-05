@@ -50,9 +50,6 @@ export default function PublishStepApartmentDetails({
   onNext, 
   onPrev 
 }: PublishStepApartmentDetailsProps) {
-  // Local state for text inputs to prevent lag
-  const [propertySize, setPropertySize] = useState(draft.property_size_m2?.toString() || '');
-  
   const toggleAmenity = (amenity: string) => {
     const current = draft.amenities_property || [];
     const updated = current.includes(amenity)

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, startTransition } from "react";
 import { Helmet } from "react-helmet-async";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
@@ -251,13 +251,6 @@ export default function Publish() {
     setIsSaving(true);
     const updatedDraft = { ...draft, ...updates };
     setDraft(updatedDraft);
-    
-    console.log('Saving draft with updates:', updates, 'Full draft:', updatedDraft);
-
-    // Mark current step as completed
-    if (!completedSteps.includes(currentStep)) {
-      setCompletedSteps(prev => [...prev, currentStep]);
-    }
 
     try {
       const draftData = {
@@ -345,26 +338,33 @@ export default function Publish() {
     }
   };
 
-  // Debounced auto-save for field changes - reduced from 1000ms to 400ms for faster responsiveness
+  // Debounced auto-save for field changes - increased for performance
   const debouncedSave = useDebouncedCallback(
     (draftToSave: ListingDraft) => {
       saveDraft(draftToSave);
     },
-    400
+    1200
   );
 
-  // Optimistic update - UI responds immediately
+  // Optimistic update - UI responds immediately with startTransition
   const updateDraft = useCallback((updates: Partial<ListingDraft>) => {
-    setDraft(prev => {
-      const updated = { ...prev, ...updates };
-      debouncedSave(updated);
-      return updated;
+    startTransition(() => {
+      setDraft(prev => {
+        const updated = { ...prev, ...updates };
+        debouncedSave(updated);
+        return updated;
+      });
     });
   }, [debouncedSave]);
 
   const nextStep = (updates?: Partial<ListingDraft>) => {
     if (updates) {
       saveDraft(updates);
+    }
+    
+    // Mark current step as completed
+    if (!completedSteps.includes(currentStep)) {
+      setCompletedSteps(prev => [...prev, currentStep]);
     }
     
     let next = currentStep + 1;

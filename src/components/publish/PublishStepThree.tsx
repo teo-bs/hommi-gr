@@ -147,8 +147,8 @@ export default function PublishStepThree({
                     type="number"
                     min="1"
                     placeholder="3"
-                    value={draft.min_stay_months || ''}
-                    onChange={(e) => onUpdate({ min_stay_months: parseInt(e.target.value) || undefined })}
+                    defaultValue={draft.min_stay_months || ''}
+                    onBlur={(e) => onUpdate({ min_stay_months: parseInt(e.target.value) || undefined })}
                   />
                 </div>
 
@@ -159,8 +159,8 @@ export default function PublishStepThree({
                     type="number"
                     min="1"
                     placeholder="12"
-                    value={draft.max_stay_months || ''}
-                    onChange={(e) => onUpdate({ max_stay_months: parseInt(e.target.value) || undefined })}
+                    defaultValue={draft.max_stay_months || ''}
+                    onBlur={(e) => onUpdate({ max_stay_months: parseInt(e.target.value) || undefined })}
                   />
                 </div>
               </div>
@@ -204,8 +204,8 @@ export default function PublishStepThree({
                   id="rent"
                   type="number"
                   placeholder="400"
-                  value={draft.price_month || ''}
-                  onChange={(e) => onUpdate({ price_month: parseInt(e.target.value) || undefined })}
+                  defaultValue={draft.price_month || ''}
+                  onBlur={(e) => onUpdate({ price_month: parseInt(e.target.value) || undefined })}
                 />
                 {pricePerM2 && (
                   <p className="text-sm text-muted-foreground">
@@ -219,8 +219,8 @@ export default function PublishStepThree({
                 <Textarea
                   id="bills"
                   placeholder="π.χ. Περιλαμβάνονται ρεύμα, νερό, internet. Θέρμανση εκτός."
-                  value={draft.bills_note || ''}
-                  onChange={(e) => onUpdate({ bills_note: e.target.value })}
+                  defaultValue={draft.bills_note || ''}
+                  onBlur={(e) => onUpdate({ bills_note: e.target.value })}
                   rows={3}
                 />
               </div>
