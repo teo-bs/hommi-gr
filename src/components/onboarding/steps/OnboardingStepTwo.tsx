@@ -5,6 +5,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge } from "@/components/ui/badge";
 import { X } from "lucide-react";
 import type { OnboardingData } from "../OnboardingModal";
+import { StepTransition } from "@/components/ui/step-transition";
 
 interface OnboardingStepTwoProps {
   data: OnboardingData;
@@ -104,7 +105,8 @@ export const OnboardingStepTwo = ({ data, onComplete, onBack }: OnboardingStepTw
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
+    <StepTransition isVisible={true} direction="forward">
+      <form onSubmit={handleSubmit} className="space-y-6">
       {/* Country of residence */}
       <div className="space-y-2">
         <Label>
@@ -191,13 +193,14 @@ export const OnboardingStepTwo = ({ data, onComplete, onBack }: OnboardingStepTw
 
       {/* Actions */}
       <div className="flex justify-between pt-4">
-        <Button type="button" variant="outline" onClick={onBack}>
+        <Button type="button" variant="outline" onClick={onBack} className="h-11">
           Πίσω
         </Button>
-        <Button type="submit">
+        <Button type="submit" className="h-11">
           Επόμενο
         </Button>
       </div>
     </form>
+    </StepTransition>
   );
 };

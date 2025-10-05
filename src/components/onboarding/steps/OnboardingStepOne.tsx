@@ -12,6 +12,9 @@ import { cn } from "@/lib/utils";
 import type { OnboardingData } from "../OnboardingModal";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
+import { LoadingOverlay } from "@/components/ui/loading-overlay";
+import { useToast } from "@/hooks/use-toast";
+import { StepTransition } from "@/components/ui/step-transition";
 
 interface OnboardingStepOneProps {
   data: OnboardingData;
@@ -21,6 +24,7 @@ interface OnboardingStepOneProps {
 
 export const OnboardingStepOne = ({ data, onComplete, onBack }: OnboardingStepOneProps) => {
   const { user } = useAuth();
+  const { toast } = useToast();
   const [formData, setFormData] = useState({
     first_name: data.first_name || '',
     last_name: data.last_name || '',
@@ -32,6 +36,7 @@ export const OnboardingStepOne = ({ data, onComplete, onBack }: OnboardingStepOn
 
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isUploading, setIsUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
 
   const validateForm = () => {
     const newErrors: Record<string, string> = {};
@@ -65,29 +70,92 @@ export const OnboardingStepOne = ({ data, onComplete, onBack }: OnboardingStepOn
     return Object.keys(newErrors).length === 0;
   };
 
+  const compressImage = async (file: File): Promise<Blob> => {
+    return new Promise((resolve) => {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const img = new Image();
+        img.onload = () => {
+          const canvas = document.createElement('canvas');
+          const ctx = canvas.getContext('2d')!;
+          
+          const MAX_WIDTH = 800;
+          const MAX_HEIGHT = 800;
+          
+          let width = img.width;
+          let height = img.height;
+          
+          if (width > height) {
+            if (width > MAX_WIDTH) {
+              height *= MAX_WIDTH / width;
+              width = MAX_WIDTH;
+            }
+          } else {
+            if (height > MAX_HEIGHT) {
+              width *= MAX_HEIGHT / height;
+              height = MAX_HEIGHT;
+            }
+          }
+          
+          canvas.width = width;
+          canvas.height = height;
+          ctx.drawImage(img, 0, 0, width, height);
+          
+          canvas.toBlob((blob) => resolve(blob!), 'image/jpeg', 0.8);
+        };
+        img.src = e.target?.result as string;
+      };
+      reader.readAsDataURL(file);
+    });
+  };
+
   const handlePhotoUpload = async (file: File | null) => {
     if (!file || !user) return;
     
     setIsUploading(true);
+    setUploadProgress(10);
+    
     try {
+      setUploadProgress(30);
+      const compressedBlob = await compressImage(file);
+      
+      setUploadProgress(50);
       const fileExt = file.name.split('.').pop();
       const fileName = `${user.id}/${Date.now()}.${fileExt}`;
       
+      setUploadProgress(70);
       const { data, error: uploadError } = await supabase.storage
         .from('avatars')
-        .upload(fileName, file, { upsert: true });
+        .upload(fileName, compressedBlob, { upsert: true });
 
       if (uploadError) throw uploadError;
 
+      setUploadProgress(90);
       const { data: publicUrlData } = supabase.storage
         .from('avatars')
         .getPublicUrl(data.path);
 
       setFormData({ ...formData, avatar_url: publicUrlData.publicUrl });
+      setUploadProgress(100);
+      
+      toast({
+        title: "Επιτυχία!",
+        description: "Η φωτογραφία ανέβηκε με επιτυχία",
+      });
+      
+      if ('vibrate' in navigator) {
+        navigator.vibrate(50);
+      }
     } catch (error) {
       console.error('Upload error:', error);
+      toast({
+        title: "Σφάλμα",
+        description: "Δεν ήταν δυνατή η μεταφόρτωση της φωτογραφίας",
+        variant: "destructive",
+      });
     } finally {
       setIsUploading(false);
+      setUploadProgress(0);
     }
   };
 
@@ -107,7 +175,14 @@ export const OnboardingStepOne = ({ data, onComplete, onBack }: OnboardingStepOn
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
+    <StepTransition isVisible={true} direction="forward">
+      <LoadingOverlay 
+        isVisible={isUploading} 
+        message="Μεταφόρτωση φωτογραφίας..." 
+        progress={uploadProgress}
+      />
+      
+      <form onSubmit={handleSubmit} className="space-y-6">
       {/* Profile Photo */}
       <FileUpload
         value={formData.avatar_url}
@@ -272,13 +347,14 @@ export const OnboardingStepOne = ({ data, onComplete, onBack }: OnboardingStepOn
 
       {/* Actions */}
       <div className="flex justify-between pt-4">
-        <Button type="button" variant="outline" onClick={onBack}>
+        <Button type="button" variant="outline" onClick={onBack} className="h-11">
           Ακύρωση
         </Button>
-        <Button type="submit">
+        <Button type="submit" className="h-11">
           Επόμενο
         </Button>
       </div>
     </form>
+    </StepTransition>
   );
 };

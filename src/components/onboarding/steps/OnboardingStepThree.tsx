@@ -6,6 +6,7 @@ import { Calendar, MapPin, Users, CheckCircle } from "lucide-react";
 import { format } from "date-fns";
 import { el } from "date-fns/locale";
 import type { OnboardingData } from "../OnboardingModal";
+import { StepTransition } from "@/components/ui/step-transition";
 
 interface OnboardingStepThreeProps {
   data: OnboardingData;
@@ -70,7 +71,8 @@ export const OnboardingStepThree = ({ data, onComplete, onBack, isSubmitting }: 
   };
 
   return (
-    <div className="space-y-6">
+    <StepTransition isVisible={true} direction="forward">
+      <div className="space-y-6">
       <div className="text-center space-y-2">
         <div className="mx-auto w-16 h-16 bg-green-100 rounded-full flex items-center justify-center">
           <CheckCircle className="h-8 w-8 text-green-600" />
@@ -157,13 +159,14 @@ export const OnboardingStepThree = ({ data, onComplete, onBack, isSubmitting }: 
 
       {/* Actions */}
       <div className="flex justify-between pt-4">
-        <Button type="button" variant="outline" onClick={onBack} disabled={isSubmitting}>
+        <Button type="button" variant="outline" onClick={onBack} disabled={isSubmitting} className="h-11">
           Πίσω
         </Button>
-        <Button onClick={onComplete} disabled={isSubmitting}>
+        <Button onClick={onComplete} disabled={isSubmitting} className="h-11">
           {isSubmitting ? 'Αποθήκευση...' : 'Ολοκλήρωση'}
         </Button>
       </div>
     </div>
+    </StepTransition>
   );
 };

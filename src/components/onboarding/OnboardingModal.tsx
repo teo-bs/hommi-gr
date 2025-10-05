@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { OnboardingStepOne } from "./steps/OnboardingStepOne";
 import { OnboardingStepTwo } from "./steps/OnboardingStepTwo";
@@ -9,7 +8,6 @@ import { OnboardingStepThree } from "./steps/OnboardingStepThree";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { X } from "lucide-react";
 
 export interface OnboardingData {
   first_name: string;
@@ -79,14 +77,51 @@ export const OnboardingModal = () => {
     navigate('/me');
   };
 
-  const handleStepOneComplete = (data: Partial<OnboardingData>) => {
-    setFormData({ ...formData, ...data });
+  const handleStepOneComplete = async (data: Partial<OnboardingData>) => {
+    const updatedData = { ...formData, ...data };
+    setFormData(updatedData);
+    
+    // Save Step 1 data immediately
+    try {
+      await updateProfile({
+        first_name: data.first_name,
+        last_name: data.last_name,
+        date_of_birth: data.date_of_birth,
+        gender: data.gender,
+        avatar_url: data.avatar_url,
+      });
+      
+      toast({
+        title: "Αποθηκεύτηκε",
+        description: "Τα στοιχεία σας αποθηκεύτηκαν",
+      });
+    } catch (error) {
+      console.error('Error saving step 1:', error);
+    }
+    
     updateOnboardingProgress(1);
     handleNext();
   };
 
-  const handleStepTwoComplete = (data: Partial<OnboardingData>) => {
-    setFormData({ ...formData, ...data });
+  const handleStepTwoComplete = async (data: Partial<OnboardingData>) => {
+    const updatedData = { ...formData, ...data };
+    setFormData(updatedData);
+    
+    // Save Step 2 data immediately
+    try {
+      await updateProfile({
+        country: data.country,
+        languages: data.languages,
+      });
+      
+      toast({
+        title: "Αποθηκεύτηκε",
+        description: "Τα στοιχεία σας αποθηκεύτηκαν",
+      });
+    } catch (error) {
+      console.error('Error saving step 2:', error);
+    }
+    
     updateOnboardingProgress(2);
     handleNext();
   };
@@ -195,19 +230,9 @@ export const OnboardingModal = () => {
     <Dialog open={isOpen} onOpenChange={() => handleClose()}>
       <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <div className="flex items-center justify-between">
-            <DialogTitle className="text-xl font-semibold">
-              {getStepTitle()}
-            </DialogTitle>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={handleClose}
-              className="h-6 w-6 p-0"
-            >
-              <X className="h-4 w-4" />
-            </Button>
-          </div>
+          <DialogTitle className="text-xl font-semibold">
+            {getStepTitle()}
+          </DialogTitle>
           
           {/* Progress */}
           <div className="space-y-2">
