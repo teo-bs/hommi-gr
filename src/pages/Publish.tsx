@@ -250,7 +250,6 @@ export default function Publish() {
 
     setIsSaving(true);
     const updatedDraft = { ...draft, ...updates };
-    setDraft(updatedDraft);
 
     try {
       const draftData = {
@@ -338,21 +337,34 @@ export default function Publish() {
     }
   };
 
-  // Debounced auto-save for field changes - increased for performance
+  // Debounced auto-save for field changes - only saves changed fields
   const debouncedSave = useDebouncedCallback(
-    (draftToSave: ListingDraft) => {
-      saveDraft(draftToSave);
+    (updates: Partial<ListingDraft>) => {
+      saveDraft(updates);
     },
     1200
   );
 
-  // Optimistic update - UI responds immediately with startTransition
+  // Instant UI update - computes minimal diff for efficient saves
   const updateDraft = useCallback((updates: Partial<ListingDraft>) => {
     startTransition(() => {
       setDraft(prev => {
-        const updated = { ...prev, ...updates };
-        debouncedSave(updated);
-        return updated;
+        const next = { ...prev, ...updates };
+        
+        // Compute minimal diff - only save changed fields
+        const minimal: Partial<ListingDraft> = {};
+        for (const key of Object.keys(updates) as Array<keyof ListingDraft>) {
+          if (!Object.is(prev[key], updates[key])) {
+            (minimal as any)[key] = next[key];
+          }
+        }
+        
+        // Only trigger save if something actually changed
+        if (Object.keys(minimal).length > 0) {
+          debouncedSave(minimal);
+        }
+        
+        return next;
       });
     });
   }, [debouncedSave]);
@@ -803,7 +815,7 @@ export default function Publish() {
             {currentStep === 2 && (
               <PublishStepOne
                 draft={draft}
-                onUpdate={debouncedSave}
+                onUpdate={updateDraft}
                 onNext={nextStep}
                 onPrev={prevStep}
               />
@@ -814,7 +826,7 @@ export default function Publish() {
             {currentStep === 3 && (
               <PublishStepApartmentDetails
                 draft={draft}
-                onUpdate={debouncedSave}
+                onUpdate={updateDraft}
                 onNext={nextStep}
                 onPrev={prevStep}
               />
@@ -825,7 +837,7 @@ export default function Publish() {
             {currentStep === 4 && draft.property_type === 'room' && (
               <PublishStepRoomDetails
                 draft={draft}
-                onUpdate={debouncedSave}
+                onUpdate={updateDraft}
                 onNext={nextStep}
                 onPrev={prevStep}
               />
@@ -836,7 +848,7 @@ export default function Publish() {
             {currentStep === 5 && (
               <PublishStepPhotos
                 draft={draft}
-                onUpdate={debouncedSave}
+                onUpdate={updateDraft}
                 onNext={nextStep}
                 onPrev={prevStep}
               />
@@ -847,7 +859,7 @@ export default function Publish() {
             {currentStep === 6 && (
               <PublishStepTitleDescription
                 draft={draft}
-                onUpdate={debouncedSave}
+                onUpdate={updateDraft}
                 onNext={nextStep}
                 onPrev={prevStep}
               />
@@ -858,7 +870,7 @@ export default function Publish() {
             {currentStep === 7 && (
               <PublishStepVerifications
                 draft={draft}
-                onUpdate={debouncedSave}
+                onUpdate={updateDraft}
                 onNext={nextStep}
                 onPrev={prevStep}
               />
@@ -869,7 +881,7 @@ export default function Publish() {
             {currentStep === 8 && (
               <PublishStepThree
                 draft={draft}
-                onUpdate={debouncedSave}
+                onUpdate={updateDraft}
                 onNext={nextStep}
                 onPrev={prevStep}
               />
