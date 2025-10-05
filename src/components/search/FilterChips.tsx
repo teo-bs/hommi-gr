@@ -19,7 +19,7 @@ export const FilterChips = ({ activeFilters, onRemoveFilter, onClearAll }: Filte
 
   return (
     <div className="flex items-center gap-2 flex-wrap py-3 px-4 bg-surface-elevated border-b border-border">
-      <span className="text-sm text-muted-foreground">Φίλτρα:</span>
+      <span className="text-small text-muted-foreground tracking-wide">Φίλτρα:</span>
       {activeFilters.map((filter) => (
         <Badge
           key={filter.key}
@@ -42,7 +42,7 @@ export const FilterChips = ({ activeFilters, onRemoveFilter, onClearAll }: Filte
           variant="ghost"
           size="sm"
           onClick={onClearAll}
-          className="text-xs"
+          className="text-small"
         >
           Καθαρισμός όλων
         </Button>

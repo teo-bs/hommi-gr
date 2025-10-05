@@ -14,7 +14,44 @@ export default {
     },
     extend: {
       fontFamily: {
-        sans: ['Inter', 'ui-sans-serif', 'system-ui'],
+        sans: [
+          'Inter',
+          '-apple-system',
+          'BlinkMacSystemFont',
+          'Segoe UI',
+          'Roboto',
+          'Helvetica',
+          'Arial',
+          'Apple Color Emoji',
+          'Segoe UI Emoji',
+          'Noto Color Emoji',
+          'sans-serif'
+        ],
+        serif: [
+          'Noto Serif',
+          'Georgia',
+          'serif'
+        ],
+      },
+      fontSize: {
+        'h1': 'var(--h1)',
+        'h2': 'var(--h2)',
+        'h3': 'var(--h3)',
+        'h4': 'var(--h4)',
+        'body-l': 'var(--body-l)',
+        'body': 'var(--body)',
+        'small': 'var(--small)',
+        'micro': 'var(--micro)',
+        'button': 'var(--button)',
+        'caption': 'var(--caption)',
+      },
+      letterSpacing: {
+        tighter: '-0.005em',
+        tight: '-0.0025em',
+        normal: '0',
+        wide: '0.002em',
+        wider: '0.004em',
+        widest: '0.02em',
       },
       colors: {
         border: "hsl(var(--border))",

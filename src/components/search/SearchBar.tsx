@@ -46,16 +46,16 @@ export const SearchBar = ({ filters, onFilterChange, onRemoveFilter, resultCount
                 aria-label="Άνοιγμα φίλτρων"
               >
                 <div className="flex-1 px-6 py-3 border-r">
-                  <div className="text-xs font-semibold">Περιοχή</div>
-                  <div className="text-sm text-muted-foreground">Όλη η Ελλάδα</div>
+                  <div className="text-micro font-semibold tracking-wide">Περιοχή</div>
+                  <div className="text-small text-muted-foreground">Όλη η Ελλάδα</div>
                 </div>
                 <div className="flex-1 px-6 py-3 border-r">
-                  <div className="text-xs font-semibold">Ημερομηνία</div>
-                  <div className="text-sm text-muted-foreground">{filters?.moveInDate ? new Date(filters.moveInDate).toLocaleDateString('el-GR') : 'Οποιαδήποτε'}</div>
+                  <div className="text-micro font-semibold tracking-wide">Ημερομηνία</div>
+                  <div className="text-small text-muted-foreground">{filters?.moveInDate ? new Date(filters.moveInDate).toLocaleDateString('el-GR') : 'Οποιαδήποτε'}</div>
                 </div>
                 <div className="flex-1 px-6 py-3 border-r">
-                  <div className="text-xs font-semibold">Επισκέπτες</div>
-                  <div className="text-sm text-muted-foreground">1+</div>
+                  <div className="text-micro font-semibold tracking-wide">Επισκέπτες</div>
+                  <div className="text-small text-muted-foreground tabular-nums">1+</div>
                 </div>
                 <Button size="icon" className="rounded-full m-2" variant="default">
                   <Search className="h-4 w-4" />
@@ -66,7 +66,7 @@ export const SearchBar = ({ filters, onFilterChange, onRemoveFilter, resultCount
             {/* Filters Button */}
             <Sheet open={showFilters} onOpenChange={setShowFilters}>
               <SheetTrigger asChild>
-                <Button variant="outline" className="rounded-full" size="default">
+                <Button variant="outline" className="rounded-full font-medium" size="default">
                   <SlidersHorizontal className="h-4 w-4 mr-2" />
                   Φίλτρα
                 </Button>

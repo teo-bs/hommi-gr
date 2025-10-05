@@ -70,26 +70,26 @@ export const ListingCard = ({
         {/* Content */}
         <div className="space-y-1">
           <div className="flex items-start justify-between gap-2">
-            <h3 className="font-semibold text-sm line-clamp-1 group-hover:underline">
+            <h3 className="font-semibold text-base line-clamp-2 leading-tight group-hover:underline">
               {listing.neighborhood || listing.city}
             </h3>
-            <div className="flex items-center gap-1 text-sm">
+            <div className="flex items-center gap-1 text-small">
               <Star className="h-3 w-3" />
-              <span className="font-semibold">4.9</span>
+              <span className="font-semibold tabular-nums">4.9</span>
             </div>
           </div>
           
-          <p className="text-sm text-muted-foreground line-clamp-1">
+          <p className="text-small text-muted-foreground tracking-wide line-clamp-1">
             {listing.title}
           </p>
           
-          <p className="text-sm text-muted-foreground">
+          <p className="text-small text-muted-foreground tracking-wide">
             {new Date(listing.availability_date) <= new Date() ? 'Άμεσα διαθέσιμο' : 'Διαθέσιμο σύντομα'}
           </p>
           
           <div className="flex items-baseline gap-1 pt-1">
-            <span className="font-semibold">€{listing.price_month}</span>
-            <span className="text-sm text-muted-foreground">μήνα</span>
+            <span className="font-bold text-base tabular-nums">€{listing.price_month}</span>
+            <span className="text-small text-muted-foreground">μήνα</span>
           </div>
         </div>
       </div>

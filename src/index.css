@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Noto+Serif:ital,wght@0,100..900;1,100..900&display=swap&subset=greek,latin');
 
 @tailwind base;
 @tailwind components;
@@ -30,6 +30,21 @@
   }
 
   :root {
+    /* Typography Scale - Responsive clamp() values */
+    --h1: clamp(2.125rem, 1.4rem + 2vw, 2.75rem);      /* 34-44px */
+    --h2: clamp(1.75rem, 1.2rem + 1.5vw, 2.25rem);     /* 28-36px */
+    --h3: clamp(1.375rem, 1.05rem + 1vw, 1.75rem);     /* 22-28px */
+    --h4: clamp(1.25rem, 1.15rem + 0.5vw, 1.375rem);   /* 20-22px */
+    --body-l: 1.125rem;                                  /* 18px */
+    --body: 1rem;                                        /* 16px */
+    --small: 0.875rem;                                   /* 14px */
+    --micro: 0.75rem;                                    /* 12px */
+    --button: 0.9375rem;                                 /* 15px */
+    --caption: 0.8125rem;                                /* 13px */
+    
+    /* OpenType Features */
+    --num: "tnum" 1, "cv11" 1, "ss01" 0;
+    
     /* Core Mediterranean palette */
     --background: 0 0% 100%;
     --foreground: 220 25% 8%;
@@ -163,6 +178,26 @@
 
   body {
     @apply bg-background text-foreground;
+    font: 400 var(--body)/1.6 "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    font-kerning: normal;
+  }
+
+  h1 {
+    font: 700 var(--h1)/1.15 "Inter", system-ui;
+    letter-spacing: -0.005em;
+  }
+
+  h2 {
+    font: 700 var(--h2)/1.2 "Inter", system-ui;
+    letter-spacing: -0.0025em;
+  }
+
+  h3 {
+    font: 600 var(--h3)/1.25 "Inter", system-ui;
+  }
+
+  h4 {
+    font: 600 var(--h4)/1.3 "Inter", system-ui;
   }
 }
 
@@ -181,5 +216,75 @@
 
   .overflow-wrap-anywhere {
     overflow-wrap: anywhere;
+  }
+
+  /* Tabular numbers for prices & stats alignment */
+  .prices,
+  .stats,
+  .tabular-nums {
+    font-feature-settings: var(--num);
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* Greek all-caps with proper spacing */
+  .uppercase-greek {
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+  }
+
+  /* Serif for editorial content */
+  .serif {
+    font-family: "Noto Serif", Georgia, serif;
+  }
+
+  /* Typography utilities */
+  .text-h1 {
+    font-size: var(--h1);
+    line-height: 1.15;
+  }
+
+  .text-h2 {
+    font-size: var(--h2);
+    line-height: 1.2;
+  }
+
+  .text-h3 {
+    font-size: var(--h3);
+    line-height: 1.25;
+  }
+
+  .text-h4 {
+    font-size: var(--h4);
+    line-height: 1.3;
+  }
+
+  .text-body-l {
+    font-size: var(--body-l);
+    line-height: 1.55;
+  }
+
+  .text-body {
+    font-size: var(--body);
+    line-height: 1.6;
+  }
+
+  .text-small {
+    font-size: var(--small);
+    line-height: 1.5;
+  }
+
+  .text-micro {
+    font-size: var(--micro);
+    line-height: 1.45;
+  }
+
+  .text-button {
+    font-size: var(--button);
+    line-height: 1.2;
+  }
+
+  .text-caption {
+    font-size: var(--caption);
+    line-height: 1.4;
   }
 }
