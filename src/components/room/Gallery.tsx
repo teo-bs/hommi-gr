@@ -32,8 +32,15 @@ export const Gallery = ({ photos, title }: GalleryProps) => {
   const displayPhotos = validPhotos.length > 0 ? validPhotos : mockPhotos;
   const totalPhotos = displayPhotos.length;
 
-  const handleImageError = (url: string) => {
+  const handleImageError = async (url: string) => {
     setFailedImages(prev => new Set(prev).add(url));
+    
+    // Log broken photo for lister notification
+    const { logBrokenPhoto } = await import('@/lib/log-broken-photo');
+    const roomId = window.location.pathname.split('/').pop();
+    if (roomId) {
+      logBrokenPhoto(roomId, url);
+    }
   };
 
   return (

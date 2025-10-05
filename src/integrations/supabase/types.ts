@@ -203,6 +203,83 @@ export type Database = {
           },
         ]
       }
+      broken_photos_log: {
+        Row: {
+          created_at: string | null
+          detected_at: string | null
+          id: string
+          lister_id: string | null
+          photo_url: string
+          room_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          detected_at?: string | null
+          id?: string
+          lister_id?: string | null
+          photo_url: string
+          room_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          detected_at?: string | null
+          id?: string
+          lister_id?: string | null
+          photo_url?: string
+          room_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "broken_photos_log_lister_id_fkey"
+            columns: ["lister_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "broken_photos_log_lister_id_fkey"
+            columns: ["lister_id"]
+            isOneToOne: false
+            referencedRelation: "room_search_cache"
+            referencedColumns: ["lister_profile_id"]
+          },
+          {
+            foreignKeyName: "broken_photos_log_room_id_fkey"
+            columns: ["room_id"]
+            isOneToOne: false
+            referencedRelation: "mv_room_amenity_facets"
+            referencedColumns: ["room_id"]
+          },
+          {
+            foreignKeyName: "broken_photos_log_room_id_fkey"
+            columns: ["room_id"]
+            isOneToOne: false
+            referencedRelation: "room_search_cache"
+            referencedColumns: ["room_id"]
+          },
+          {
+            foreignKeyName: "broken_photos_log_room_id_fkey"
+            columns: ["room_id"]
+            isOneToOne: false
+            referencedRelation: "rooms"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "broken_photos_log_room_id_fkey"
+            columns: ["room_id"]
+            isOneToOne: false
+            referencedRelation: "v_room_amenities_grouped"
+            referencedColumns: ["room_id"]
+          },
+          {
+            foreignKeyName: "broken_photos_log_room_id_fkey"
+            columns: ["room_id"]
+            isOneToOne: false
+            referencedRelation: "v_room_detail_by_slug"
+            referencedColumns: ["room_id"]
+          },
+        ]
+      }
       holds: {
         Row: {
           amount: number

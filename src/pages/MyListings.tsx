@@ -4,16 +4,50 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Calendar, Eye, Heart, Home, MessageCircle, Plus, Users, Edit, FileText, Archive } from "lucide-react";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Calendar, Eye, Heart, Home, MessageCircle, Plus, Users, Edit, FileText, Archive, AlertTriangle } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useMyListings } from "@/hooks/useMyListings";
 import { Skeleton } from "@/components/ui/skeleton";
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
+import { useQuery } from '@tanstack/react-query';
 
 const MyListings = () => {
   const [activeTab, setActiveTab] = useState<'draft' | 'published' | 'archived'>('published');
   const { data: listings = [], isLoading, error, refetch } = useMyListings(activeTab);
+
+  // Query broken photos for current user's listings
+  const { data: brokenPhotos = [] } = useQuery({
+    queryKey: ['broken-photos'],
+    queryFn: async () => {
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('id')
+        .eq('user_id', (await supabase.auth.getUser()).data.user?.id)
+        .single();
+
+      if (!profile) return [];
+
+      const { data } = await supabase
+        .from('broken_photos_log')
+        .select('room_id, photo_url')
+        .eq('lister_id', profile.id);
+
+      return data || [];
+    }
+  });
+
+  // Group broken photos by listing
+  const brokenPhotosByListing = new Map<string, number>();
+  listings.forEach(listing => {
+    const count = brokenPhotos.filter(bp => 
+      bp.room_id && listing.id // matching by listing.id as room_id proxy
+    ).length;
+    if (count > 0) {
+      brokenPhotosByListing.set(listing.id, count);
+    }
+  });
 
   const handleStatusChange = async (listingId: string, newStatus: 'draft' | 'published' | 'archived') => {
     try {
@@ -84,6 +118,18 @@ const MyListings = () => {
               </Link>
             </div>
 
+            {/* Broken Photos Warning Banner */}
+            {brokenPhotos.length > 0 && (
+              <Alert variant="destructive" className="mb-6">
+                <AlertTriangle className="h-4 w-4" />
+                <AlertDescription>
+                  <strong>Προσοχή:</strong> Κάποιες από τις φωτογραφίες σας δεν εμφανίζονται σωστά. 
+                  Επηρεάζονται {brokenPhotosByListing.size} αγγελί{brokenPhotosByListing.size === 1 ? 'α' : 'ες'}. 
+                  Παρακαλούμε επεξεργαστείτε τις και ανεβάστε ξανά τις φωτογραφίες.
+                </AlertDescription>
+              </Alert>
+            )}
+
             {/* Tabs */}
             <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as 'draft' | 'published' | 'archived')} className="mb-6">
               <TabsList className="grid w-full grid-cols-3">
@@ -130,8 +176,10 @@ const MyListings = () => {
                 {/* Listings */}
                 {!isLoading && listings.length > 0 && (
                   <div className="space-y-6">
-                    {listings.map((listing) => (
-                      <Card key={listing.id} className="overflow-hidden">
+                    {listings.map((listing) => {
+                      const hasBrokenPhotos = brokenPhotosByListing.has(listing.id);
+                      return (
+                      <Card key={listing.id} className={`overflow-hidden ${hasBrokenPhotos ? 'border-destructive border-2' : ''}`}>
                         <CardContent className="p-6">
                           <div className="flex gap-6">
                             {/* Image */}
@@ -153,8 +201,14 @@ const MyListings = () => {
                             <div className="flex-1">
                               <div className="flex items-start justify-between mb-3">
                                 <div>
-                                  <h3 className="text-xl font-semibold text-foreground mb-1">
+                                  <h3 className="text-xl font-semibold text-foreground mb-1 flex items-center gap-2">
                                     {listing.title}
+                                    {hasBrokenPhotos && (
+                                      <Badge variant="destructive" className="gap-1">
+                                        <AlertTriangle className="h-3 w-3" />
+                                        Φωτογραφίες
+                                      </Badge>
+                                    )}
                                   </h3>
                                   <p className="text-muted-foreground">
                                     {listing.neighborhood}, {listing.city}
@@ -220,9 +274,13 @@ const MyListings = () => {
                             {/* Actions */}
                             <div className="flex flex-col gap-2 flex-shrink-0">
                               <Link to={`/publish?id=${listing.id}`}>
-                                <Button variant="outline" size="sm" className="w-full">
+                                <Button 
+                                  variant={hasBrokenPhotos ? "destructive" : "outline"} 
+                                  size="sm" 
+                                  className="w-full"
+                                >
                                   <Edit className="h-4 w-4 mr-2" />
-                                  Επεξεργασία
+                                  {hasBrokenPhotos ? 'Διόρθωση Φωτογραφιών' : 'Επεξεργασία'}
                                 </Button>
                               </Link>
                               
@@ -249,7 +307,8 @@ const MyListings = () => {
                           </div>
                         </CardContent>
                       </Card>
-                    ))}
+                    )}
+                    )}
                   </div>
                 )}
 

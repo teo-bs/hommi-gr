@@ -44,7 +44,14 @@ export const ListingCard = ({
   onClick
 }: ListingCardProps) => {
   const isHighlighted = hoveredListingId === listing.room_id || selectedListingId === listing.room_id;
-  const images = photos && photos.length > 0 ? photos : [listing.cover_photo_url || '/placeholder.svg'];
+  const [failedImages, setFailedImages] = useState<Set<string>>(new Set());
+  
+  // Filter out broken images
+  const allImages = photos && photos.length > 0 ? photos : [listing.cover_photo_url || '/placeholder.svg'];
+  const images = allImages.filter(url => url && !failedImages.has(url));
+  
+  // Fallback if all images failed
+  const displayImages = images.length > 0 ? images : ['/placeholder.svg'];
   
   // Carousel API for smart navigation
   const [api, setApi] = useState<CarouselApi>();
@@ -84,18 +91,23 @@ export const ListingCard = ({
     };
   }, [api]);
 
+  // Handle image load errors
+  const handleImageError = (url: string) => {
+    setFailedImages(prev => new Set(prev).add(url));
+  };
+
   // Preload adjacent images on hover
   useEffect(() => {
-    if (!api || !isHovered || images.length <= 1) return;
+    if (!api || !isHovered || displayImages.length <= 1) return;
     
     const currentIndex = api.selectedScrollSnap();
-    const preloadIndexes = [currentIndex - 1, currentIndex + 1].filter(i => i >= 0 && i < images.length);
+    const preloadIndexes = [currentIndex - 1, currentIndex + 1].filter(i => i >= 0 && i < displayImages.length);
     
     preloadIndexes.forEach(idx => {
       const img = new window.Image();
-      img.src = getOptimizedImageUrl(images[idx], 720);
+      img.src = getOptimizedImageUrl(displayImages[idx], 720);
     });
-  }, [api, isHovered, images]);
+  }, [api, isHovered, displayImages]);
 
   // Calculate match score
   const { isGoodFit, matchPercentage } = calculateMatchScore(
@@ -163,7 +175,7 @@ export const ListingCard = ({
             }}
           >
             <CarouselContent>
-              {images.map((src, idx) => (
+              {displayImages.map((src, idx) => (
                 <CarouselItem key={idx} className="w-full h-full">
                   <img
                     src={getOptimizedImageUrl(src, 720)}
@@ -175,19 +187,20 @@ export const ListingCard = ({
                     decoding="async"
                     draggable={false}
                     className="w-full h-full object-cover"
+                    onError={() => handleImageError(src)}
                   />
                 </CarouselItem>
               ))}
             </CarouselContent>
             
             {/* Smart Navigation arrows - only show if can scroll */}
-            {images.length > 1 && canScrollPrev && (
+            {displayImages.length > 1 && canScrollPrev && (
               <CarouselPrevious 
                 className="left-2 opacity-0 group-hover/carousel:opacity-100 transition-opacity"
                 data-carousel-control
               />
             )}
-            {images.length > 1 && canScrollNext && (
+            {displayImages.length > 1 && canScrollNext && (
               <CarouselNext 
                 className="right-2 opacity-0 group-hover/carousel:opacity-100 transition-opacity"
                 data-carousel-control
@@ -196,17 +209,17 @@ export const ListingCard = ({
           </Carousel>
           
           {/* Photo count indicator - bottom left */}
-          {images.length > 1 && isHovered && (
+          {displayImages.length > 1 && isHovered && (
             <div className="absolute bottom-3 left-3 bg-background/90 backdrop-blur-sm px-2 py-1 rounded-md flex items-center gap-1.5 z-10 shadow-sm">
               <Image className="h-3.5 w-3.5" />
-              <span className="text-xs font-medium tabular-nums">{images.length}</span>
+              <span className="text-xs font-medium tabular-nums">{displayImages.length}</span>
             </div>
           )}
           
           {/* Dots indicator - only show if multiple images */}
-          {images.length > 1 && (
+          {displayImages.length > 1 && (
             <div className="absolute bottom-3 left-1/2 transform -translate-x-1/2 flex gap-1.5 z-10">
-              {images.map((_, idx) => (
+              {displayImages.map((_, idx) => (
                 <div 
                   key={idx} 
                   className="w-1.5 h-1.5 rounded-full bg-white/70 shadow-sm"
