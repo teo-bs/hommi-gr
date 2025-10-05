@@ -130,27 +130,100 @@ const Index = () => {
                       </Button>
                     </div>
                   </div>
-
-                  {/* Smart Shortcuts */}
-                  <div className="mt-6 pt-4 border-t border-border">
-                    <p className="text-sm text-muted-foreground mb-3">Smart Shortcuts:</p>
-                    <div className="flex flex-wrap gap-2">
-                      {smartShortcuts.map((shortcut) => (
-                        <Badge
-                          key={shortcut.label}
-                          variant="secondary"
-                          className="cursor-pointer hover:bg-primary hover:text-primary-foreground transition-colors"
-                          onClick={() => handleShortcut(shortcut.label)}
-                        >
-                          <shortcut.icon className="h-3 w-3 mr-1" />
-                          {shortcut.label}
-                        </Badge>
-                      ))}
-                    </div>
-                  </div>
                 </CardContent>
               </Card>
             </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Category Cards Section */}
+      <section className="py-20 bg-background">
+        <div className="container mx-auto px-4">
+          <div className="text-center mb-12">
+            <h2 className="text-h2 font-bold tracking-tight mb-4">
+              Οι ανάγκες σου, οι κανόνες σου
+            </h2>
+            <p className="text-body-l text-muted-foreground max-w-2xl mx-auto">
+              Βρες το ιδανικό σπίτι που ταιριάζει στον τρόπο ζωής σου
+            </p>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {/* Shared Homes Card */}
+            <Card 
+              className="group cursor-pointer overflow-hidden rounded-3xl hover:scale-[1.02] hover:shadow-elevated transition-all duration-300"
+              onClick={() => handleShortcut("Shared homes")}
+              role="button"
+              tabIndex={0}
+              aria-label="Φίλτρο: Κοινόχρηστα σπίτια"
+              onKeyDown={(e) => e.key === 'Enter' && handleShortcut("Shared homes")}
+            >
+              <div className="relative h-[300px] overflow-hidden">
+                <div className="w-full h-full bg-gradient-to-br from-primary/20 via-accent/10 to-primary/30 flex items-center justify-center">
+                  <Users className="h-24 w-24 text-primary opacity-40" />
+                </div>
+                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />
+                <div className="absolute bottom-0 left-0 right-0 p-6 text-white">
+                  <h3 className="text-xl font-semibold mb-2 leading-tight">
+                    Κοινόχρηστα σπίτια
+                  </h3>
+                  <p className="text-small text-white/90 leading-relaxed">
+                    Το δικό σου δωμάτιο σε κοινόχρηστο διαμέρισμα
+                  </p>
+                </div>
+              </div>
+            </Card>
+
+            {/* Couples Accepted Card */}
+            <Card 
+              className="group cursor-pointer overflow-hidden rounded-3xl hover:scale-[1.02] hover:shadow-elevated transition-all duration-300"
+              onClick={() => handleShortcut("Couples accepted")}
+              role="button"
+              tabIndex={0}
+              aria-label="Φίλτρο: Ζευγάρια καλοδεχούμενα"
+              onKeyDown={(e) => e.key === 'Enter' && handleShortcut("Couples accepted")}
+            >
+              <div className="relative h-[300px] overflow-hidden">
+                <div className="w-full h-full bg-gradient-to-br from-accent/20 via-primary/10 to-accent/30 flex items-center justify-center">
+                  <Heart className="h-24 w-24 text-accent opacity-40" />
+                </div>
+                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />
+                <div className="absolute bottom-0 left-0 right-0 p-6 text-white">
+                  <h3 className="text-xl font-semibold mb-2 leading-tight">
+                    Ζευγάρια καλοδεχούμενα
+                  </h3>
+                  <p className="text-small text-white/90 leading-relaxed">
+                    Δύο οδοντόβουρτσες; Κανένα πρόβλημα.
+                  </p>
+                </div>
+              </div>
+            </Card>
+
+            {/* Pets Accepted Card */}
+            <Card 
+              className="group cursor-pointer overflow-hidden rounded-3xl hover:scale-[1.02] hover:shadow-elevated transition-all duration-300"
+              onClick={() => handleShortcut("Pets accepted")}
+              role="button"
+              tabIndex={0}
+              aria-label="Φίλτρο: Κατοικίδια καλοδεχούμενα"
+              onKeyDown={(e) => e.key === 'Enter' && handleShortcut("Pets accepted")}
+            >
+              <div className="relative h-[300px] overflow-hidden">
+                <div className="w-full h-full bg-gradient-to-br from-success/20 via-primary/10 to-success/30 flex items-center justify-center">
+                  <Home className="h-24 w-24 text-success opacity-40" />
+                </div>
+                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />
+                <div className="absolute bottom-0 left-0 right-0 p-6 text-white">
+                  <h3 className="text-xl font-semibold mb-2 leading-tight">
+                    Κατοικίδια καλοδεχούμενα
+                  </h3>
+                  <p className="text-small text-white/90 leading-relaxed">
+                    Γιατί το σπίτι είναι εκεί που είναι το κατοικίδιό σου
+                  </p>
+                </div>
+              </div>
+            </Card>
           </div>
         </div>
       </section>
