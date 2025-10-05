@@ -1,10 +1,12 @@
+import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
 import { OptimizedListing } from "@/hooks/useOptimizedSearch";
-import { Carousel, CarouselContent, CarouselItem, CarouselPrevious, CarouselNext } from "@/components/ui/carousel";
+import { Carousel, CarouselContent, CarouselItem, CarouselPrevious, CarouselNext, CarouselApi } from "@/components/ui/carousel";
 import { ListerBadge } from "./ListerBadge";
 import { calculateMatchScore } from "@/lib/matching";
 import { SaveRoomButton } from "@/components/room/SaveRoomButton";
+import { Image } from "lucide-react";
 
 interface ListingCardProps {
   listing: OptimizedListing;
@@ -15,6 +17,14 @@ interface ListingCardProps {
   onHover?: (listingId: string, isEntering: boolean) => void;
   onClick?: (roomId: string) => void;
 }
+
+// Helper to optimize Supabase images
+const getOptimizedImageUrl = (url: string, width: number = 600): string => {
+  if (url.includes('supabase.co') && url.includes('/storage/v1/object/public/')) {
+    return `${url}?width=${width}&quality=80`;
+  }
+  return url;
+};
 
 export const ListingCard = ({ 
   listing, 
@@ -27,6 +37,30 @@ export const ListingCard = ({
 }: ListingCardProps) => {
   const isHighlighted = hoveredListingId === listing.room_id || selectedListingId === listing.room_id;
   const images = photos && photos.length > 0 ? photos : [listing.cover_photo_url || '/placeholder.svg'];
+  
+  // Carousel API for smart navigation
+  const [api, setApi] = useState<CarouselApi>();
+  const [canScrollPrev, setCanScrollPrev] = useState(false);
+  const [canScrollNext, setCanScrollNext] = useState(false);
+  const [isHovered, setIsHovered] = useState(false);
+
+  useEffect(() => {
+    if (!api) return;
+
+    const updateScrollability = () => {
+      setCanScrollPrev(api.canScrollPrev());
+      setCanScrollNext(api.canScrollNext());
+    };
+
+    updateScrollability();
+    api.on('select', updateScrollability);
+    api.on('reInit', updateScrollability);
+
+    return () => {
+      api.off('select', updateScrollability);
+      api.off('reInit', updateScrollability);
+    };
+  }, [api]);
 
   // Calculate match score
   const { isGoodFit, matchPercentage } = calculateMatchScore(
@@ -57,40 +91,55 @@ export const ListingCard = ({
       state={{ fromSearch: true }}
       className="block group animate-fade-in"
       onClick={() => onClick?.(listing.room_id)}
-      onMouseEnter={() => onHover?.(listing.room_id, true)}
-      onMouseLeave={() => onHover?.(listing.room_id, false)}
+      onMouseEnter={() => {
+        onHover?.(listing.room_id, true);
+        setIsHovered(true);
+      }}
+      onMouseLeave={() => {
+        onHover?.(listing.room_id, false);
+        setIsHovered(false);
+      }}
     >
       <div className={`transition-all duration-200 ${isHighlighted ? 'scale-[1.02]' : ''}`}>
         {/* Image carousel */}
         <div className="relative aspect-[4/3] mb-3 rounded-xl overflow-hidden group/carousel">
-          <Carousel className="w-full h-full">
+          <Carousel className="w-full h-full" setApi={setApi}>
             <CarouselContent>
               {images.map((src, idx) => (
                 <CarouselItem key={idx} className="w-full h-full">
                   <img
-                    src={src}
+                    src={getOptimizedImageUrl(src)}
                     alt={`${listing.title} – φωτο ${idx+1}`}
-                    loading="lazy"
+                    loading={idx === 0 ? "eager" : "lazy"}
+                    decoding="async"
                     className="w-full h-full object-cover"
                   />
                 </CarouselItem>
               ))}
             </CarouselContent>
             
-            {/* Navigation arrows - only show if multiple images */}
-            {images.length > 1 && (
-              <>
-                <CarouselPrevious 
-                  className="left-2 opacity-0 group-hover/carousel:opacity-100 transition-opacity"
-                  onClick={(e) => { e.preventDefault(); e.stopPropagation(); }}
-                />
-                <CarouselNext 
-                  className="right-2 opacity-0 group-hover/carousel:opacity-100 transition-opacity"
-                  onClick={(e) => { e.preventDefault(); e.stopPropagation(); }}
-                />
-              </>
+            {/* Smart Navigation arrows - only show if can scroll */}
+            {images.length > 1 && canScrollPrev && (
+              <CarouselPrevious 
+                className="left-2 opacity-0 group-hover/carousel:opacity-100 transition-opacity"
+                onClick={(e) => { e.preventDefault(); e.stopPropagation(); }}
+              />
+            )}
+            {images.length > 1 && canScrollNext && (
+              <CarouselNext 
+                className="right-2 opacity-0 group-hover/carousel:opacity-100 transition-opacity"
+                onClick={(e) => { e.preventDefault(); e.stopPropagation(); }}
+              />
             )}
           </Carousel>
+          
+          {/* Photo count indicator - bottom left */}
+          {images.length > 1 && isHovered && (
+            <div className="absolute bottom-3 left-3 bg-background/90 backdrop-blur-sm px-2 py-1 rounded-md flex items-center gap-1.5 z-10 shadow-sm">
+              <Image className="h-3.5 w-3.5" />
+              <span className="text-xs font-medium tabular-nums">{images.length}</span>
+            </div>
+          )}
           
           {/* Dots indicator - only show if multiple images */}
           {images.length > 1 && (

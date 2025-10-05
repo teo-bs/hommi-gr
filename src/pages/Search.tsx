@@ -6,8 +6,18 @@ import { useSearchStateCache } from "@/hooks/useSearchStateCache";
 import { useDebouncedCallback } from 'use-debounce';
 import { useOptimizedSearch } from '@/hooks/useOptimizedSearch';
 import { ListingCard } from "@/components/search/ListingCard";
+import { ResultsCounter } from "@/components/search/ResultsCounter";
 import { supabase } from '@/integrations/supabase/client';
 import { useQuery } from '@tanstack/react-query';
+import {
+  Pagination,
+  PaginationContent,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+  PaginationEllipsis,
+} from "@/components/ui/pagination";
 
 export interface FilterState extends FilterBarState {
   bounds?: {
@@ -25,6 +35,10 @@ const Search = () => {
   const [hoveredListingId, setHoveredListingId] = useState<string | null>(null);
   const [selectedListingId, setSelectedListingId] = useState<string | null>(null);
   const [autoSearch, setAutoSearch] = useState<boolean>(false);
+  
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 30;
 
   // Fetch current user and profile for matching
   const { data: currentUserProfile } = useQuery({
@@ -175,6 +189,9 @@ const Search = () => {
     const updatedFilters = { ...filters, ...newFilters };
     setFilters(updatedFilters);
     
+    // Reset to page 1 when filters change
+    setCurrentPage(1);
+    
     // Persist to URL
     const params = new URLSearchParams(searchParams);
     if (updatedFilters.budget[0] !== 300 || updatedFilters.budget[1] !== 800) {
@@ -204,6 +221,55 @@ const Search = () => {
   };
 
   const city = searchParams.get('city');
+  
+  // Calculate pagination values
+  const totalPages = Math.ceil(listings.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const paginatedListings = listings.slice(startIndex, endIndex);
+  
+  // Scroll to top when page changes
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, [currentPage]);
+  
+  // Helper to generate page numbers with ellipsis
+  const getPageNumbers = () => {
+    const pages: (number | 'ellipsis')[] = [];
+    const showEllipsisStart = currentPage > 3;
+    const showEllipsisEnd = currentPage < totalPages - 2;
+    
+    if (totalPages <= 7) {
+      // Show all pages if 7 or fewer
+      for (let i = 1; i <= totalPages; i++) {
+        pages.push(i);
+      }
+    } else {
+      // Always show first page
+      pages.push(1);
+      
+      if (showEllipsisStart) {
+        pages.push('ellipsis');
+      }
+      
+      // Show current page and neighbors
+      const start = Math.max(2, currentPage - 1);
+      const end = Math.min(totalPages - 1, currentPage + 1);
+      
+      for (let i = start; i <= end; i++) {
+        pages.push(i);
+      }
+      
+      if (showEllipsisEnd) {
+        pages.push('ellipsis');
+      }
+      
+      // Always show last page
+      pages.push(totalPages);
+    }
+    
+    return pages;
+  };
 
   return (
     <div className="min-h-screen bg-background">
@@ -214,11 +280,12 @@ const Search = () => {
       />
 
       {/* Results Counter */}
-      <div className="container mx-auto px-6 py-4">
-        <p className="text-sm text-muted-foreground">
-          Πάνω από {listings.length} καταλύματα{city ? ` - ${city}` : ''}
-        </p>
-      </div>
+      <ResultsCounter 
+        count={listings.length} 
+        isLoading={isLoading}
+        currentPage={currentPage}
+        itemsPerPage={itemsPerPage}
+      />
 
       {/* Main Content - Always Split View on Desktop */}
       <div className="container mx-auto px-6 pb-6">
@@ -236,20 +303,72 @@ const Search = () => {
                 ))}
               </div>
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {listings.map((listing) => (
-                <ListingCard
-                  key={listing.room_id}
-                  listing={listing}
-                  photos={photosByRoom[listing.room_id]}
-                  currentUserProfileExtras={currentUserProfile?.profile_extras}
-                  hoveredListingId={hoveredListingId}
-                  selectedListingId={selectedListingId}
-                  onHover={handleListingHover}
-                  onClick={handleListingClick}
-                />
-                ))}
-              </div>
+              <>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {paginatedListings.map((listing) => (
+                    <ListingCard
+                      key={listing.room_id}
+                      listing={listing}
+                      photos={photosByRoom[listing.room_id]}
+                      currentUserProfileExtras={currentUserProfile?.profile_extras}
+                      hoveredListingId={hoveredListingId}
+                      selectedListingId={selectedListingId}
+                      onHover={handleListingHover}
+                      onClick={handleListingClick}
+                    />
+                  ))}
+                </div>
+                
+                {/* Pagination */}
+                {totalPages > 1 && (
+                  <div className="mt-8 mb-4">
+                    <Pagination>
+                      <PaginationContent>
+                        <PaginationItem>
+                          <PaginationPrevious 
+                            href="#"
+                            onClick={(e) => {
+                              e.preventDefault();
+                              if (currentPage > 1) setCurrentPage(currentPage - 1);
+                            }}
+                            className={currentPage === 1 ? 'pointer-events-none opacity-50' : ''}
+                          />
+                        </PaginationItem>
+                        
+                        {getPageNumbers().map((page, idx) => (
+                          <PaginationItem key={idx}>
+                            {page === 'ellipsis' ? (
+                              <PaginationEllipsis />
+                            ) : (
+                              <PaginationLink
+                                href="#"
+                                onClick={(e) => {
+                                  e.preventDefault();
+                                  setCurrentPage(page);
+                                }}
+                                isActive={currentPage === page}
+                              >
+                                {page}
+                              </PaginationLink>
+                            )}
+                          </PaginationItem>
+                        ))}
+                        
+                        <PaginationItem>
+                          <PaginationNext 
+                            href="#"
+                            onClick={(e) => {
+                              e.preventDefault();
+                              if (currentPage < totalPages) setCurrentPage(currentPage + 1);
+                            }}
+                            className={currentPage === totalPages ? 'pointer-events-none opacity-50' : ''}
+                          />
+                        </PaginationItem>
+                      </PaginationContent>
+                    </Pagination>
+                  </div>
+                )}
+              </>
             )}
           </div>
 
