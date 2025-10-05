@@ -24,8 +24,9 @@ const Search = () => {
   const { saveState, restoreState } = useSearchStateCache();
   const [hoveredListingId, setHoveredListingId] = useState<string | null>(null);
   const [selectedListingId, setSelectedListingId] = useState<string | null>(null);
+  const [autoSearch, setAutoSearch] = useState<boolean>(false);
 
-  // Fetch current user's profile for matching
+  // Fetch current user and profile for matching
   const { data: currentUserProfile } = useQuery({
     queryKey: ['current-user-profile'],
     queryFn: async () => {
@@ -36,11 +37,16 @@ const Search = () => {
         .from('profiles')
         .select('profile_extras')
         .eq('user_id', user.id)
-        .maybeSingle();
+        .single();
       
-      if (error) throw error;
+      if (error) {
+        console.error('Error fetching user profile:', error);
+        return null;
+      }
+      
+      console.log('Fetched user profile_extras:', data?.profile_extras);
       return data;
-    }
+    },
   });
 
   // Filter state management
@@ -190,6 +196,13 @@ const Search = () => {
     setSelectedListingId(listingId);
   };
 
+  const handleManualMapSearch = () => {
+    // Trigger a new search based on current map bounds
+    window.dispatchEvent(new CustomEvent('mapBoundsChanged', { 
+      detail: { bounds: filters.bounds } 
+    }));
+  };
+
   const city = searchParams.get('city');
 
   return (
@@ -249,6 +262,9 @@ const Search = () => {
                 onListingClick={setSelectedListingId}
                 hoveredListingId={hoveredListingId}
                 selectedListingId={selectedListingId}
+                autoSearch={autoSearch}
+                onAutoSearchChange={setAutoSearch}
+                onManualSearch={handleManualMapSearch}
               />
             </div>
           </div>

@@ -2,8 +2,7 @@ import { useEffect, useRef, useCallback } from "react";
 import mapboxgl from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
 import { useMapState } from "@/hooks/useMapState";
-import { Button } from "@/components/ui/button";
-import { RotateCcw } from "lucide-react";
+import { MapControls } from "./MapControls";
 
 export interface Listing {
   id: string;
@@ -25,6 +24,9 @@ interface MapContainerProps {
   onListingClick?: (listingId: string) => void;
   hoveredListingId?: string | null;
   selectedListingId?: string | null;
+  autoSearch?: boolean;
+  onAutoSearchChange?: (checked: boolean) => void;
+  onManualSearch?: () => void;
 }
 
 export const MapContainer = ({ 
@@ -32,7 +34,10 @@ export const MapContainer = ({
   onListingHover,
   onListingClick,
   hoveredListingId,
-  selectedListingId
+  selectedListingId,
+  autoSearch = false,
+  onAutoSearchChange,
+  onManualSearch
 }: MapContainerProps) => {
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<mapboxgl.Map | null>(null);
@@ -120,7 +125,20 @@ export const MapContainer = ({
         west: bounds.getWest()
       });
       setIsMoving(false);
-      setHasUserMoved(true);
+      
+      // Trigger search automatically if enabled, otherwise just mark as moved
+      if (autoSearch) {
+        window.dispatchEvent(new CustomEvent('mapBoundsChanged', { 
+          detail: { bounds: {
+            north: bounds.getNorth(),
+            south: bounds.getSouth(),
+            east: bounds.getEast(),
+            west: bounds.getWest()
+          } } 
+        }));
+      } else {
+        setHasUserMoved(true);
+      }
     });
 
     // Load complete handler
@@ -419,19 +437,13 @@ export const MapContainer = ({
     <div className="relative w-full h-full">
       <div ref={mapContainer} className="w-full h-full rounded-lg" />
       
-      {/* Update results button */}
-      {mapState.hasUserMoved && (
-        <div className="absolute top-4 left-1/2 transform -translate-x-1/2 z-10">
-          <Button
-            onClick={handleUpdateResults}
-            className="shadow-lg"
-            size="sm"
-          >
-            <RotateCcw className="h-4 w-4 mr-2" />
-            Ενημέρωση αποτελεσμάτων
-          </Button>
-        </div>
-      )}
+      {/* Map Controls */}
+      <MapControls
+        autoSearch={autoSearch}
+        onAutoSearchChange={onAutoSearchChange || (() => {})}
+        onManualSearch={onManualSearch || handleUpdateResults}
+        hasUserMoved={mapState.hasUserMoved}
+      />
     </div>
   );
 };

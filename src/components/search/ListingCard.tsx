@@ -1,10 +1,10 @@
 import { Link } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
-import { Heart } from "lucide-react";
 import { OptimizedListing } from "@/hooks/useOptimizedSearch";
-import { Carousel, CarouselContent, CarouselItem } from "@/components/ui/carousel";
+import { Carousel, CarouselContent, CarouselItem, CarouselPrevious, CarouselNext } from "@/components/ui/carousel";
 import { ListerBadge } from "./ListerBadge";
 import { calculateMatchScore } from "@/lib/matching";
+import { SaveRoomButton } from "@/components/room/SaveRoomButton";
 
 interface ListingCardProps {
   listing: OptimizedListing;
@@ -51,7 +51,7 @@ export const ListingCard = ({
     >
       <div className={`transition-all duration-200 ${isHighlighted ? 'scale-[1.02]' : ''}`}>
         {/* Image carousel */}
-        <div className="relative aspect-[4/3] mb-3 rounded-xl overflow-hidden">
+        <div className="relative aspect-[4/3] mb-3 rounded-xl overflow-hidden group/carousel">
           <Carousel className="w-full h-full">
             <CarouselContent>
               {images.map((src, idx) => (
@@ -65,25 +65,48 @@ export const ListingCard = ({
                 </CarouselItem>
               ))}
             </CarouselContent>
+            
+            {/* Navigation arrows - only show if multiple images */}
+            {images.length > 1 && (
+              <>
+                <CarouselPrevious 
+                  className="left-2 opacity-0 group-hover/carousel:opacity-100 transition-opacity"
+                  onClick={(e) => { e.preventDefault(); e.stopPropagation(); }}
+                />
+                <CarouselNext 
+                  className="right-2 opacity-0 group-hover/carousel:opacity-100 transition-opacity"
+                  onClick={(e) => { e.preventDefault(); e.stopPropagation(); }}
+                />
+              </>
+            )}
           </Carousel>
+          
+          {/* Dots indicator - only show if multiple images */}
+          {images.length > 1 && (
+            <div className="absolute bottom-3 left-1/2 transform -translate-x-1/2 flex gap-1.5 z-10">
+              {images.map((_, idx) => (
+                <div 
+                  key={idx} 
+                  className="w-1.5 h-1.5 rounded-full bg-white/70 shadow-sm"
+                />
+              ))}
+            </div>
+          )}
           
           {/* Good Fit Badge - Top Left */}
           {isGoodFit && (
-            <Badge className="absolute top-3 left-3 bg-background text-foreground shadow-md border-0 font-semibold">
+            <Badge className="absolute top-3 left-3 bg-background text-foreground shadow-md border-0 font-semibold z-10">
               YOU'RE A GOOD FIT
             </Badge>
           )}
           
           {/* Save Button - Top Right */}
-          <button 
-            className="absolute top-3 right-3 p-2 rounded-full bg-background/80 hover:bg-background transition-all z-10"
-            onClick={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
-            }}
-          >
-            <Heart className="h-4 w-4" />
-          </button>
+          <SaveRoomButton 
+            roomId={listing.room_id}
+            size="sm"
+            variant="ghost"
+            className="absolute top-3 right-3 bg-background/80 hover:bg-background shadow-sm z-10"
+          />
           
           {/* Lister Badge - Bottom Right */}
           <ListerBadge
