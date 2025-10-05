@@ -1,12 +1,15 @@
 import { Link } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
-import { Heart, Star } from "lucide-react";
+import { Heart } from "lucide-react";
 import { OptimizedListing } from "@/hooks/useOptimizedSearch";
 import { Carousel, CarouselContent, CarouselItem } from "@/components/ui/carousel";
+import { ListerBadge } from "./ListerBadge";
+import { calculateMatchScore } from "@/lib/matching";
 
 interface ListingCardProps {
   listing: OptimizedListing;
   photos?: string[];
+  currentUserProfileExtras?: any;
   hoveredListingId?: string | null;
   selectedListingId?: string | null;
   onHover?: (listingId: string, isEntering: boolean) => void;
@@ -16,6 +19,7 @@ interface ListingCardProps {
 export const ListingCard = ({ 
   listing, 
   photos,
+  currentUserProfileExtras,
   hoveredListingId, 
   selectedListingId,
   onHover,
@@ -23,6 +27,18 @@ export const ListingCard = ({
 }: ListingCardProps) => {
   const isHighlighted = hoveredListingId === listing.room_id || selectedListingId === listing.room_id;
   const images = photos && photos.length > 0 ? photos : [listing.cover_photo_url || '/placeholder.svg'];
+
+  // Calculate match score
+  const { isGoodFit } = calculateMatchScore(
+    currentUserProfileExtras || {},
+    listing.lister_profile_extras || {},
+    listing.audience_preferences || {}
+  );
+
+  // Format labels
+  const roomTypeLabel = listing.room_type === 'private' ? 'PRIVATE ROOM' : 'SHARED ROOM';
+  const flatmatesCount = listing.flatmates_count || 0;
+  const flatmatesLabel = flatmatesCount === 1 ? '1 FLATMATE' : `${flatmatesCount} FLATMATES`;
 
   return (
     <Link
@@ -44,14 +60,23 @@ export const ListingCard = ({
                     src={src}
                     alt={`${listing.title} – φωτο ${idx+1}`}
                     loading="lazy"
-                    className="w-full h-full object-cover hover-scale"
+                    className="w-full h-full object-cover"
                   />
                 </CarouselItem>
               ))}
             </CarouselContent>
           </Carousel>
+          
+          {/* Good Fit Badge - Top Left */}
+          {isGoodFit && (
+            <Badge className="absolute top-3 left-3 bg-background text-foreground shadow-md border-0 font-semibold">
+              YOU'RE A GOOD FIT
+            </Badge>
+          )}
+          
+          {/* Save Button - Top Right */}
           <button 
-            className="absolute top-3 right-3 p-2 rounded-full bg-background/80 hover:bg-background transition-all"
+            className="absolute top-3 right-3 p-2 rounded-full bg-background/80 hover:bg-background transition-all z-10"
             onClick={(e) => {
               e.preventDefault();
               e.stopPropagation();
@@ -59,37 +84,37 @@ export const ListingCard = ({
           >
             <Heart className="h-4 w-4" />
           </button>
-          {listing.kyc_status === 'approved' && (
-            <Badge className="absolute top-3 left-3 bg-background/90 text-foreground border-0">
-              <Star className="h-3 w-3 mr-1" />
-              Επαληθευμένος
-            </Badge>
-          )}
+          
+          {/* Lister Badge - Bottom Right */}
+          <ListerBadge
+            avatarUrl={listing.lister_avatar_url}
+            firstName={listing.lister_first_name}
+            score={listing.lister_score}
+            verifications={listing.verifications_json}
+          />
         </div>
 
         {/* Content */}
         <div className="space-y-1">
-          <div className="flex items-start justify-between gap-2">
-            <h3 className="font-semibold text-base line-clamp-2 leading-tight group-hover:underline">
-              {listing.neighborhood || listing.city}
-            </h3>
-            <div className="flex items-center gap-1 text-small">
-              <Star className="h-3 w-3" />
-              <span className="font-semibold tabular-nums">4.9</span>
-            </div>
-          </div>
+          {/* Room Type & Flatmates */}
+          <p className="text-xs text-muted-foreground uppercase tracking-wide">
+            {roomTypeLabel} · {flatmatesLabel}
+          </p>
           
-          <p className="text-small text-muted-foreground tracking-wide line-clamp-1">
+          {/* Title */}
+          <h3 className="font-semibold text-lg line-clamp-2 leading-tight group-hover:underline">
             {listing.title}
-          </p>
+          </h3>
           
-          <p className="text-small text-muted-foreground tracking-wide">
-            {new Date(listing.availability_date) <= new Date() ? 'Άμεσα διαθέσιμο' : 'Διαθέσιμο σύντομα'}
-          </p>
-          
-          <div className="flex items-baseline gap-1 pt-1">
-            <span className="font-bold text-base tabular-nums">€{listing.price_month}</span>
-            <span className="text-small text-muted-foreground">μήνα</span>
+          {/* Price & Bills */}
+          <div className="flex items-baseline justify-between pt-1">
+            <div className="flex items-baseline gap-1">
+              <span className="font-bold text-lg tabular-nums">€{listing.price_month}</span>
+              <span className="text-sm text-muted-foreground">/month</span>
+            </div>
+            <div className="text-sm text-muted-foreground">
+              Bills: {listing.bills_included ? 'Included' : 'Not included'}
+            </div>
           </div>
         </div>
       </div>

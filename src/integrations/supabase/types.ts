@@ -194,6 +194,13 @@ export type Database = {
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "applications_seeker_id_fkey"
+            columns: ["seeker_id"]
+            isOneToOne: false
+            referencedRelation: "room_search_cache"
+            referencedColumns: ["lister_profile_id"]
+          },
         ]
       }
       holds: {
@@ -265,6 +272,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "holds_seeker_id_fkey"
+            columns: ["seeker_id"]
+            isOneToOne: false
+            referencedRelation: "room_search_cache"
+            referencedColumns: ["lister_profile_id"]
           },
         ]
       }
@@ -686,6 +700,13 @@ export type Database = {
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "listings_owner_id_fkey"
+            columns: ["owner_id"]
+            isOneToOne: false
+            referencedRelation: "room_search_cache"
+            referencedColumns: ["lister_profile_id"]
+          },
         ]
       }
       messages: {
@@ -717,6 +738,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "messages_sender_id_fkey"
+            columns: ["sender_id"]
+            isOneToOne: false
+            referencedRelation: "room_search_cache"
+            referencedColumns: ["lister_profile_id"]
           },
           {
             foreignKeyName: "messages_thread_id_fkey"
@@ -895,6 +923,13 @@ export type Database = {
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "references_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "room_search_cache"
+            referencedColumns: ["lister_profile_id"]
+          },
         ]
       }
       reviews: {
@@ -931,11 +966,25 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "reviews_reviewee_id_fkey"
+            columns: ["reviewee_id"]
+            isOneToOne: false
+            referencedRelation: "room_search_cache"
+            referencedColumns: ["lister_profile_id"]
+          },
+          {
             foreignKeyName: "reviews_reviewer_id_fkey"
             columns: ["reviewer_id"]
             isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "reviews_reviewer_id_fkey"
+            columns: ["reviewer_id"]
+            isOneToOne: false
+            referencedRelation: "room_search_cache"
+            referencedColumns: ["lister_profile_id"]
           },
         ]
       }
@@ -1307,6 +1356,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "threads_host_id_fkey"
+            columns: ["host_id"]
+            isOneToOne: false
+            referencedRelation: "room_search_cache"
+            referencedColumns: ["lister_profile_id"]
+          },
+          {
             foreignKeyName: "threads_listing_id_fkey"
             columns: ["listing_id"]
             isOneToOne: false
@@ -1375,6 +1431,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "threads_seeker_id_fkey"
+            columns: ["seeker_id"]
+            isOneToOne: false
+            referencedRelation: "room_search_cache"
+            referencedColumns: ["lister_profile_id"]
           },
         ]
       }
@@ -1490,6 +1553,13 @@ export type Database = {
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "viewings_seeker_id_fkey"
+            columns: ["seeker_id"]
+            isOneToOne: false
+            referencedRelation: "room_search_cache"
+            referencedColumns: ["lister_profile_id"]
+          },
         ]
       }
     }
@@ -1511,6 +1581,7 @@ export type Database = {
       room_search_cache: {
         Row: {
           amenity_keys: string[] | null
+          audience_preferences: Json | null
           availability_date: string | null
           bills_included: boolean | null
           city: string | null
@@ -1519,6 +1590,11 @@ export type Database = {
           flatmates_count: number | null
           kyc_status: string | null
           lat: number | null
+          lister_avatar_url: string | null
+          lister_first_name: string | null
+          lister_profile_extras: Json | null
+          lister_profile_id: string | null
+          lister_score: number | null
           lister_type: Database["public"]["Enums"]["lister_type_enum"] | null
           listing_id: string | null
           lng: number | null
@@ -1526,9 +1602,11 @@ export type Database = {
           pets_allowed: boolean | null
           price_month: number | null
           room_id: string | null
+          room_type: string | null
           slug: string | null
           smoking_allowed: boolean | null
           title: string | null
+          verifications_json: Json | null
         }
         Relationships: []
       }

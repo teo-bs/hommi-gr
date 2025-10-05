@@ -7,6 +7,7 @@ import { useDebouncedCallback } from 'use-debounce';
 import { useOptimizedSearch } from '@/hooks/useOptimizedSearch';
 import { ListingCard } from "@/components/search/ListingCard";
 import { supabase } from '@/integrations/supabase/client';
+import { useQuery } from '@tanstack/react-query';
 
 export interface FilterState extends FilterBarState {
   bounds?: {
@@ -23,6 +24,24 @@ const Search = () => {
   const { saveState, restoreState } = useSearchStateCache();
   const [hoveredListingId, setHoveredListingId] = useState<string | null>(null);
   const [selectedListingId, setSelectedListingId] = useState<string | null>(null);
+
+  // Fetch current user's profile for matching
+  const { data: currentUserProfile } = useQuery({
+    queryKey: ['current-user-profile'],
+    queryFn: async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return null;
+      
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('profile_extras')
+        .eq('user_id', user.id)
+        .maybeSingle();
+      
+      if (error) throw error;
+      return data;
+    }
+  });
 
   // Filter state management
   const [filters, setFilters] = useState<FilterState>({
@@ -206,15 +225,16 @@ const Search = () => {
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {listings.map((listing) => (
-                  <ListingCard
-                    key={listing.room_id}
-                    listing={listing}
-                    photos={photosByListing[listing.listing_id]}
-                    hoveredListingId={hoveredListingId}
-                    selectedListingId={selectedListingId}
-                    onHover={handleListingHover}
-                    onClick={handleListingClick}
-                  />
+                <ListingCard
+                  key={listing.room_id}
+                  listing={listing}
+                  photos={photosByListing[listing.listing_id]}
+                  currentUserProfileExtras={currentUserProfile?.profile_extras}
+                  hoveredListingId={hoveredListingId}
+                  selectedListingId={selectedListingId}
+                  onHover={handleListingHover}
+                  onClick={handleListingClick}
+                />
                 ))}
               </div>
             )}

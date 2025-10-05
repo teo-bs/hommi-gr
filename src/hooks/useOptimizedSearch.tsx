@@ -15,6 +15,7 @@ export interface OptimizedListing {
   pets_allowed: boolean;
   smoking_allowed: boolean;
   bills_included: boolean;
+  room_type: string;
   lat?: number;
   lng?: number;
   cover_photo_url?: string;
@@ -22,6 +23,15 @@ export interface OptimizedListing {
   lister_type?: string;
   amenity_keys?: string[];
   formatted_address?: string;
+  
+  // Lister data
+  lister_profile_id?: string;
+  lister_avatar_url?: string;
+  lister_first_name?: string;
+  lister_score?: number;
+  verifications_json?: any;
+  lister_profile_extras?: any;
+  audience_preferences?: any;
 }
 
 export interface SearchFilters {
