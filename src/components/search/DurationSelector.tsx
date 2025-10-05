@@ -29,7 +29,7 @@ export function DurationSelector({ value, onValueChange, className }: DurationSe
         <Button
           variant="ghost"
           className={cn(
-            "w-full justify-start text-left font-normal border-0 bg-transparent hover:bg-transparent p-0 h-auto",
+            "w-full justify-start text-left font-normal border-0 bg-transparent hover:bg-muted/50 p-0 h-auto",
             className
           )}
         >

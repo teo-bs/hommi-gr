@@ -1,11 +1,11 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { DatePicker } from "@/components/search/DatePicker";
 import { DurationSelector } from "@/components/search/DurationSelector";
+import { LocationAutocomplete } from "@/components/search/LocationAutocomplete";
 import { useListingFlow } from "@/hooks/useListingFlow";
 import { 
   Search, 
@@ -29,6 +29,23 @@ const Index = () => {
   const [duration, setDuration] = useState("");
 
   const handleSearch = () => {
+    // Save to recent searches
+    if (searchQuery.trim()) {
+      try {
+        const RECENT_SEARCHES_KEY = "hommi_recent_searches";
+        const MAX_RECENT_SEARCHES = 5;
+        const stored = localStorage.getItem(RECENT_SEARCHES_KEY);
+        const recentSearches = stored ? JSON.parse(stored) : [];
+        const updated = [
+          searchQuery,
+          ...recentSearches.filter((s: string) => s !== searchQuery),
+        ].slice(0, MAX_RECENT_SEARCHES);
+        localStorage.setItem(RECENT_SEARCHES_KEY, JSON.stringify(updated));
+      } catch (error) {
+        console.error("Failed to save recent search:", error);
+      }
+    }
+
     // Track analytics
     console.log('search_triggered', {
       query: searchQuery,
@@ -97,10 +114,9 @@ const Index = () => {
                           <span className="text-xs font-medium text-foreground mb-1">
                             Τοποθεσία
                           </span>
-                          <Input
-                            placeholder="Περιοχή, γειτονιά..."
+                          <LocationAutocomplete
                             value={searchQuery}
-                            onChange={(e) => setSearchQuery(e.target.value)}
+                            onChange={setSearchQuery}
                             className="border-0 bg-transparent p-0 h-auto text-sm focus-visible:ring-0"
                           />
                         </div>
