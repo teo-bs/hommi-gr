@@ -25,6 +25,7 @@ import { PublishWarningsBanner } from "@/components/publish/PublishWarningsBanne
 import { PublishProfileModal } from "@/components/publish/PublishProfileModal";
 import { PublishVerificationModal } from "@/components/publish/PublishVerificationModal";
 import { handleAmenitiesUpdate } from "@/components/publish/AmenitiesHandler";
+import { DraftWarningDialog } from "@/components/publish/DraftWarningDialog";
 
 interface ListingDraft {
   id?: string;
@@ -93,6 +94,7 @@ export default function Publish() {
   const { verifications, refetch: refetchVerifications } = useVerifications();
   
   const editingId = searchParams.get('id'); // Check if we're editing an existing listing
+  const forceNew = searchParams.get('new') === 'true'; // Check if user explicitly wants to create new
   
   // Redirect pending agencies to /agencies page
   useEffect(() => {
@@ -119,6 +121,8 @@ export default function Publish() {
   const [isSaving, setIsSaving] = useState(false);
   const [lastSaved, setLastSaved] = useState<Date | null>(null);
   const [completedSteps, setCompletedSteps] = useState<number[]>([]);
+  const [showDraftWarning, setShowDraftWarning] = useState(false);
+  const [existingDraftId, setExistingDraftId] = useState<string | null>(null);
   
   // Search cache refresh hook
   const { mutateAsync: refreshSearchCache } = useSearchCacheRefresh();
@@ -157,7 +161,7 @@ export default function Publish() {
     if (user && profile) {
       loadDraft();
     }
-  }, [user, profile, editingId]);
+  }, [user, profile, editingId, forceNew]);
 
   // Auto-advance from step 0 if it should be skipped
   useEffect(() => {
@@ -181,8 +185,8 @@ export default function Publish() {
           .eq('owner_id', profile.id)
           .single();
         existingDraft = data;
-      } else {
-        // Load most recent draft
+      } else if (!forceNew) {
+        // Check for most recent draft (but don't auto-load)
         const { data } = await supabase
           .from('listings')
           .select('*')
@@ -191,7 +195,13 @@ export default function Publish() {
           .order('created_at', { ascending: false })
           .limit(1)
           .maybeSingle();
-        existingDraft = data;
+        
+        if (data) {
+          // Found a draft - show warning instead of auto-loading
+          setExistingDraftId(data.id);
+          setShowDraftWarning(true);
+          return;
+        }
       }
 
       if (existingDraft) {
@@ -368,6 +378,16 @@ export default function Publish() {
       });
     });
   }, [debouncedSave]);
+
+  const handleGoToDraft = () => {
+    setShowDraftWarning(false);
+    navigate('/my-listings?tab=draft');
+  };
+
+  const handleCreateNew = () => {
+    setShowDraftWarning(false);
+    setSearchParams({ new: 'true' });
+  };
 
   const nextStep = (updates?: Partial<ListingDraft>) => {
     if (updates) {
@@ -733,6 +753,12 @@ export default function Publish() {
       </Helmet>
 
       <div className="min-h-screen bg-background">
+        <DraftWarningDialog
+          open={showDraftWarning}
+          onGoToDraft={handleGoToDraft}
+          onCreateNew={handleCreateNew}
+        />
+        
         <div className="container mx-auto px-4 py-6">{/* Full-width layout */}
           {/* Publish Warnings */}
           {publishWarnings.length > 0 && (
