@@ -1,9 +1,11 @@
 import React, { useRef, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Upload, X, Camera } from "lucide-react";
+import { Upload, X, Camera, AlertCircle } from "lucide-react";
 import { uploadListingPhoto } from "@/lib/photo-upload";
 import { useAuth } from "@/hooks/useAuth";
+import { validatePhotoUrl } from "@/lib/photo-validation";
+import { toast } from "sonner";
 
 interface ListingDraft {
   photos: string[];
@@ -37,13 +39,35 @@ export default function PublishStepPhotos({
 
     try {
       const results = await Promise.all(uploadPromises);
-      const successfulUploads = results
+      const uploadedUrls = results
         .filter(result => result.success && result.url)
         .map(result => result.url!);
       
-      onUpdate({ photos: [...(draft.photos || []), ...successfulUploads] });
+      // Validate each uploaded photo URL
+      const validatedPhotos: string[] = [];
+      let failedCount = 0;
+      
+      for (const url of uploadedUrls) {
+        const isValid = await validatePhotoUrl(url, 8000);
+        if (isValid) {
+          validatedPhotos.push(url);
+        } else {
+          failedCount++;
+          console.error('Photo failed validation:', url);
+        }
+      }
+      
+      if (validatedPhotos.length > 0) {
+        onUpdate({ photos: [...(draft.photos || []), ...validatedPhotos] });
+        toast.success(`${validatedPhotos.length} ${validatedPhotos.length === 1 ? 'φωτογραφία προστέθηκε' : 'φωτογραφίες προστέθηκαν'}`);
+      }
+      
+      if (failedCount > 0) {
+        toast.error(`${failedCount} ${failedCount === 1 ? 'φωτογραφία δεν φορτώνει' : 'φωτογραφίες δεν φορτώνουν'} σωστά και δεν προστέθηκαν`);
+      }
     } catch (error) {
       console.error('Photo upload failed:', error);
+      toast.error('Αποτυχία μεταφόρτωσης φωτογραφιών');
     } finally {
       setIsUploading(false);
     }
@@ -108,6 +132,10 @@ export default function PublishStepPhotos({
                     src={photo}
                     alt={`Φωτογραφία ${index + 1}`}
                     className="w-full h-32 object-cover rounded-lg"
+                    onError={(e) => {
+                      e.currentTarget.classList.add('border-2', 'border-destructive');
+                      e.currentTarget.src = '/placeholder.svg';
+                    }}
                   />
                   <button
                     type="button"

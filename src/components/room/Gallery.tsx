@@ -13,6 +13,7 @@ interface GalleryProps {
 
 export const Gallery = ({ photos, title }: GalleryProps) => {
   const [currentImage, setCurrentImage] = useState(0);
+  const [failedImages, setFailedImages] = useState<Set<string>>(new Set());
   
   // Mock photos if none provided
   const mockPhotos = [
@@ -23,8 +24,17 @@ export const Gallery = ({ photos, title }: GalleryProps) => {
     { url: "https://images.unsplash.com/photo-1556909075-f3e64e6b1065?w=800&h=600&fit=crop", alt_text: "Kitchen" }
   ];
   
-  const displayPhotos = photos.length > 0 ? photos : mockPhotos;
+  // Filter out broken images
+  const validPhotos = (photos.length > 0 ? photos : mockPhotos).filter(
+    photo => !failedImages.has(photo.url)
+  );
+  
+  const displayPhotos = validPhotos.length > 0 ? validPhotos : mockPhotos;
   const totalPhotos = displayPhotos.length;
+
+  const handleImageError = (url: string) => {
+    setFailedImages(prev => new Set(prev).add(url));
+  };
 
   return (
     <div className="space-y-4">
@@ -54,6 +64,7 @@ export const Gallery = ({ photos, title }: GalleryProps) => {
             src={displayPhotos[0]?.url}
             alt={displayPhotos[0]?.alt_text || title}
             className="w-full h-full object-cover transition-transform group-hover:scale-105"
+            onError={() => handleImageError(displayPhotos[0]?.url)}
           />
         </div>
 
@@ -68,6 +79,7 @@ export const Gallery = ({ photos, title }: GalleryProps) => {
               src={photo.url}
               alt={photo.alt_text || `${title} photo ${index + 2}`}
               className="w-full h-full object-cover transition-transform group-hover:scale-105"
+              onError={() => handleImageError(photo.url)}
             />
             {index === 3 && totalPhotos > 5 && (
               <div className="absolute inset-0 bg-black/60 flex items-center justify-center">
