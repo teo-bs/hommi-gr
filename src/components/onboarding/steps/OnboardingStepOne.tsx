@@ -281,6 +281,9 @@ export const OnboardingStepOne = ({ data, onComplete, onBack }: OnboardingStepOn
               captionLayout="dropdown-buttons"
               fromYear={1940}
               toYear={2010}
+              classNames={{
+                caption_label: "hidden",
+              }}
             />
           </PopoverContent>
         </Popover>
