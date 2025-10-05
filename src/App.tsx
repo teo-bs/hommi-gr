@@ -21,6 +21,7 @@ import Publish from "./pages/Publish";
 import Agencies from "./pages/Agencies";
 import Inbox from "./pages/Inbox";
 import Settings from "./pages/Settings";
+import PhotoHealth from "./pages/admin/PhotoHealth";
 
 const queryClient = new QueryClient();
 
@@ -51,6 +52,7 @@ const App = () => (
                 <Route path="/agencies" element={<Agencies />} />
                 <Route path="/inbox" element={<Inbox />} />
                 <Route path="/settings" element={<Settings />} />
+                <Route path="/admin/photo-health" element={<PhotoHealth />} />
                 <Route path="*" element={<NotFound />} />
               </Routes>
             </main>

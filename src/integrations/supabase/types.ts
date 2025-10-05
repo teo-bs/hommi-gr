@@ -1168,24 +1168,33 @@ export type Database = {
           alt_text: string | null
           created_at: string | null
           id: string
+          large_url: string | null
+          medium_url: string | null
           room_id: string
           sort_order: number | null
+          thumbnail_url: string | null
           url: string
         }
         Insert: {
           alt_text?: string | null
           created_at?: string | null
           id?: string
+          large_url?: string | null
+          medium_url?: string | null
           room_id: string
           sort_order?: number | null
+          thumbnail_url?: string | null
           url: string
         }
         Update: {
           alt_text?: string | null
           created_at?: string | null
           id?: string
+          large_url?: string | null
+          medium_url?: string | null
           room_id?: string
           sort_order?: number | null
+          thumbnail_url?: string | null
           url?: string
         }
         Relationships: [

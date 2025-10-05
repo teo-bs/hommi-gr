@@ -1,7 +1,7 @@
 import React, { useRef, useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Upload, X, Camera, AlertCircle, AlertTriangle } from "lucide-react";
+import { Upload, X, Camera, AlertCircle, AlertTriangle, Loader2 } from "lucide-react";
 import { uploadListingPhoto } from "@/lib/photo-upload";
 import { useAuth } from "@/hooks/useAuth";
 import { validatePhotoUrl } from "@/lib/photo-validation";
@@ -9,6 +9,7 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { resolveBrokenPhoto } from "@/lib/resolve-broken-photo";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { compressImages, getImageStats } from "@/lib/image-compression";
 
 interface ListingDraft {
   photos: string[];
@@ -56,12 +57,36 @@ export default function PublishStepPhotos({
     if (!profile?.user_id) return;
 
     setIsUploading(true);
-    const uploadPromises = Array.from(files)
-      .filter(file => file.type.startsWith('image/'))
-      .map(file => uploadListingPhoto(file, profile.user_id));
-
+    
     try {
+      // Filter image files
+      const imageFiles = Array.from(files).filter(file => file.type.startsWith('image/'));
+      
+      if (imageFiles.length === 0) {
+        toast.error('Δεν βρέθηκαν έγκυρες εικόνες');
+        return;
+      }
+
+      // Show compression progress
+      const totalSize = imageFiles.reduce((sum, f) => sum + f.size, 0);
+      const totalSizeMB = (totalSize / 1024 / 1024).toFixed(1);
+      toast.info(`Συμπίεση ${imageFiles.length} φωτογραφιών (${totalSizeMB}MB)...`);
+
+      // Compress images before upload
+      const compressedFiles = await compressImages(imageFiles, {
+        maxSizeMB: 2,
+        maxWidthOrHeight: 2000,
+        useWebWorker: true,
+      });
+
+      const compressedSize = compressedFiles.reduce((sum, f) => sum + f.size, 0);
+      const savedMB = ((totalSize - compressedSize) / 1024 / 1024).toFixed(1);
+      console.log(`Compression saved ${savedMB}MB (${Math.round((1 - compressedSize / totalSize) * 100)}% reduction)`);
+
+      // Upload compressed images
+      const uploadPromises = compressedFiles.map(file => uploadListingPhoto(file, profile.user_id));
       const results = await Promise.all(uploadPromises);
+      
       const uploadedUrls = results
         .filter(result => result.success && result.url)
         .map(result => result.url!);
@@ -82,11 +107,13 @@ export default function PublishStepPhotos({
       
       if (validatedPhotos.length > 0) {
         onUpdate({ photos: [...(draft.photos || []), ...validatedPhotos] });
-        toast.success(`${validatedPhotos.length} ${validatedPhotos.length === 1 ? 'φωτογραφία προστέθηκε' : 'φωτογραφίες προστέθηκαν'}`);
+        toast.success(
+          `✅ ${validatedPhotos.length} φωτογραφί${validatedPhotos.length === 1 ? 'α' : 'ες'} προστέθηκ${validatedPhotos.length === 1 ? 'ε' : 'αν'} (εξοικονομήθηκαν ${savedMB}MB)`
+        );
       }
       
       if (failedCount > 0) {
-        toast.error(`${failedCount} ${failedCount === 1 ? 'φωτογραφία δεν φορτώνει' : 'φωτογραφίες δεν φορτώνουν'} σωστά και δεν προστέθηκαν`);
+        toast.error(`${failedCount} φωτογραφί${failedCount === 1 ? 'α' : 'ες'} δεν φορτώνουν σωστά`);
       }
     } catch (error) {
       console.error('Photo upload failed:', error);
@@ -181,12 +208,16 @@ export default function PublishStepPhotos({
             }`}
             onClick={() => !isUploading && fileInputRef.current?.click()}
           >
-            <Upload className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
+            {isUploading ? (
+              <Loader2 className="w-12 h-12 mx-auto mb-4 text-primary animate-spin" />
+            ) : (
+              <Upload className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
+            )}
             <p className="text-base text-muted-foreground mb-2">
-              {isUploading ? 'Μεταφόρτωση...' : 'Κάντε κλικ για να επιλέξετε φωτογραφίες'}
+              {isUploading ? 'Συμπίεση και μεταφόρτωση...' : 'Κάντε κλικ για να επιλέξετε φωτογραφίες'}
             </p>
             <p className="text-sm text-muted-foreground">
-              JPG, PNG μέχρι 10MB ανά φωτογραφία
+              JPG, PNG, WebP μέχρι 10MB • Αυτόματη βελτιστοποίηση
             </p>
             
             <input
