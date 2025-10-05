@@ -76,10 +76,13 @@ export function LocationAutocomplete({ value, onChange, className }: LocationAut
   const reverseGeocode = async (lat: number, lng: number) => {
     try {
       const response = await fetch(
-        `https://api.mapbox.com/geocoding/v5/mapbox.places/${lng},${lat}.json?access_token=pk.eyJ1IjoibG92YWJsZS1ob21taSIsImEiOiJjbThhYmZuemswM3hlMnJzNTM4cmlneDlvIn0.nF3V4aN5sqrxd10lZcBlFw&language=el&types=place,locality`
+        `https://api.mapbox.com/geocoding/v5/mapbox.places/${lng},${lat}.json?access_token=${import.meta.env.VITE_MAPBOX_TOKEN}&language=el&types=place,locality`
       );
       
-      if (!response.ok) throw new Error("Geocoding failed");
+      if (!response.ok) {
+        console.error("Mapbox API error:", response.status, await response.text());
+        throw new Error("Geocoding failed");
+      }
       
       const data = await response.json();
       if (data.features && data.features.length > 0) {
