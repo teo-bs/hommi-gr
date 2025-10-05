@@ -92,7 +92,7 @@ export const ListingCard = ({
     const preloadIndexes = [currentIndex - 1, currentIndex + 1].filter(i => i >= 0 && i < images.length);
     
     preloadIndexes.forEach(idx => {
-      const img = document.createElement('img');
+      const img = new window.Image();
       img.src = getOptimizedImageUrl(images[idx], 720);
     });
   }, [api, isHovered, images]);
