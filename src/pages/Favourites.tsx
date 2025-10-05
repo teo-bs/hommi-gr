@@ -30,7 +30,7 @@ interface SavedRoomWithDetails {
       owner: {
         display_name: string;
         avatar_url?: string;
-      };
+      } | null;
     };
   };
 }
@@ -271,10 +271,10 @@ const Favourites = () => {
 
                       <div className="flex items-center gap-2 pt-3 border-t">
                         <div className="w-8 h-8 bg-primary/10 rounded-full flex items-center justify-center">
-                          {listing.owner.avatar_url ? (
+                          {listing.owner?.avatar_url ? (
                             <img
                               src={listing.owner.avatar_url}
-                              alt={listing.owner.display_name}
+                              alt={listing.owner.display_name || 'Owner'}
                               className="w-full h-full rounded-full object-cover"
                             />
                           ) : (
@@ -282,7 +282,7 @@ const Favourites = () => {
                           )}
                         </div>
                         <span className="text-sm text-muted-foreground">
-                          {listing.owner.display_name}
+                          {listing.owner?.display_name || 'Lister'}
                         </span>
                       </div>
                     </CardContent>
