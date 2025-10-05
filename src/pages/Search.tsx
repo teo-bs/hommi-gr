@@ -92,26 +92,26 @@ const Search = () => {
     }
   });
 
-  // Fetch all photos for visible listings
-  const [photosByListing, setPhotosByListing] = useState<Record<string, string[]>>({});
+  // Fetch all photos for visible rooms
+  const [photosByRoom, setPhotosByRoom] = useState<Record<string, string[]>>({});
   useEffect(() => {
     const run = async () => {
-      const listingIds = Array.from(new Set(listings.map(l => l.listing_id).filter(Boolean)));
-      if (listingIds.length === 0) { setPhotosByListing({}); return; }
+      const roomIds = Array.from(new Set(listings.map(l => l.room_id).filter(Boolean)));
+      if (roomIds.length === 0) { setPhotosByRoom({}); return; }
       const { data, error } = await supabase
-        .from('listing_photos')
-        .select('listing_id,url,sort_order,is_cover')
-        .in('listing_id', listingIds)
-        .order('is_cover', { ascending: false })
+        .from('room_photos')
+        .select('room_id,url,sort_order')
+        .in('room_id', roomIds)
         .order('sort_order', { ascending: true });
       if (error) { console.error('photo query error', error); return; }
       const grouped: Record<string, string[]> = {};
       (data || []).forEach((p: any) => {
-        const id = p.listing_id as string;
+        const id = p.room_id as string;
         if (!grouped[id]) grouped[id] = [];
         grouped[id].push(p.url as string);
       });
-      setPhotosByListing(grouped);
+      console.log('Fetched room photos:', grouped);
+      setPhotosByRoom(grouped);
     };
     run();
   }, [listings]);
@@ -127,12 +127,12 @@ const Search = () => {
       city: listing.city,
       flatmates_count: listing.flatmates_count,
       couples_accepted: listing.couples_accepted,
-      photos: photosByListing[listing.listing_id]?.length ? photosByListing[listing.listing_id] : (listing.cover_photo_url ? [listing.cover_photo_url] : ['/placeholder.svg']),
+      photos: photosByRoom[listing.room_id]?.length ? photosByRoom[listing.room_id] : (listing.cover_photo_url ? [listing.cover_photo_url] : ['/placeholder.svg']),
       room_slug: listing.slug,
       geo: listing.lat && listing.lng ? { lat: listing.lat, lng: listing.lng } : undefined,
       formatted_address: (listing as any).formatted_address
     }));
-  }, [listings, photosByListing]);
+  }, [listings, photosByRoom]);
 
   // Restore state when coming back from listing
   useEffect(() => {
@@ -241,7 +241,7 @@ const Search = () => {
                 <ListingCard
                   key={listing.room_id}
                   listing={listing}
-                  photos={photosByListing[listing.listing_id]}
+                  photos={photosByRoom[listing.room_id]}
                   currentUserProfileExtras={currentUserProfile?.profile_extras}
                   hoveredListingId={hoveredListingId}
                   selectedListingId={selectedListingId}

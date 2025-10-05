@@ -29,11 +29,22 @@ export const ListingCard = ({
   const images = photos && photos.length > 0 ? photos : [listing.cover_photo_url || '/placeholder.svg'];
 
   // Calculate match score
-  const { isGoodFit } = calculateMatchScore(
+  const { isGoodFit, matchPercentage } = calculateMatchScore(
     currentUserProfileExtras || {},
     listing.lister_profile_extras || {},
     listing.audience_preferences || {}
   );
+  
+  // Debug logging for "Good Fit" badge
+  console.log('ListingCard Match Debug:', {
+    room_id: listing.room_id,
+    title: listing.title,
+    currentUserProfileExtras,
+    lister_profile_extras: listing.lister_profile_extras,
+    audience_preferences: listing.audience_preferences,
+    isGoodFit,
+    matchPercentage
+  });
 
   // Format labels
   const roomTypeLabel = listing.room_type === 'private' ? 'PRIVATE ROOM' : 'SHARED ROOM';
