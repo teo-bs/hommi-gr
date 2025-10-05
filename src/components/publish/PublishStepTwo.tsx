@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -59,22 +59,40 @@ export default function PublishStepTwo({
   onNext, 
   onPrev 
 }: PublishStepTwoProps) {
+  // Local state for batching badge selections
+  const [localAmenitiesProperty, setLocalAmenitiesProperty] = useState(draft.amenities_property || []);
+  const [localAmenitiesRoom, setLocalAmenitiesRoom] = useState(draft.amenities_room || []);
+  const [localHouseRules, setLocalHouseRules] = useState(draft.house_rules || []);
   
   const toggleAmenity = (amenity: string, type: 'property' | 'room') => {
-    const key = type === 'property' ? 'amenities_property' : 'amenities_room';
-    const current = draft[key] || [];
-    const updated = current.includes(amenity)
-      ? current.filter((a: string) => a !== amenity)
-      : [...current, amenity];
-    onUpdate({ [key]: updated });
+    if (type === 'property') {
+      const updated = localAmenitiesProperty.includes(amenity)
+        ? localAmenitiesProperty.filter((a: string) => a !== amenity)
+        : [...localAmenitiesProperty, amenity];
+      setLocalAmenitiesProperty(updated);
+    } else {
+      const updated = localAmenitiesRoom.includes(amenity)
+        ? localAmenitiesRoom.filter((a: string) => a !== amenity)
+        : [...localAmenitiesRoom, amenity];
+      setLocalAmenitiesRoom(updated);
+    }
   };
 
   const toggleHouseRule = (rule: string) => {
-    const current = draft.house_rules || [];
-    const updated = current.includes(rule)
-      ? current.filter(r => r !== rule)
-      : [...current, rule];
-    onUpdate({ house_rules: updated });
+    const updated = localHouseRules.includes(rule)
+      ? localHouseRules.filter(r => r !== rule)
+      : [...localHouseRules, rule];
+    setLocalHouseRules(updated);
+  };
+
+  const handleNext = () => {
+    // Commit local badge selections to draft
+    onUpdate({
+      amenities_property: localAmenitiesProperty,
+      amenities_room: localAmenitiesRoom,
+      house_rules: localHouseRules
+    });
+    onNext();
   };
 
   const isValid = draft.property_size_m2 && draft.bathrooms && 
@@ -106,8 +124,8 @@ export default function PublishStepTwo({
                     id="property_size"
                     type="number"
                     placeholder="80"
-                    value={draft.property_size_m2 || ''}
-                    onChange={(e) => onUpdate({ property_size_m2: parseInt(e.target.value) || undefined })}
+                    defaultValue={draft.property_size_m2 || ''}
+                    onBlur={(e) => onUpdate({ property_size_m2: parseInt(e.target.value) || undefined })}
                   />
                 </div>
 
@@ -118,8 +136,8 @@ export default function PublishStepTwo({
                       id="room_size"
                       type="number"
                       placeholder="15"
-                      value={draft.room_size_m2 || ''}
-                      onChange={(e) => onUpdate({ room_size_m2: parseInt(e.target.value) || undefined })}
+                      defaultValue={draft.room_size_m2 || ''}
+                      onBlur={(e) => onUpdate({ room_size_m2: parseInt(e.target.value) || undefined })}
                     />
                   </div>
                 )}
@@ -141,8 +159,8 @@ export default function PublishStepTwo({
                     id="bedrooms_single"
                     type="number"
                     min="0"
-                    value={draft.bedrooms_single}
-                    onChange={(e) => onUpdate({ bedrooms_single: parseInt(e.target.value) || 0 })}
+                    defaultValue={draft.bedrooms_single}
+                    onBlur={(e) => onUpdate({ bedrooms_single: parseInt(e.target.value) || 0 })}
                   />
                 </div>
 
@@ -152,8 +170,8 @@ export default function PublishStepTwo({
                     id="bedrooms_double"
                     type="number"
                     min="0"
-                    value={draft.bedrooms_double}
-                    onChange={(e) => onUpdate({ bedrooms_double: parseInt(e.target.value) || 0 })}
+                    defaultValue={draft.bedrooms_double}
+                    onBlur={(e) => onUpdate({ bedrooms_double: parseInt(e.target.value) || 0 })}
                   />
                 </div>
               </div>
@@ -165,8 +183,8 @@ export default function PublishStepTwo({
                     id="bathrooms"
                     type="number"
                     min="1"
-                    value={draft.bathrooms}
-                    onChange={(e) => onUpdate({ bathrooms: parseInt(e.target.value) || 1 })}
+                    defaultValue={draft.bathrooms}
+                    onBlur={(e) => onUpdate({ bathrooms: parseInt(e.target.value) || 1 })}
                   />
                 </div>
 
@@ -176,8 +194,8 @@ export default function PublishStepTwo({
                     id="wc_count"
                     type="number"
                     min="0"
-                    value={draft.wc_count}
-                    onChange={(e) => onUpdate({ wc_count: parseInt(e.target.value) || 1 })}
+                    defaultValue={draft.wc_count}
+                    onBlur={(e) => onUpdate({ wc_count: parseInt(e.target.value) || 1 })}
                   />
                 </div>
               </div>
@@ -191,8 +209,8 @@ export default function PublishStepTwo({
                       type="number"
                       min="0"
                       placeholder="2"
-                      value={draft.flatmates_count}
-                      onChange={(e) => onUpdate({ flatmates_count: parseInt(e.target.value) || 0 })}
+                      defaultValue={draft.flatmates_count}
+                      onBlur={(e) => onUpdate({ flatmates_count: parseInt(e.target.value) || 0 })}
                     />
                   </div>
 
@@ -280,7 +298,7 @@ export default function PublishStepTwo({
                 {PROPERTY_AMENITIES.map((amenity) => (
                   <Badge
                     key={amenity}
-                    variant={(draft.amenities_property || []).includes(amenity) ? 'default' : 'outline'}
+                    variant={localAmenitiesProperty.includes(amenity) ? 'default' : 'outline'}
                     className="cursor-pointer"
                     onClick={() => toggleAmenity(amenity, 'property')}
                   >
@@ -297,11 +315,11 @@ export default function PublishStepTwo({
                 <CardTitle>Ανέσεις δωματίου</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="flex flex-wrap gap-2">
+              <div className="flex flex-wrap gap-2">
                   {ROOM_AMENITIES.map((amenity) => (
                     <Badge
                       key={amenity}
-                      variant={(draft.amenities_room || []).includes(amenity) ? 'default' : 'outline'}
+                      variant={localAmenitiesRoom.includes(amenity) ? 'default' : 'outline'}
                       className="cursor-pointer"
                       onClick={() => toggleAmenity(amenity, 'room')}
                     >
@@ -322,7 +340,7 @@ export default function PublishStepTwo({
                 {HOUSE_RULES.map((rule) => (
                   <Badge
                     key={rule}
-                    variant={(draft.house_rules || []).includes(rule) ? 'default' : 'outline'}
+                    variant={localHouseRules.includes(rule) ? 'default' : 'outline'}
                     className="cursor-pointer"
                     onClick={() => toggleHouseRule(rule)}
                   >
@@ -340,7 +358,7 @@ export default function PublishStepTwo({
         <Button variant="outline" onClick={onPrev}>
           Πίσω
         </Button>
-        <Button onClick={onNext} disabled={!isValid}>
+        <Button onClick={handleNext} disabled={!isValid}>
           Συνέχεια
         </Button>
       </div>

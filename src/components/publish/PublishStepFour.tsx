@@ -1,4 +1,4 @@
-import React, { useRef, useState } from "react";
+import React, { useRef, useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -33,6 +33,16 @@ export default function PublishStepFour({
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { profile } = useAuth();
   const [isUploading, setIsUploading] = useState(false);
+  
+  // Local state for text inputs
+  const [title, setTitle] = useState(draft.title || '');
+  const [description, setDescription] = useState(draft.description || '');
+
+  // Sync with draft when it changes externally
+  useEffect(() => {
+    setTitle(draft.title || '');
+    setDescription(draft.description || '');
+  }, [draft.title, draft.description]);
 
   const handlePhotoUpload = async (files: FileList) => {
     if (!profile?.user_id) return;
@@ -61,9 +71,18 @@ export default function PublishStepFour({
     onUpdate({ photos: updatedPhotos });
   };
 
+  const handleBlur = () => {
+    onUpdate({ title, description });
+  };
+
+  const handleNext = () => {
+    onUpdate({ title, description });
+    onNext();
+  };
+
   const isValid = draft.photos && draft.photos.length > 0 && 
-    draft.title && draft.title.length >= 10 && 
-    draft.description && draft.description.length >= 90;
+    title && title.length >= 10 && 
+    description && description.length >= 90;
 
   return (
     <div className="space-y-6">
@@ -154,11 +173,12 @@ export default function PublishStepFour({
                 <Input
                   id="title"
                   placeholder="π.χ. Φωτεινό δωμάτιο στο κέντρο της Αθήνας"
-                  value={draft.title || ''}
-                  onChange={(e) => onUpdate({ title: e.target.value })}
+                  value={title}
+                  onChange={(e) => setTitle(e.target.value)}
+                  onBlur={handleBlur}
                 />
                 <p className="text-xs text-muted-foreground">
-                  {draft.title?.length || 0}/10 χαρακτήρες
+                  {title.length}/10 χαρακτήρες
                 </p>
               </div>
             </CardContent>
@@ -176,12 +196,13 @@ export default function PublishStepFour({
                 <Textarea
                   id="description"
                   placeholder="Περιγράψτε το χώρο σας, τη γειτονιά, τις ανέσεις και τι κάνει τη διαμονή ιδιαίτερη..."
-                  value={draft.description || ''}
-                  onChange={(e) => onUpdate({ description: e.target.value })}
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value)}
+                  onBlur={handleBlur}
                   rows={8}
                 />
                 <p className="text-xs text-muted-foreground">
-                  {draft.description?.length || 0}/90 χαρακτήρες
+                  {description.length}/90 χαρακτήρες
                 </p>
               </div>
 
@@ -210,10 +231,10 @@ export default function PublishStepFour({
               {(!draft.photos || draft.photos.length === 0) && (
                 <li>• Προσθέστε τουλάχιστον μία φωτογραφία</li>
               )}
-              {(!draft.title || draft.title.length < 10) && (
+              {(!title || title.length < 10) && (
                 <li>• Τίτλος τουλάχιστον 10 χαρακτήρες</li>
               )}
-              {(!draft.description || draft.description.length < 90) && (
+              {(!description || description.length < 90) && (
                 <li>• Περιγραφή τουλάχιστον 90 χαρακτήρες</li>
               )}
             </ul>
@@ -226,7 +247,7 @@ export default function PublishStepFour({
         <Button variant="outline" onClick={onPrev}>
           Πίσω
         </Button>
-        <Button onClick={onNext} disabled={!isValid}>
+        <Button onClick={handleNext} disabled={!isValid}>
           {isLastStep ? 'Δημοσίευση αγγελίας' : 'Συνέχεια'}
         </Button>
       </div>

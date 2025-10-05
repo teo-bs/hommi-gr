@@ -1,4 +1,5 @@
-import React from "react";
+import React, { useState, useMemo } from "react";
+import { useDebouncedCallback } from "use-debounce";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -42,47 +43,54 @@ export default function PublishStepFive({
   onPrev,
   isPublishing = false
 }: PublishStepFiveProps) {
+  // Local state for batching badge selections
+  const [localGender, setLocalGender] = useState(draft.preferred_gender || []);
+  const [localSituation, setLocalSituation] = useState(draft.preferred_situation || []);
   
   const toggleGender = (gender: string) => {
-    const current = draft.preferred_gender || [];
     let updated;
     
     if (gender === 'any') {
-      updated = current.includes('any') ? [] : ['any'];
+      updated = localGender.includes('any') ? [] : ['any'];
     } else {
-      updated = current.includes(gender)
-        ? current.filter(g => g !== gender)
-        : [...current.filter(g => g !== 'any'), gender];
+      updated = localGender.includes(gender)
+        ? localGender.filter(g => g !== gender)
+        : [...localGender.filter(g => g !== 'any'), gender];
     }
     
-    onUpdate({ preferred_gender: updated });
+    setLocalGender(updated);
   };
 
   const toggleSituation = (situation: string) => {
-    const current = draft.preferred_situation || [];
-    const updated = current.includes(situation)
-      ? current.filter(s => s !== situation)
-      : [...current, situation];
-    onUpdate({ preferred_situation: updated });
+    const updated = localSituation.includes(situation)
+      ? localSituation.filter(s => s !== situation)
+      : [...localSituation, situation];
+    setLocalSituation(updated);
   };
 
-  const handleAgeChange = (values: number[]) => {
+  // Debounced age slider update
+  const debouncedAgeUpdate = useDebouncedCallback((values: number[]) => {
     onUpdate({ 
       preferred_age_min: values[0],
       preferred_age_max: values[1]
     });
+  }, 300);
+
+  const handleAgeChange = (values: number[]) => {
+    debouncedAgeUpdate(values);
+  };
+
+  const handlePublish = () => {
+    // Commit local badge selections before publishing
+    onUpdate({
+      preferred_gender: localGender,
+      preferred_situation: localSituation
+    });
+    onPublish();
   };
 
   // Roommate preferences are optional - user can publish without them
   const isValid = true;
-    
-  console.log('PublishStepFive validation:', {
-    preferred_gender: draft.preferred_gender,
-    preferred_situation: draft.preferred_situation,
-    hasPreferences: (draft.preferred_gender && draft.preferred_gender.length > 0) ||
-      (draft.preferred_situation && draft.preferred_situation.length > 0),
-    isValid
-  });
 
   return (
     <div className="space-y-6">
@@ -105,7 +113,7 @@ export default function PublishStepFive({
                 {GENDER_OPTIONS.map((option) => (
                   <div key={option.value} className="flex items-center space-x-3">
                     <Badge
-                      variant={(draft.preferred_gender || []).includes(option.value) ? 'default' : 'outline'}
+                      variant={localGender.includes(option.value) ? 'default' : 'outline'}
                       className="cursor-pointer px-4 py-2"
                       onClick={() => toggleGender(option.value)}
                     >
@@ -163,7 +171,7 @@ export default function PublishStepFive({
               <div className="space-y-3">
                 {SITUATION_OPTIONS.map((option) => {
                   const Icon = option.icon;
-                  const isSelected = (draft.preferred_situation || []).includes(option.value);
+                  const isSelected = localSituation.includes(option.value);
                   
                   return (
                     <div
@@ -197,9 +205,9 @@ export default function PublishStepFive({
                 <div>
                   <p className="text-sm font-medium mb-1">Φύλο:</p>
                   <p className="text-sm text-muted-foreground">
-                    {draft.preferred_gender && draft.preferred_gender.length > 0
+                    {localGender.length > 0
                       ? GENDER_OPTIONS
-                          .filter(opt => draft.preferred_gender!.includes(opt.value))
+                          .filter(opt => localGender.includes(opt.value))
                           .map(opt => opt.label)
                           .join(', ')
                       : 'Δεν έχει καθοριστεί'
@@ -217,9 +225,9 @@ export default function PublishStepFive({
                 <div>
                   <p className="text-sm font-medium mb-1">Κατάσταση:</p>
                   <p className="text-sm text-muted-foreground">
-                    {draft.preferred_situation && draft.preferred_situation.length > 0
+                    {localSituation.length > 0
                       ? SITUATION_OPTIONS
-                          .filter(opt => draft.preferred_situation!.includes(opt.value))
+                          .filter(opt => localSituation.includes(opt.value))
                           .map(opt => opt.label)
                           .join(', ')
                       : 'Δεν έχει καθοριστεί'
@@ -251,7 +259,7 @@ export default function PublishStepFive({
           Πίσω
         </Button>
         <Button 
-          onClick={onPublish} 
+          onClick={handlePublish} 
           disabled={isPublishing}
           size="lg"
         >
