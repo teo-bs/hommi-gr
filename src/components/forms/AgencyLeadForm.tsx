@@ -45,7 +45,11 @@ const agencyLeadSchema = z.object({
 
 type AgencyLeadFormData = z.infer<typeof agencyLeadSchema>;
 
-export const AgencyLeadForm = () => {
+interface AgencyLeadFormProps {
+  onSubmitSuccess?: () => void;
+}
+
+export const AgencyLeadForm = ({ onSubmitSuccess }: AgencyLeadFormProps) => {
   const { toast } = useToast();
   const { user, profile } = useAuth();
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -99,6 +103,9 @@ export const AgencyLeadForm = () => {
       // Success
       setIsSubmitted(true);
       reset();
+      
+      // Call success callback to trigger banner
+      onSubmitSuccess?.();
       
       toast({
         title: "Επιτυχής αποστολή!",

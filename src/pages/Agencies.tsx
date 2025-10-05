@@ -12,16 +12,17 @@ export default function Agencies() {
   const [searchParams] = useSearchParams();
   const { user, profile } = useAuth();
   const [showForm, setShowForm] = useState(false);
+  const [isFormSubmitted, setIsFormSubmitted] = useState(false);
   
   const fromSignup = searchParams.get('from_signup') === 'true';
   const isPendingAgency = profile?.account_status === 'pending_qualification';
   
-  // Auto-show form for pending agencies
+  // Auto-show form for agency signups
   useEffect(() => {
-    if (fromSignup && isPendingAgency) {
+    if (fromSignup) {
       setShowForm(true);
     }
-  }, [fromSignup, isPendingAgency]);
+  }, [fromSignup]);
 
   const features = [
     {
@@ -59,100 +60,111 @@ export default function Agencies() {
 
       <div className="min-h-screen bg-background">
         <div className="container mx-auto px-4 py-12 max-w-4xl">
-          {/* Pending Qualification Banner */}
-          {isPendingAgency && (
-            <Alert className="mb-8 border-primary bg-primary/5">
-              <AlertCircle className="h-4 w-4" />
-              <AlertTitle>Ο λογαριασμός σας ελέγχεται</AlertTitle>
-              <AlertDescription>
-                Η ομάδα μας θα επικοινωνήσει σύντομα μαζί σας για να ολοκληρώσει την εγγραφή σας.
-                Ευχαριστούμε για την υπομονή σας!
-              </AlertDescription>
-            </Alert>
-          )}
-
-          {/* Hero Section */}
-          <div className="text-center mb-12">
-            <h1 className="text-4xl font-bold mb-4">
-              Λύσεις για Κτηματομεσίτες
-            </h1>
-            <p className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
-              Εξειδικευμένες υπηρεσίες για κτηματομεσιτικά γραφεία που θέλουν να 
-              μεγιστοποιήσουν τη διαχείριση και την απόδοση των ιδιοκτησιών τους.
-            </p>
-            <Button 
-              size="lg" 
-              onClick={handleBookCall} 
-              disabled={isPendingAgency}
-              className="text-lg px-8 py-3"
-            >
-              <Calendar className="mr-2 h-5 w-5" />
-              {isPendingAgency ? 'Αίτημα σε εξέλιξη' : 'Κλείστε συνάντηση'}
-            </Button>
-          </div>
-
-          {/* Features Grid */}
-          <div className="grid md:grid-cols-2 gap-6 mb-12">
-            {features.map((feature, index) => (
-              <Card key={index} className="h-full">
-                <CardHeader>
-                  <div className="flex items-center space-x-3">
-                    <div className="p-2 bg-primary/10 rounded-lg">
-                      {feature.icon}
-                    </div>
-                    <CardTitle className="text-lg">{feature.title}</CardTitle>
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  <CardDescription className="text-base">
-                    {feature.description}
-                  </CardDescription>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-
-          {/* Contact Form */}
-          {showForm && (
-            <div className="mb-12">
-              <AgencyLeadForm />
-            </div>
-          )}
-
-          {/* CTA Section */}
-          <Card className="bg-gradient-to-r from-primary/5 to-secondary/5 border-primary/20">
-            <CardContent className="p-8 text-center">
-              <h2 className="text-2xl font-bold mb-4">
-                Ξεκινήστε σήμερα
-              </h2>
-              <p className="text-muted-foreground mb-6 max-w-md mx-auto">
-                Κλείστε μια δωρεάν συνάντηση για να συζητήσουμε πως το Hommi 
-                μπορεί να βελτιώσει τις επιδόσεις του γραφείου σας.
-              </p>
-              <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
+          {fromSignup ? (
+            // Minimal view for agency signups: only form + banner after submission
+            <>
+              {isFormSubmitted && (
+                <Alert className="mb-8 border-primary bg-primary/5">
+                  <AlertCircle className="h-4 w-4" />
+                  <AlertTitle>Ο λογαριασμός σας ελέγχεται</AlertTitle>
+                  <AlertDescription>
+                    Η ομάδα μας θα επικοινωνήσει σύντομα μαζί σας για να ολοκληρώσει την εγγραφή σας.
+                    Ευχαριστούμε για την υπομονή σας!
+                  </AlertDescription>
+                </Alert>
+              )}
+              
+              <div className="mb-12">
+                <AgencyLeadForm onSubmitSuccess={() => setIsFormSubmitted(true)} />
+              </div>
+            </>
+          ) : (
+            // Full marketing page for regular visitors
+            <>
+              {/* Hero Section */}
+              <div className="text-center mb-12">
+                <h1 className="text-4xl font-bold mb-4">
+                  Λύσεις για Κτηματομεσίτες
+                </h1>
+                <p className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
+                  Εξειδικευμένες υπηρεσίες για κτηματομεσιτικά γραφεία που θέλουν να 
+                  μεγιστοποιήσουν τη διαχείριση και την απόδοση των ιδιοκτησιών τους.
+                </p>
                 <Button 
                   size="lg" 
                   onClick={handleBookCall} 
                   disabled={isPendingAgency}
+                  className="text-lg px-8 py-3"
                 >
-                  <Calendar className="mr-2 h-4 w-4" />
+                  <Calendar className="mr-2 h-5 w-5" />
                   {isPendingAgency ? 'Αίτημα σε εξέλιξη' : 'Κλείστε συνάντηση'}
                 </Button>
-                <div className="flex items-center text-sm text-muted-foreground">
-                  <Phone className="mr-2 h-4 w-4" />
-                  <span>Ή καλέστε μας: +30 210 123 4567</span>
-                </div>
               </div>
-            </CardContent>
-          </Card>
 
-          {/* Footer Note */}
-          <div className="text-center mt-8 text-sm text-muted-foreground">
-            <p>
-              Οι υπηρεσίες για κτηματομεσίτες θα είναι διαθέσιμες σύντομα. 
-              Κλείστε συνάντηση για πρώτη πρόσβαση.
-            </p>
-          </div>
+              {/* Features Grid */}
+              <div className="grid md:grid-cols-2 gap-6 mb-12">
+                {features.map((feature, index) => (
+                  <Card key={index} className="h-full">
+                    <CardHeader>
+                      <div className="flex items-center space-x-3">
+                        <div className="p-2 bg-primary/10 rounded-lg">
+                          {feature.icon}
+                        </div>
+                        <CardTitle className="text-lg">{feature.title}</CardTitle>
+                      </div>
+                    </CardHeader>
+                    <CardContent>
+                      <CardDescription className="text-base">
+                        {feature.description}
+                      </CardDescription>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+
+              {/* Contact Form */}
+              {showForm && (
+                <div className="mb-12">
+                  <AgencyLeadForm />
+                </div>
+              )}
+
+              {/* CTA Section */}
+              <Card className="bg-gradient-to-r from-primary/5 to-secondary/5 border-primary/20">
+                <CardContent className="p-8 text-center">
+                  <h2 className="text-2xl font-bold mb-4">
+                    Ξεκινήστε σήμερα
+                  </h2>
+                  <p className="text-muted-foreground mb-6 max-w-md mx-auto">
+                    Κλείστε μια δωρεάν συνάντηση για να συζητήσουμε πως το Hommi 
+                    μπορεί να βελτιώσει τις επιδόσεις του γραφείου σας.
+                  </p>
+                  <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
+                    <Button 
+                      size="lg" 
+                      onClick={handleBookCall} 
+                      disabled={isPendingAgency}
+                    >
+                      <Calendar className="mr-2 h-4 w-4" />
+                      {isPendingAgency ? 'Αίτημα σε εξέλιξη' : 'Κλείστε συνάντηση'}
+                    </Button>
+                    <div className="flex items-center text-sm text-muted-foreground">
+                      <Phone className="mr-2 h-4 w-4" />
+                      <span>Ή καλέστε μας: +30 210 123 4567</span>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Footer Note */}
+              <div className="text-center mt-8 text-sm text-muted-foreground">
+                <p>
+                  Οι υπηρεσίες για κτηματομεσίτες θα είναι διαθέσιμες σύντομα. 
+                  Κλείστε συνάντηση για πρώτη πρόσβαση.
+                </p>
+              </div>
+            </>
+          )}
         </div>
       </div>
     </>

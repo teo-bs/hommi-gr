@@ -1,5 +1,6 @@
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+import { Resend } from 'npm:resend@4.0.0'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -13,8 +14,10 @@ interface AgencyLeadData {
   phone?: string;
   website?: string;
   message?: string;
-  user_id?: string; // NEW: Optional user_id
+  user_id?: string;
 }
+
+const resend = new Resend(Deno.env.get('RESEND_API_KEY') as string);
 
 serve(async (req) => {
   // Handle CORS preflight requests
@@ -169,10 +172,118 @@ serve(async (req) => {
 
     console.log(`New agency lead submitted: ${data.company_name} (${data.email})`);
 
-    // TODO: In production, you might want to:
-    // - Send a notification email to admins
-    // - Add the lead to a CRM system
-    // - Send a confirmation email to the agency
+    // Send email notification to admin
+    try {
+      const submissionDate = new Date().toLocaleString('el-GR', {
+        dateStyle: 'full',
+        timeStyle: 'short',
+        timeZone: 'Europe/Athens'
+      });
+
+      const emailHtml = `
+        <!DOCTYPE html>
+        <html>
+          <head>
+            <meta charset="utf-8">
+            <style>
+              body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; line-height: 1.6; color: #333; }
+              .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+              .header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 30px; border-radius: 10px 10px 0 0; text-align: center; }
+              .content { background: #f9fafb; padding: 30px; border-radius: 0 0 10px 10px; }
+              .field { margin-bottom: 20px; }
+              .label { font-weight: 600; color: #4b5563; font-size: 14px; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 5px; }
+              .value { font-size: 16px; color: #1f2937; padding: 10px; background: white; border-radius: 5px; border-left: 3px solid #667eea; }
+              .footer { margin-top: 30px; padding-top: 20px; border-top: 1px solid #e5e7eb; text-align: center; color: #6b7280; font-size: 12px; }
+              .badge { display: inline-block; padding: 4px 12px; background: #10b981; color: white; border-radius: 12px; font-size: 12px; font-weight: 600; }
+            </style>
+          </head>
+          <body>
+            <div class="container">
+              <div class="header">
+                <h1 style="margin: 0; font-size: 24px;">🏢 Νέο Αίτημα Κτηματομεσίτη</h1>
+                <p style="margin: 10px 0 0 0; opacity: 0.9;">Hommi Agency Leads</p>
+              </div>
+              
+              <div class="content">
+                <div style="text-align: center; margin-bottom: 20px;">
+                  <span class="badge">ΝΕΟ ΑΙΤΗΜΑ</span>
+                </div>
+
+                <div class="field">
+                  <div class="label">Εταιρεία</div>
+                  <div class="value">${leadData.company_name}</div>
+                </div>
+
+                <div class="field">
+                  <div class="label">Όνομα Επικοινωνίας</div>
+                  <div class="value">${leadData.contact_name}</div>
+                </div>
+
+                <div class="field">
+                  <div class="label">Email</div>
+                  <div class="value"><a href="mailto:${leadData.email}" style="color: #667eea; text-decoration: none;">${leadData.email}</a></div>
+                </div>
+
+                ${leadData.phone ? `
+                <div class="field">
+                  <div class="label">Τηλέφωνο</div>
+                  <div class="value"><a href="tel:${leadData.phone}" style="color: #667eea; text-decoration: none;">${leadData.phone}</a></div>
+                </div>
+                ` : ''}
+
+                ${leadData.website ? `
+                <div class="field">
+                  <div class="label">Ιστοσελίδα</div>
+                  <div class="value"><a href="${leadData.website}" target="_blank" style="color: #667eea; text-decoration: none;">${leadData.website}</a></div>
+                </div>
+                ` : ''}
+
+                ${leadData.message ? `
+                <div class="field">
+                  <div class="label">Μήνυμα</div>
+                  <div class="value" style="white-space: pre-wrap;">${leadData.message}</div>
+                </div>
+                ` : ''}
+
+                <div class="field">
+                  <div class="label">Ημερομηνία Υποβολής</div>
+                  <div class="value">${submissionDate}</div>
+                </div>
+
+                ${leadData.user_id ? `
+                <div class="field">
+                  <div class="label">User ID (Authenticated)</div>
+                  <div class="value" style="font-family: monospace; font-size: 12px;">${leadData.user_id}</div>
+                </div>
+                ` : ''}
+              </div>
+
+              <div class="footer">
+                <p>Αυτό το email στάλθηκε αυτόματα από το σύστημα Hommi.<br>
+                Απαντήστε απευθείας στον υποψήφιο πελάτη στο ${leadData.email}</p>
+              </div>
+            </div>
+          </body>
+        </html>
+      `;
+
+      const { error: emailError } = await resend.emails.send({
+        from: 'Hommi Agencies <onboarding@resend.dev>',
+        to: ['mpoufisth@gmail.com'],
+        subject: `Νέο Αίτημα Κτηματομεσίτη από ${leadData.company_name}`,
+        html: emailHtml,
+      });
+
+      if (emailError) {
+        console.error('Error sending email notification:', emailError);
+        // Don't fail the request if email fails, just log it
+      } else {
+        console.log('Email notification sent successfully to mpoufisth@gmail.com');
+      }
+    } catch (emailError) {
+      console.error('Unexpected error sending email:', emailError);
+      // Don't fail the request if email fails
+    }
 
     return new Response(
       JSON.stringify({ 
