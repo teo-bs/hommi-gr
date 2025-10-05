@@ -1,5 +1,4 @@
 import { useState, useEffect } from "react";
-import { useSearchParams } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -9,20 +8,18 @@ import { AgencyLeadForm } from "@/components/forms/AgencyLeadForm";
 import { useAuth } from "@/hooks/useAuth";
 
 export default function Agencies() {
-  const [searchParams] = useSearchParams();
   const { user, profile } = useAuth();
   const [showForm, setShowForm] = useState(false);
   const [isFormSubmitted, setIsFormSubmitted] = useState(false);
   
-  const fromSignup = searchParams.get('from_signup') === 'true';
   const isPendingAgency = profile?.account_status === 'pending_qualification';
   
-  // Auto-show form for agency signups
+  // Auto-show form for pending agencies
   useEffect(() => {
-    if (fromSignup) {
+    if (isPendingAgency) {
       setShowForm(true);
     }
-  }, [fromSignup]);
+  }, [isPendingAgency]);
 
   const features = [
     {
@@ -60,8 +57,8 @@ export default function Agencies() {
 
       <div className="min-h-screen bg-background">
         <div className="container mx-auto px-4 py-12 max-w-4xl">
-          {fromSignup ? (
-            // Minimal view for agency signups: only form + banner after submission
+          {isPendingAgency ? (
+            // Minimal view for pending agencies: only form + banner after submission
             <>
               {isFormSubmitted && (
                 <Alert className="mb-8 border-primary bg-primary/5">

@@ -117,8 +117,8 @@ export const GlobalTermsHandler = () => {
       // Start listing wizard flow
       navigate('/publish');
     } else {
-      // Navigate to agencies page with flag
-      navigate('/agencies?from_signup=true');
+      // Navigate to agencies page (profile status will control the view)
+      navigate('/agencies');
     }
   };
 

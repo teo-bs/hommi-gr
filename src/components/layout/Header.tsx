@@ -319,14 +319,16 @@ export const Header = () => {
                     
                     <DropdownMenuSeparator />
                     
-                    {/* Role Switch */}
-                    <DropdownMenuItem onClick={() => handleRoleSwitch(currentRole === 'tenant' ? 'lister' : 'tenant')}>
-                      <UserCheck className="h-4 w-4 mr-2" />
-                      {currentRole === 'tenant' 
-                        ? (language === 'el' ? 'Μετάβαση σε Lister' : 'Switch to Lister')
-                        : (language === 'el' ? 'Μετάβαση σε Tenant' : 'Switch to Tenant')
-                      }
-                    </DropdownMenuItem>
+                    {/* Role Switch - Hide for agencies */}
+                    {profile?.can_switch_roles && (
+                      <DropdownMenuItem onClick={() => handleRoleSwitch(currentRole === 'tenant' ? 'lister' : 'tenant')}>
+                        <UserCheck className="h-4 w-4 mr-2" />
+                        {currentRole === 'tenant' 
+                          ? (language === 'el' ? 'Μετάβαση σε Lister' : 'Switch to Lister')
+                          : (language === 'el' ? 'Μετάβαση σε Tenant' : 'Switch to Tenant')
+                        }
+                      </DropdownMenuItem>
+                    )}
                     
                     <DropdownMenuSeparator />
                     
