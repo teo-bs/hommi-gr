@@ -126,6 +126,14 @@ export const ListingCard = ({
       state={{ fromSearch: true }}
       className="block group animate-fade-in"
       onClick={(e) => {
+        // Check if click originated from carousel controls
+        const target = e.target as Element;
+        if (target && target.closest('[data-carousel-control]')) {
+          e.preventDefault();
+          e.stopPropagation();
+          return;
+        }
+        // Prevent navigation if dragging
         if (isDragging) {
           e.preventDefault();
           return;
@@ -176,13 +184,13 @@ export const ListingCard = ({
             {images.length > 1 && canScrollPrev && (
               <CarouselPrevious 
                 className="left-2 opacity-0 group-hover/carousel:opacity-100 transition-opacity"
-                onClick={(e) => { e.preventDefault(); e.stopPropagation(); }}
+                data-carousel-control
               />
             )}
             {images.length > 1 && canScrollNext && (
               <CarouselNext 
                 className="right-2 opacity-0 group-hover/carousel:opacity-100 transition-opacity"
-                onClick={(e) => { e.preventDefault(); e.stopPropagation(); }}
+                data-carousel-control
               />
             )}
           </Carousel>

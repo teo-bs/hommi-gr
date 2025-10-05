@@ -36,8 +36,9 @@ const Search = () => {
   const [selectedListingId, setSelectedListingId] = useState<string | null>(null);
   const [autoSearch, setAutoSearch] = useState<boolean>(false);
   
-  // Pagination state
-  const [currentPage, setCurrentPage] = useState(1);
+  // Pagination state - initialize from URL
+  const initialPage = Math.max(1, parseInt(searchParams.get('page') || '1', 10) || 1);
+  const [currentPage, setCurrentPage] = useState(initialPage);
   const itemsPerPage = 30;
 
   // Fetch current user and profile for matching
@@ -228,6 +229,20 @@ const Search = () => {
   const endIndex = startIndex + itemsPerPage;
   const paginatedListings = listings.slice(startIndex, endIndex);
   
+  // Sync currentPage to URL
+  useEffect(() => {
+    const params = new URLSearchParams(searchParams);
+    params.set('page', String(currentPage));
+    setSearchParams(params, { replace: true });
+  }, [currentPage]);
+
+  // Clamp currentPage if totalPages changes
+  useEffect(() => {
+    if (currentPage > totalPages && totalPages > 0) {
+      setCurrentPage(Math.max(1, totalPages));
+    }
+  }, [totalPages]);
+  
   // Scroll to top when page changes
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -319,8 +334,8 @@ const Search = () => {
                   ))}
                 </div>
                 
-                {/* Pagination */}
-                {totalPages > 1 && (
+                {/* Pagination - always show when there are listings */}
+                {listings.length > 0 && (
                   <div className="mt-8 mb-4">
                     <Pagination>
                       <PaginationContent>
