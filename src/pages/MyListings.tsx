@@ -5,7 +5,8 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Calendar, Eye, Heart, Home, MessageCircle, Plus, Users, Edit, FileText, Archive, AlertTriangle } from "lucide-react";
+import { Calendar, Eye, Heart, Home, MessageCircle, Plus, Users, Edit, FileText, Archive, AlertTriangle, Trash2 } from "lucide-react";
+import { DeleteConfirmDialog } from "@/components/owner/DeleteConfirmDialog";
 import { Link } from "react-router-dom";
 import { useMyListings } from "@/hooks/useMyListings";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -16,6 +17,8 @@ import { useQuery } from '@tanstack/react-query';
 const MyListings = () => {
   const [activeTab, setActiveTab] = useState<'draft' | 'published' | 'archived'>('published');
   const { data: listings = [], isLoading, error, refetch } = useMyListings(activeTab);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [listingToDelete, setListingToDelete] = useState<string | null>(null);
 
   // Query broken photos for current user's listings
   const { data: brokenPhotos = [] } = useQuery({
@@ -69,6 +72,38 @@ const MyListings = () => {
         description: "Δεν ήταν δυνατή η ενημέρωση της αγγελίας",
         variant: "destructive"
       });
+    }
+  };
+
+  const handleDeleteListing = async () => {
+    if (!listingToDelete) return;
+
+    try {
+      const nowISO = new Date().toISOString();
+      
+      const { error } = await supabase
+        .from('listings')
+        .update({ deleted_at: nowISO } as any)
+        .eq('id', listingToDelete);
+
+      if (error) throw error;
+
+      toast({
+        title: "Επιτυχής διαγραφή",
+        description: "Η αγγελία διαγράφηκε"
+      });
+      
+      refetch();
+    } catch (error) {
+      console.error('Error deleting listing:', error);
+      toast({
+        title: "Σφάλμα",
+        description: "Δεν ήταν δυνατή η διαγραφή της αγγελίας",
+        variant: "destructive"
+      });
+    } finally {
+      setDeleteDialogOpen(false);
+      setListingToDelete(null);
     }
   };
 
@@ -303,6 +338,21 @@ const MyListings = () => {
                                   Αρχειοθέτηση
                                 </Button>
                               )}
+
+                              {listing.status === 'draft' && (
+                                <Button 
+                                  variant="destructive" 
+                                  size="sm"
+                                  onClick={() => {
+                                    setListingToDelete(listing.id);
+                                    setDeleteDialogOpen(true);
+                                  }}
+                                  className="gap-1"
+                                >
+                                  <Trash2 className="h-4 w-4" />
+                                  Διαγραφή
+                                </Button>
+                              )}
                             </div>
                           </div>
                         </CardContent>
@@ -383,6 +433,15 @@ const MyListings = () => {
             </Card>
           </div>
         </div>
+
+        <DeleteConfirmDialog
+          open={deleteDialogOpen}
+          onOpenChange={setDeleteDialogOpen}
+          onConfirm={handleDeleteListing}
+          title="Διαγραφή αγγελίας;"
+          description="Η αγγελία θα διαγραφεί οριστικά. Αυτή η ενέργεια δεν μπορεί να αναιρεθεί."
+          confirmText="Διαγραφή"
+        />
       </div>
     </>
   );

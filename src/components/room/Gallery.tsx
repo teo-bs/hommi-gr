@@ -2,9 +2,11 @@ import { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Heart, Share2, Camera } from "lucide-react";
+import { OwnerGalleryActions } from "@/components/owner/OwnerGalleryActions";
 
 interface GalleryProps {
   photos: Array<{
+    id?: string;
     url: string;
     alt_text?: string;
     thumbnail_url?: string;
@@ -13,9 +15,20 @@ interface GalleryProps {
     is_cover?: boolean;
   }>;
   title: string;
+  isOwner?: boolean;
+  photoType?: 'listing_photos' | 'room_photos';
+  parentId?: string; // listing_id or room_id
+  onPhotosUpdate?: () => void;
 }
 
-export const Gallery = ({ photos, title }: GalleryProps) => {
+export const Gallery = ({ 
+  photos, 
+  title, 
+  isOwner = false,
+  photoType = 'room_photos',
+  parentId,
+  onPhotosUpdate
+}: GalleryProps) => {
   const [currentImage, setCurrentImage] = useState(0);
   const [failedImages, setFailedImages] = useState<Set<string>>(new Set());
   
@@ -86,9 +99,12 @@ export const Gallery = ({ photos, title }: GalleryProps) => {
         {/* Thumbnail grid */}
         {displayPhotos.slice(1, 5).map((photo, index) => (
           <div
-            key={index}
+            key={photo.id || index}
             className="cursor-pointer relative group overflow-hidden rounded-xl"
-            onClick={() => setCurrentImage(index + 1)}
+            onClick={(e) => {
+              if ((e.target as HTMLElement).closest('button')) return;
+              setCurrentImage(index + 1);
+            }}
           >
             <img
               src={photo.thumbnail_url || photo.medium_url || photo.url}
@@ -96,6 +112,15 @@ export const Gallery = ({ photos, title }: GalleryProps) => {
               className="w-full h-full object-cover transition-transform group-hover:scale-105"
               onError={() => handleImageError(photo.url)}
             />
+            {isOwner && photo.id && parentId && onPhotosUpdate && (
+              <OwnerGalleryActions
+                photoId={photo.id}
+                isCover={photo.is_cover || false}
+                photoType={photoType}
+                parentId={parentId}
+                onUpdate={onPhotosUpdate}
+              />
+            )}
             {index === 3 && totalPhotos > 5 && (
               <div className="absolute inset-0 bg-black/60 flex items-center justify-center">
                 <div className="text-white text-center">

@@ -44,9 +44,10 @@ const RoomPage = () => {
   const { slug, id } = useParams(); // Support both slug and legacy id
   const navigate = useNavigate();
   const location = useLocation();
-  const { user } = useAuth();
+  const { user, profile: authProfile } = useAuth();
   const [roomData, setRoomData] = useState<RoomData | null>(null);
   const [loading, setLoading] = useState(true);
+  const [isOwner, setIsOwner] = useState(false);
   
   // Message flow management - use slug or id as identifier
   const roomIdentifier = slug || id || '';
@@ -238,7 +239,7 @@ const RoomPage = () => {
     };
 
     fetchRoom();
-  }, [slug, id, navigate]);
+  }, [slug, id, navigate, authProfile?.id]);
 
   const handleRequestChat = async () => {
     if (!roomData) return;
@@ -276,7 +277,7 @@ const RoomPage = () => {
     return null;
   }
 
-  const { room, listing, profile, photos, amenities, stats } = roomData;
+  const { room, listing, profile: listerProfile, photos, amenities, stats } = roomData;
 
   return (
     <>
@@ -306,7 +307,28 @@ const RoomPage = () => {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Main Content */}
           <div className="lg:col-span-2 space-y-8">
-            <Gallery photos={photos} title={listing.title} />
+            <Gallery 
+              photos={photos} 
+              title={listing.title}
+              isOwner={isOwner}
+              photoType="room_photos"
+              parentId={room.id}
+              onPhotosUpdate={async () => {
+                // Refetch room photos after actions
+                const { data: updatedPhotos } = await supabase
+                  .from('room_photos')
+                  .select('id, url, is_cover, sort_order, created_at, thumbnail_url, medium_url, large_url, alt_text')
+                  .eq('room_id', room.id)
+                  .is('deleted_at', null)
+                  .order('is_cover', { ascending: false })
+                  .order('sort_order', { ascending: true })
+                  .order('created_at', { ascending: true });
+                
+                if (updatedPhotos) {
+                  setRoomData(prev => prev ? { ...prev, photos: updatedPhotos } : null);
+                }
+              }}
+            />
             
             <div className="space-y-6">
               <StatsBar 
@@ -354,12 +376,12 @@ const RoomPage = () => {
             {/* Lister Card - Not Sticky */}
             <div className="mb-4">
               <ListerCard 
-                lister={profile}
-                verificationBadge={profile?.kyc_status === 'approved'}
-                languages={profile?.languages || []}
-                memberSince={profile?.member_since}
-                lastActive={profile?.last_active}
-                profession={profile?.profession}
+                lister={listerProfile}
+                verificationBadge={listerProfile?.kyc_status === 'approved'}
+                languages={listerProfile?.languages || []}
+                memberSince={listerProfile?.member_since}
+                lastActive={listerProfile?.last_active}
+                profession={listerProfile?.profession}
               />
             </div>
             
