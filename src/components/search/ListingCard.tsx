@@ -2,15 +2,13 @@ import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
 import { OptimizedListing } from "@/hooks/useOptimizedSearch";
-import { Carousel, CarouselContent, CarouselItem, CarouselPrevious, CarouselNext, CarouselApi } from "@/components/ui/carousel";
 import { ListerBadge } from "./ListerBadge";
 import { calculateMatchScore } from "@/lib/matching";
 import { SaveRoomButton } from "@/components/room/SaveRoomButton";
-import { Image } from "lucide-react";
 
 interface ListingCardProps {
   listing: OptimizedListing;
-  photos?: string[];
+  coverPhoto?: string;
   currentUserProfileExtras?: any;
   hoveredListingId?: string | null;
   selectedListingId?: string | null;
@@ -36,7 +34,7 @@ const getImageSrcSet = (url: string): string => {
 
 export const ListingCard = ({ 
   listing, 
-  photos,
+  coverPhoto,
   currentUserProfileExtras,
   hoveredListingId, 
   selectedListingId,
@@ -44,78 +42,18 @@ export const ListingCard = ({
   onClick
 }: ListingCardProps) => {
   const isHighlighted = hoveredListingId === listing.room_id || selectedListingId === listing.room_id;
-  const [failedImages, setFailedImages] = useState<Set<string>>(new Set());
-  
-  // Filter out broken images
-  const allImages = photos && photos.length > 0 ? photos : [listing.cover_photo_url || '/placeholder.svg'];
-  const images = allImages.filter(url => url && !failedImages.has(url));
-  
-  // Fallback if all images failed
-  const displayImages = images.length > 0 ? images : ['/placeholder.svg'];
-  
-  // Carousel API for smart navigation
-  const [api, setApi] = useState<CarouselApi>();
-  const [canScrollPrev, setCanScrollPrev] = useState(false);
-  const [canScrollNext, setCanScrollNext] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
-  const [isDragging, setIsDragging] = useState(false);
-
+  const [imageLoaded, setImageLoaded] = useState(false);
+  const [imageError, setImageError] = useState(false);
+  
+  // Use cover photo or fallback
+  const imageUrl = coverPhoto || listing.cover_photo_url || '/placeholder.svg';
+  
+  // Reset image state when cover photo changes
   useEffect(() => {
-    if (!api) return;
-
-    const updateScrollability = () => {
-      setCanScrollPrev(api.canScrollPrev());
-      setCanScrollNext(api.canScrollNext());
-    };
-
-    const handlePointerDown = () => {
-      setIsDragging(false);
-    };
-    
-    const handlePointerUp = () => {
-      // Small delay to detect drag
-      setTimeout(() => {
-        setIsDragging(false);
-      }, 100);
-    };
-    
-    const handleScroll = () => {
-      setIsDragging(true);
-    };
-
-    updateScrollability();
-    api.on('select', updateScrollability);
-    api.on('reInit', updateScrollability);
-    api.on('pointerDown', handlePointerDown);
-    api.on('pointerUp', handlePointerUp);
-    api.on('scroll', handleScroll);
-
-    return () => {
-      api.off('select', updateScrollability);
-      api.off('reInit', updateScrollability);
-      api.off('pointerDown', handlePointerDown);
-      api.off('pointerUp', handlePointerUp);
-      api.off('scroll', handleScroll);
-    };
-  }, [api]);
-
-  // Handle image load errors
-  const handleImageError = (url: string) => {
-    setFailedImages(prev => new Set(prev).add(url));
-  };
-
-  // Preload adjacent images on hover
-  useEffect(() => {
-    if (!api || !isHovered || displayImages.length <= 1) return;
-    
-    const currentIndex = api.selectedScrollSnap();
-    const preloadIndexes = [currentIndex - 1, currentIndex + 1].filter(i => i >= 0 && i < displayImages.length);
-    
-    preloadIndexes.forEach(idx => {
-      const img = new window.Image();
-      img.src = getOptimizedImageUrl(displayImages[idx], 720);
-    });
-  }, [api, isHovered, displayImages]);
+    setImageLoaded(false);
+    setImageError(false);
+  }, [imageUrl]);
 
   // Calculate match score
   const { isGoodFit, matchPercentage } = calculateMatchScore(
@@ -146,18 +84,6 @@ export const ListingCard = ({
       state={{ fromSearch: true }}
       className="block group animate-fade-in"
       onClick={(e) => {
-        // Check if click originated from carousel controls
-        const target = e.target as Element;
-        if (target && target.closest('[data-carousel-control]')) {
-          e.preventDefault();
-          e.stopPropagation();
-          return;
-        }
-        // Prevent navigation if dragging
-        if (isDragging) {
-          e.preventDefault();
-          return;
-        }
         onClick?.(listing.room_id);
       }}
       onMouseEnter={() => {
@@ -170,69 +96,23 @@ export const ListingCard = ({
       }}
     >
       <div className={`transition-all duration-200 ${isHighlighted ? 'scale-[1.02]' : ''}`}>
-        {/* Image carousel */}
-        <div className="relative aspect-[4/3] mb-3 rounded-xl overflow-hidden group/carousel">
-          <Carousel 
-            className="w-full h-full" 
-            setApi={setApi}
-            opts={{
-              containScroll: 'trimSnaps',
-              align: 'start',
-              dragFree: false,
-              loop: false
-            }}
-          >
-            <CarouselContent>
-              {displayImages.map((src, idx) => (
-                <CarouselItem key={idx} className="w-full h-full">
-                  <img
-                    src={getOptimizedImageUrl(src, 720)}
-                    srcSet={getImageSrcSet(src)}
-                    sizes="(min-width: 1024px) 320px, 100vw"
-                    alt={`${listing.title} – φωτο ${idx+1}`}
-                    loading={idx === 0 ? "eager" : "lazy"}
-                    fetchPriority={idx === 0 ? "high" : "low"}
-                    decoding="async"
-                    draggable={false}
-                    className="w-full h-full object-cover"
-                    onError={() => handleImageError(src)}
-                  />
-                </CarouselItem>
-              ))}
-            </CarouselContent>
-            
-            {/* Smart Navigation arrows - only show if can scroll */}
-            {displayImages.length > 1 && canScrollPrev && (
-              <CarouselPrevious 
-                className="left-2 opacity-0 group-hover/carousel:opacity-100 transition-opacity"
-                data-carousel-control
-              />
-            )}
-            {displayImages.length > 1 && canScrollNext && (
-              <CarouselNext 
-                className="right-2 opacity-0 group-hover/carousel:opacity-100 transition-opacity"
-                data-carousel-control
-              />
-            )}
-          </Carousel>
+        {/* Cover Image */}
+        <div className="relative aspect-[4/3] mb-3 rounded-xl overflow-hidden bg-muted">
+          <img
+            src={imageError ? '/placeholder.svg' : getOptimizedImageUrl(imageUrl, 720)}
+            srcSet={!imageError ? getImageSrcSet(imageUrl) : undefined}
+            sizes="(min-width: 1024px) 320px, 100vw"
+            alt={listing.title}
+            loading="lazy"
+            decoding="async"
+            className={`w-full h-full object-cover transition-opacity duration-200 ${imageLoaded ? 'opacity-100' : 'opacity-0'}`}
+            onLoad={() => setImageLoaded(true)}
+            onError={() => setImageError(true)}
+          />
           
-          {/* Photo count indicator - bottom left */}
-          {displayImages.length > 1 && isHovered && (
-            <div className="absolute bottom-3 left-3 bg-background/90 backdrop-blur-sm px-2 py-1 rounded-md flex items-center gap-1.5 z-10 shadow-sm">
-              <Image className="h-3.5 w-3.5" />
-              <span className="text-xs font-medium tabular-nums">{displayImages.length}</span>
-            </div>
-          )}
-          
-          {/* Dots indicator - only show if multiple images */}
-          {displayImages.length > 1 && (
-            <div className="absolute bottom-3 left-1/2 transform -translate-x-1/2 flex gap-1.5 z-10">
-              {displayImages.map((_, idx) => (
-                <div 
-                  key={idx} 
-                  className="w-1.5 h-1.5 rounded-full bg-white/70 shadow-sm"
-                />
-              ))}
+          {!imageLoaded && !imageError && (
+            <div className="absolute inset-0 flex items-center justify-center">
+              <div className="animate-pulse text-muted-foreground text-sm">Loading...</div>
             </div>
           )}
           

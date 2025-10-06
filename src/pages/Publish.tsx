@@ -253,11 +253,6 @@ export default function Publish() {
             
             photos = roomPhotos?.map(p => p.url) || [];
           }
-          
-          // Fallback to listings.photos if no room photos found
-          if (photos.length === 0 && Array.isArray(existingDraft.photos)) {
-            photos = existingDraft.photos as string[];
-          }
         } else {
           // Use listings.photos for drafts
           photos = Array.isArray(existingDraft.photos) ? existingDraft.photos as string[] : [];

@@ -107,29 +107,6 @@ const Search = () => {
     }
   });
 
-  // Fetch all photos for visible rooms
-  const [photosByRoom, setPhotosByRoom] = useState<Record<string, string[]>>({});
-  useEffect(() => {
-    const run = async () => {
-      const roomIds = Array.from(new Set(listings.map(l => l.room_id).filter(Boolean)));
-      if (roomIds.length === 0) { setPhotosByRoom({}); return; }
-      const { data, error } = await supabase
-        .from('room_photos')
-        .select('room_id,url,sort_order')
-        .in('room_id', roomIds)
-        .order('sort_order', { ascending: true });
-      if (error) { console.error('photo query error', error); return; }
-      const grouped: Record<string, string[]> = {};
-      (data || []).forEach((p: any) => {
-        const id = p.room_id as string;
-        if (!grouped[id]) grouped[id] = [];
-        grouped[id].push(p.url as string);
-      });
-      console.log('Fetched room photos:', grouped);
-      setPhotosByRoom(grouped);
-    };
-    run();
-  }, [listings]);
 
   // Convert listings to map format
   const mapListings = useMemo(() => {
@@ -142,12 +119,12 @@ const Search = () => {
       city: listing.city,
       flatmates_count: listing.flatmates_count,
       couples_accepted: listing.couples_accepted,
-      photos: photosByRoom[listing.room_id]?.length ? photosByRoom[listing.room_id] : (listing.cover_photo_url ? [listing.cover_photo_url] : ['/placeholder.svg']),
+      photos: listing.cover_photo_url ? [listing.cover_photo_url] : ['/placeholder.svg'],
       room_slug: listing.slug,
       geo: listing.lat && listing.lng ? { lat: listing.lat, lng: listing.lng } : undefined,
       formatted_address: (listing as any).formatted_address
     }));
-  }, [listings, photosByRoom]);
+  }, [listings]);
 
   // Restore state when coming back from listing
   useEffect(() => {
@@ -324,7 +301,7 @@ const Search = () => {
                     <ListingCard
                       key={listing.room_id}
                       listing={listing}
-                      photos={photosByRoom[listing.room_id]}
+                      coverPhoto={listing.cover_photo_url}
                       currentUserProfileExtras={currentUserProfile?.profile_extras}
                       hoveredListingId={hoveredListingId}
                       selectedListingId={selectedListingId}
