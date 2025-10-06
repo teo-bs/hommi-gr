@@ -21,8 +21,12 @@ interface ListingDraft {
   price_month?: number;
   deposit_required: boolean;
   bills_note?: string;
+  bills_included_any?: boolean;
+  bills_included?: string[];
   services: string[];
   property_size_m2?: number;
+  room_size_m2?: number;
+  property_type?: 'room' | 'apartment';
   [key: string]: any;
 }
 
@@ -34,8 +38,16 @@ interface PublishStepThreeProps {
 }
 
 const SERVICES = [
-  'Σύνταξη συμβολαίου', 'Καθαρισμός', 'Δήλωση δημαρχείου', 
-  'Συντήρηση', 'Διαχείριση επισκευών', 'Βοήθεια με λογαριασμούς'
+  'Σύνταξη συμβολαίου', 
+  'Καθαρισμός'
+];
+
+const BILL_TYPES = [
+  { key: 'electricity', label: 'Ρεύμα' },
+  { key: 'water', label: 'Νερό' },
+  { key: 'internet', label: 'Internet' },
+  { key: 'heating', label: 'Θέρμανση' },
+  { key: 'municipal_fees', label: 'Δημοτικά τέλη' }
 ];
 
 export default function PublishStepThree({ 
@@ -53,8 +65,13 @@ export default function PublishStepThree({
     onUpdate({ services: updated });
   };
 
-  const pricePerM2 = draft.price_month && draft.property_size_m2 
-    ? (draft.price_month / draft.property_size_m2).toFixed(1)
+  // Use room_size_m2 for room type, property_size_m2 for apartment type
+  const sizeToUse = draft.property_type === 'room' 
+    ? draft.room_size_m2 
+    : draft.property_size_m2;
+
+  const pricePerM2 = draft.price_month && sizeToUse 
+    ? (draft.price_month / sizeToUse).toFixed(1)
     : null;
 
   const isValid = draft.availability_date && draft.price_month && 
@@ -214,15 +231,71 @@ export default function PublishStepThree({
                 )}
               </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="bills">Λογαριασμοί</Label>
-                <Textarea
-                  id="bills"
-                  placeholder="π.χ. Περιλαμβάνονται ρεύμα, νερό, internet. Θέρμανση εκτός."
-                  defaultValue={draft.bills_note || ''}
-                  onBlur={(e) => onUpdate({ bills_note: e.target.value })}
-                  rows={3}
-                />
+              <div className="space-y-4">
+                <div className="space-y-3">
+                  <Label>Περιλαμβάνονται λογαριασμοί στο ενοίκιο;</Label>
+                  <div className="flex gap-2">
+                    <Button
+                      type="button"
+                      variant={draft.bills_included_any ? 'default' : 'outline'}
+                      size="sm"
+                      className="flex-1"
+                      onClick={() => onUpdate({ bills_included_any: true })}
+                    >
+                      Ναι
+                    </Button>
+                    <Button
+                      type="button"
+                      variant={!draft.bills_included_any ? 'default' : 'outline'}
+                      size="sm"
+                      className="flex-1"
+                      onClick={() => onUpdate({ bills_included_any: false, bills_included: [] })}
+                    >
+                      Όχι
+                    </Button>
+                  </div>
+                </div>
+
+                {draft.bills_included_any && (
+                  <div className="space-y-3 p-4 bg-muted/50 rounded-lg">
+                    <Label className="text-sm text-muted-foreground">
+                      💡 Επιλέξτε τι περιλαμβάνεται
+                    </Label>
+                    <div className="grid grid-cols-2 gap-3">
+                      {BILL_TYPES.map((bill) => (
+                        <div key={bill.key} className="flex items-center space-x-2">
+                          <Checkbox
+                            id={bill.key}
+                            checked={(draft.bills_included || []).includes(bill.key)}
+                            onCheckedChange={(checked) => {
+                              const current = draft.bills_included || [];
+                              const updated = checked
+                                ? [...current, bill.key]
+                                : current.filter(b => b !== bill.key);
+                              onUpdate({ bills_included: updated });
+                            }}
+                          />
+                          <Label htmlFor={bill.key} className="text-sm font-normal cursor-pointer">
+                            {bill.label}
+                          </Label>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                <div className="space-y-2">
+                  <Label htmlFor="bills_note" className="text-sm">
+                    Επιπλέον λεπτομέρειες (προαιρετικό)
+                  </Label>
+                  <Textarea
+                    id="bills_note"
+                    placeholder="π.χ. Θέρμανση μέχρι 50€/μήνα"
+                    defaultValue={draft.bills_note || ''}
+                    onBlur={(e) => onUpdate({ bills_note: e.target.value })}
+                    rows={2}
+                  />
+                </div>
               </div>
 
               <div className="space-y-4">

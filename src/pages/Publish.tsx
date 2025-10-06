@@ -59,6 +59,8 @@ interface ListingDraft {
   min_stay_months?: number;
   max_stay_months?: number;
   bills_note?: string;
+  bills_included_any?: boolean;
+  bills_included?: string[];
   services: string[];
   photos: string[];
   description?: string;

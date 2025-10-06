@@ -56,6 +56,33 @@ export const AddressAutocomplete = ({
   const abortControllerRef = useRef<AbortController | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
+  // Transliteration maps
+  const greekToLatinMap: Record<string, string> = {
+    'α': 'a', 'ά': 'a', 'β': 'v', 'γ': 'g', 'δ': 'd', 'ε': 'e', 'έ': 'e',
+    'ζ': 'z', 'η': 'i', 'ή': 'i', 'θ': 'th', 'ι': 'i', 'ί': 'i', 'ϊ': 'i',
+    'ΐ': 'i', 'κ': 'k', 'λ': 'l', 'μ': 'm', 'ν': 'n', 'ξ': 'x', 'ο': 'o',
+    'ό': 'o', 'π': 'p', 'ρ': 'r', 'σ': 's', 'ς': 's', 'τ': 't', 'υ': 'y',
+    'ύ': 'y', 'ϋ': 'y', 'ΰ': 'y', 'φ': 'f', 'χ': 'ch', 'ψ': 'ps', 'ω': 'o', 'ώ': 'o'
+  };
+
+  const latinToGreekMap: Record<string, string> = {
+    'a': 'α', 'v': 'β', 'b': 'μπ', 'g': 'γ', 'd': 'δ', 'e': 'ε', 'z': 'ζ',
+    'i': 'ι', 'k': 'κ', 'l': 'λ', 'm': 'μ', 'n': 'ν', 'x': 'ξ', 'o': 'ο',
+    'p': 'π', 'r': 'ρ', 's': 'σ', 't': 'τ', 'y': 'υ', 'f': 'φ', 'u': 'ου'
+  };
+
+  const transliterateGreekToLatin = (text: string): string => {
+    return text.toLowerCase().split('').map(char => greekToLatinMap[char] || char).join('');
+  };
+
+  const transliterateLatinToGreek = (text: string): string => {
+    let result = text.toLowerCase();
+    // Handle digraphs first
+    result = result.replace(/th/g, 'θ').replace(/ch/g, 'χ').replace(/ps/g, 'ψ');
+    // Then single characters
+    return result.split('').map(char => latinToGreekMap[char] || char).join('');
+  };
+
   const searchAddress = useCallback(async (query: string) => {
     if (!query.trim() || query.length < 3) {
       setSuggestions([]);
@@ -79,23 +106,44 @@ export const AddressAutocomplete = ({
         return;
       }
 
-      const response = await fetch(
-        `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(query)}.json?` +
-        new URLSearchParams({
-          access_token: mapboxToken,
-          country: 'GR',
-          limit: '5',
-          types: 'place,locality,neighborhood,address,poi'
-        }),
-        { signal: abortControllerRef.current.signal }
-      );
-
-      if (!response.ok) {
-        throw new Error('Geocoding request failed');
+      // Determine if query is Greek or Latin
+      const isGreek = /[\u0370-\u03FF]/.test(query);
+      const queries = [query];
+      
+      // Add transliterated version
+      if (isGreek) {
+        queries.push(transliterateGreekToLatin(query));
+      } else {
+        queries.push(transliterateLatinToGreek(query));
       }
 
-      const data = await response.json();
-      setSuggestions(data.features || []);
+      // Search both original and transliterated queries in parallel
+      const responses = await Promise.all(
+        queries.map(q => 
+          fetch(
+            `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(q)}.json?` +
+            new URLSearchParams({
+              access_token: mapboxToken,
+              country: 'GR',
+              limit: '5',
+              types: 'place,locality,neighborhood,address,poi'
+            }),
+            { signal: abortControllerRef.current?.signal }
+          )
+        )
+      );
+
+      const allData = await Promise.all(
+        responses.map(r => r.ok ? r.json() : { features: [] })
+      );
+
+      // Combine and deduplicate results by feature ID
+      const allFeatures = allData.flatMap(data => data.features || []);
+      const uniqueFeatures = Array.from(
+        new Map(allFeatures.map(f => [f.id, f])).values()
+      );
+
+      setSuggestions(uniqueFeatures);
     } catch (error) {
       if (error instanceof Error && error.name !== 'AbortError') {
         console.error('Geocoding error:', error);
