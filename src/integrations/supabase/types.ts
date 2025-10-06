@@ -1339,28 +1339,28 @@ export type Database = {
           {
             foreignKeyName: "fk_rooms_listing_id"
             columns: ["listing_id"]
-            isOneToOne: false
+            isOneToOne: true
             referencedRelation: "listings"
             referencedColumns: ["id"]
           },
           {
             foreignKeyName: "fk_rooms_listing_id"
             columns: ["listing_id"]
-            isOneToOne: false
+            isOneToOne: true
             referencedRelation: "room_search_cache"
             referencedColumns: ["listing_id"]
           },
           {
             foreignKeyName: "fk_rooms_listing_id"
             columns: ["listing_id"]
-            isOneToOne: false
+            isOneToOne: true
             referencedRelation: "v_listing_cards"
             referencedColumns: ["id"]
           },
           {
             foreignKeyName: "fk_rooms_listing_id"
             columns: ["listing_id"]
-            isOneToOne: false
+            isOneToOne: true
             referencedRelation: "v_room_detail_by_slug"
             referencedColumns: ["listing_id"]
           },

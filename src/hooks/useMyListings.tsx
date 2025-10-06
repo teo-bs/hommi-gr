@@ -69,8 +69,19 @@ export const useMyListings = (status?: 'draft' | 'published' | 'archived') => {
       }
 
       return (listings || []).map(listing => {
-        // Use room_photos if available (published), otherwise fall back to listings.photos (draft)
-        const roomPhoto = listing.rooms?.[0]?.room_photos?.[0]?.url;
+        // Normalize nested relations which may come as object or array depending on FK inference
+        const rooms = Array.isArray(listing.rooms)
+          ? listing.rooms
+          : (listing.rooms ? [listing.rooms] : []);
+
+        const firstRoom = rooms[0];
+        const roomPhotos = Array.isArray(firstRoom?.room_photos)
+          ? firstRoom.room_photos
+          : (firstRoom?.room_photos ? [firstRoom.room_photos] : []);
+        const statsArr = Array.isArray(firstRoom?.room_stats)
+          ? firstRoom.room_stats
+          : (firstRoom?.room_stats ? [firstRoom.room_stats] : []);
+        const roomPhoto = roomPhotos[0]?.url;
         
         // Handle JSONB photos array for drafts
         let draftPhoto: string | undefined;
@@ -94,9 +105,9 @@ export const useMyListings = (status?: 'draft' | 'published' | 'archived') => {
           couples_accepted: listing.couples_accepted,
           pets_allowed: listing.pets_allowed,
           cover_photo_url: roomPhoto || draftPhoto,
-          room_count: listing.rooms?.length || 0,
-          view_count: listing.rooms?.[0]?.room_stats?.[0]?.view_count || 0,
-          request_count: listing.rooms?.[0]?.room_stats?.[0]?.request_count || 0,
+          room_count: rooms.length,
+          view_count: statsArr[0]?.view_count || 0,
+          request_count: statsArr[0]?.request_count || 0,
         };
       });
     },

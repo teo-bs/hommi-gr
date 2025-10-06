@@ -57,12 +57,18 @@ export const useOverviewStats = () => {
       const activeListings = listings?.filter(l => l.status === 'published').length || 0;
       
       // Calculate total views from all rooms
-      const totalViews = listings?.reduce((total, listing) => {
-        const roomViews = listing.rooms?.reduce((roomTotal, room) => {
-          return roomTotal + (room.room_stats?.[0]?.view_count || 0);
-        }, 0) || 0;
+      const totalViews = (listings || []).reduce((total, listing) => {
+        const rooms: any[] = Array.isArray(listing.rooms)
+          ? (listing.rooms as any[])
+          : (listing.rooms ? [listing.rooms] : []);
+        const roomViews = rooms.reduce((roomTotal, room) => {
+          const statsArr = Array.isArray(room.room_stats)
+            ? room.room_stats
+            : (room.room_stats ? [room.room_stats] : []);
+          return roomTotal + (statsArr[0]?.view_count || 0);
+        }, 0);
         return total + roomViews;
-      }, 0) || 0;
+      }, 0);
 
       // Get message count (from threads where user is host)
       const { data: userThreads } = await supabase
@@ -85,14 +91,24 @@ export const useOverviewStats = () => {
       const recentListings = (listings || [])
         .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
         .slice(0, 5)
-        .map(listing => ({
-          id: listing.id,
-          title: listing.title,
-          status: listing.status as 'draft' | 'published' | 'archived',
-          views: listing.rooms?.reduce((total, room) => 
-            total + (room.room_stats?.[0]?.view_count || 0), 0) || 0,
-          created_at: listing.created_at
-        }));
+        .map(listing => {
+          const rooms: any[] = Array.isArray(listing.rooms)
+            ? (listing.rooms as any[])
+            : (listing.rooms ? [listing.rooms] : []);
+          const views = rooms.reduce((total, room) => {
+            const statsArr = Array.isArray(room.room_stats)
+              ? room.room_stats
+              : (room.room_stats ? [room.room_stats] : []);
+            return total + (statsArr[0]?.view_count || 0);
+          }, 0);
+          return {
+            id: listing.id,
+            title: listing.title,
+            status: listing.status as 'draft' | 'published' | 'archived',
+            views,
+            created_at: listing.created_at
+          };
+        });
 
       return {
         activeListings,
