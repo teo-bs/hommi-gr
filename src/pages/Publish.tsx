@@ -199,7 +199,7 @@ export default function Publish() {
           .maybeSingle();
         
         if (data && !existingDraftId) {
-          // Found a draft - show warning once
+          // Found a draft - show warning once (but not when editing a specific listing)
           setExistingDraftId(data.id);
           setShowDraftWarning(true);
           return;
@@ -207,7 +207,63 @@ export default function Publish() {
       }
 
       if (existingDraft) {
-          setDraft({
+        // Load amenities from junction tables
+        const { data: listingAmenities } = await supabase
+          .from('listing_amenities')
+          .select('amenities(key)')
+          .eq('listing_id', existingDraft.id);
+        
+        const amenitiesPropertyKeys = listingAmenities?.map((la: any) => la.amenities.key) || [];
+
+        // Load room amenities if listing is published
+        let amenitiesRoomKeys: string[] = [];
+        if (existingDraft.status === 'published' || existingDraft.status === 'archived') {
+          const { data: room } = await supabase
+            .from('rooms')
+            .select('id')
+            .eq('listing_id', existingDraft.id)
+            .maybeSingle();
+          
+          if (room) {
+            const { data: roomAmenities } = await supabase
+              .from('room_amenities')
+              .select('amenities(key)')
+              .eq('room_id', room.id);
+            
+            amenitiesRoomKeys = roomAmenities?.map((ra: any) => ra.amenities.key) || [];
+          }
+        }
+
+        // Load photos from correct source
+        let photos: string[] = [];
+        if (existingDraft.status === 'published' || existingDraft.status === 'archived') {
+          // Load from room_photos table for published listings
+          const { data: room } = await supabase
+            .from('rooms')
+            .select('id')
+            .eq('listing_id', existingDraft.id)
+            .maybeSingle();
+          
+          if (room) {
+            const { data: roomPhotos } = await supabase
+              .from('room_photos')
+              .select('url')
+              .eq('room_id', room.id)
+              .order('sort_order', { ascending: true });
+            
+            photos = roomPhotos?.map(p => p.url) || [];
+          }
+          
+          // Fallback to listings.photos if no room photos found
+          if (photos.length === 0 && Array.isArray(existingDraft.photos)) {
+            photos = existingDraft.photos as string[];
+          }
+        } else {
+          // Use listings.photos for drafts
+          photos = Array.isArray(existingDraft.photos) ? existingDraft.photos as string[] : [];
+        }
+
+        setDraft({
           id: existingDraft.id,
           title: existingDraft.title || '',
           city: existingDraft.city || '',
@@ -221,6 +277,7 @@ export default function Publish() {
           floor: existingDraft.floor || undefined,
           price_month: existingDraft.price_month || undefined,
           deposit_required: existingDraft.deposit_required ?? true,
+          bills_included: existingDraft.bills_included || false,
           has_lift: existingDraft.has_lift || false,
           bedrooms_single: existingDraft.bedrooms_single || 0,
           bedrooms_double: existingDraft.bedrooms_double || 0,
@@ -231,15 +288,15 @@ export default function Publish() {
           orientation: (existingDraft.orientation as 'exterior' | 'interior') || 'exterior',
           bed_type: existingDraft.bed_type || undefined,
           house_rules: Array.isArray(existingDraft.house_rules) ? existingDraft.house_rules as string[] : [],
-          amenities_property: [], // Handle separately via listing_amenities table
-          amenities_room: [], // Handle separately via room_amenities table
+          amenities_property: amenitiesPropertyKeys,
+          amenities_room: amenitiesRoomKeys,
           availability_date: existingDraft.availability_date ? new Date(existingDraft.availability_date) : undefined,
           availability_to: existingDraft.availability_to ? new Date(existingDraft.availability_to) : undefined,
           min_stay_months: existingDraft.min_stay_months || undefined,
           max_stay_months: existingDraft.max_stay_months || undefined,
           bills_note: existingDraft.bills_note || '',
           services: Array.isArray(existingDraft.services) ? existingDraft.services as string[] : [],
-          photos: Array.isArray(existingDraft.photos) ? existingDraft.photos as string[] : [],
+          photos: photos,
           description: existingDraft.description || '',
           preferred_gender: Array.isArray(existingDraft.preferred_gender) ? existingDraft.preferred_gender as string[] : [],
           preferred_age_min: existingDraft.preferred_age_min || 18,
