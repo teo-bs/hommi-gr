@@ -188,7 +188,7 @@ export default function Publish() {
           .single();
         existingDraft = data;
       } else if (!forceNew) {
-        // Check for most recent draft (but don't auto-load)
+        // Check for most recent draft (but don't auto-load if user wants new)
         const { data } = await supabase
           .from('listings')
           .select('*')
@@ -198,8 +198,8 @@ export default function Publish() {
           .limit(1)
           .maybeSingle();
         
-        if (data) {
-          // Found a draft - show warning instead of auto-loading
+        if (data && !existingDraftId) {
+          // Found a draft - show warning once
           setExistingDraftId(data.id);
           setShowDraftWarning(true);
           return;
@@ -383,12 +383,17 @@ export default function Publish() {
 
   const handleGoToDraft = () => {
     setShowDraftWarning(false);
-    navigate('/my-listings?tab=draft');
+    if (existingDraftId) {
+      navigate(`/publish?id=${existingDraftId}&step=1`);
+    } else {
+      navigate('/my-listings?tab=draft');
+    }
   };
 
   const handleCreateNew = () => {
     setShowDraftWarning(false);
-    setSearchParams({ new: 'true' });
+    setExistingDraftId(null); // Clear to prevent re-triggering
+    // Don't set URL param, just proceed with empty draft
   };
 
   const nextStep = (updates?: Partial<ListingDraft>) => {
@@ -629,12 +634,27 @@ export default function Publish() {
       
       const atomicResult = result as { success: boolean; room_id: string; slug: string; listing_id: string; error?: string };
 
-      // Insert photos into room_photos table
+      // Insert photos into room_photos table with validation
       if (draft.photos && draft.photos.length > 0 && atomicResult.room_id) {
-        console.log('📸 Inserting photos into room_photos...');
+        console.log('📸 Inserting photos into room_photos...', { 
+          photoCount: draft.photos.length, 
+          roomId: atomicResult.room_id,
+          photos: draft.photos
+        });
+        
         try {
+          // Delete any existing photos first to prevent duplicates
+          const { error: deleteError } = await supabase
+            .from('room_photos')
+            .delete()
+            .eq('room_id', atomicResult.room_id);
+          
+          if (deleteError) {
+            console.error('Error deleting old room photos:', deleteError);
+          }
+          
           const roomPhotos = draft.photos
-            .filter(photo => typeof photo === 'string' && photo.startsWith('http')) // Only proper URLs
+            .filter(photo => typeof photo === 'string' && photo.length > 0 && photo.includes('http'))
             .map((photo, index) => ({
               room_id: atomicResult.room_id,
               url: photo as string,
@@ -642,22 +662,33 @@ export default function Publish() {
               alt_text: `Room photo ${index + 1}`
             }));
 
+          console.log('📸 Prepared room photos for insert:', roomPhotos);
+
           if (roomPhotos.length > 0) {
-            const { error: photosError } = await supabase
+            const { data: insertedPhotos, error: photosError } = await supabase
               .from('room_photos')
-              .insert(roomPhotos);
+              .insert(roomPhotos)
+              .select();
 
             if (photosError) {
-              console.error('Error inserting room photos:', photosError);
-              // Don't fail the publish for photo insertion errors
+              console.error('❌ Error inserting room photos:', photosError);
+              throw new Error(`Failed to save photos: ${photosError.message}`);
             } else {
-              console.log('✅ Room photos inserted successfully');
+              console.log('✅ Room photos inserted successfully:', insertedPhotos);
             }
+          } else {
+            console.warn('⚠️ No valid photos to insert');
           }
         } catch (error) {
-          console.error('Error handling room photos:', error);
-          // Don't fail the publish for photo errors
+          console.error('❌ Critical error handling room photos:', error);
+          throw error; // Fail the publish if photos don't save
         }
+      } else {
+        console.warn('⚠️ No photos to insert:', { 
+          hasPhotos: !!draft.photos, 
+          photoCount: draft.photos?.length,
+          hasRoomId: !!atomicResult.room_id 
+        });
       }
 
       setPublishingStage("Ενημέρωση αναζήτησης...");

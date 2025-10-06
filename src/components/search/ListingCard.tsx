@@ -68,26 +68,34 @@ export const ListingCard = ({
       setCanScrollNext(api.canScrollNext());
     };
 
-    const handlePointerDown = () => setIsDragging(false);
-    const handlePointerUp = () => {
-      // Small delay to detect if it was a drag
-      setTimeout(() => setIsDragging(false), 50);
+    const handlePointerDown = () => {
+      setIsDragging(false);
     };
-    const handleSettle = () => setIsDragging(true);
+    
+    const handlePointerUp = () => {
+      // Small delay to detect drag
+      setTimeout(() => {
+        setIsDragging(false);
+      }, 100);
+    };
+    
+    const handleScroll = () => {
+      setIsDragging(true);
+    };
 
     updateScrollability();
     api.on('select', updateScrollability);
     api.on('reInit', updateScrollability);
     api.on('pointerDown', handlePointerDown);
     api.on('pointerUp', handlePointerUp);
-    api.on('settle', handleSettle);
+    api.on('scroll', handleScroll);
 
     return () => {
       api.off('select', updateScrollability);
       api.off('reInit', updateScrollability);
       api.off('pointerDown', handlePointerDown);
       api.off('pointerUp', handlePointerUp);
-      api.off('settle', handleSettle);
+      api.off('scroll', handleScroll);
     };
   }, [api]);
 

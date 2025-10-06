@@ -41,6 +41,7 @@ export const useMyListings = (status?: 'draft' | 'published' | 'archived') => {
           flatmates_count,
           couples_accepted,
           pets_allowed,
+          photos,
           rooms (
             id,
             room_photos (
@@ -67,23 +68,37 @@ export const useMyListings = (status?: 'draft' | 'published' | 'archived') => {
         throw error;
       }
 
-      return (listings || []).map(listing => ({
-        id: listing.id,
-        title: listing.title,
-        price_month: listing.price_month,
-        city: listing.city,
-        neighborhood: listing.neighborhood,
-        status: listing.status as 'draft' | 'published' | 'archived',
-        created_at: listing.created_at,
-        availability_date: listing.availability_date,
-        flatmates_count: listing.flatmates_count,
-        couples_accepted: listing.couples_accepted,
-        pets_allowed: listing.pets_allowed,
-        cover_photo_url: listing.rooms?.[0]?.room_photos?.[0]?.url,
-        room_count: listing.rooms?.length || 0,
-        view_count: listing.rooms?.[0]?.room_stats?.[0]?.view_count || 0,
-        request_count: listing.rooms?.[0]?.room_stats?.[0]?.request_count || 0,
-      }));
+      return (listings || []).map(listing => {
+        // Use room_photos if available (published), otherwise fall back to listings.photos (draft)
+        const roomPhoto = listing.rooms?.[0]?.room_photos?.[0]?.url;
+        
+        // Handle JSONB photos array for drafts
+        let draftPhoto: string | undefined;
+        if (listing.photos) {
+          const photosArray = Array.isArray(listing.photos) 
+            ? listing.photos 
+            : (typeof listing.photos === 'string' ? JSON.parse(listing.photos) : []);
+          draftPhoto = photosArray.length > 0 ? String(photosArray[0]) : undefined;
+        }
+        
+        return {
+          id: listing.id,
+          title: listing.title,
+          price_month: listing.price_month,
+          city: listing.city,
+          neighborhood: listing.neighborhood,
+          status: listing.status as 'draft' | 'published' | 'archived',
+          created_at: listing.created_at,
+          availability_date: listing.availability_date,
+          flatmates_count: listing.flatmates_count,
+          couples_accepted: listing.couples_accepted,
+          pets_allowed: listing.pets_allowed,
+          cover_photo_url: roomPhoto || draftPhoto,
+          room_count: listing.rooms?.length || 0,
+          view_count: listing.rooms?.[0]?.room_stats?.[0]?.view_count || 0,
+          request_count: listing.rooms?.[0]?.room_stats?.[0]?.request_count || 0,
+        };
+      });
     },
     enabled: !!profile?.id,
     staleTime: 60000, // 1 minute
