@@ -234,29 +234,16 @@ export default function Publish() {
           }
         }
 
-        // Load photos from correct source
-        let photos: string[] = [];
-        if (existingDraft.status === 'published' || existingDraft.status === 'archived') {
-          // Load from room_photos table for published listings
-          const { data: room } = await supabase
-            .from('rooms')
-            .select('id')
-            .eq('listing_id', existingDraft.id)
-            .maybeSingle();
-          
-          if (room) {
-            const { data: roomPhotos } = await supabase
-              .from('room_photos')
-              .select('url')
-              .eq('room_id', room.id)
-              .order('sort_order', { ascending: true });
-            
-            photos = roomPhotos?.map(p => p.url) || [];
-          }
-        } else {
-          // Use listings.photos for drafts
-          photos = Array.isArray(existingDraft.photos) ? existingDraft.photos as string[] : [];
-        }
+        // Load photos from listing_photos table (all statuses)
+        const { data: listingPhotos } = await supabase
+          .from('listing_photos')
+          .select('url, sort_order, is_cover')
+          .eq('listing_id', existingDraft.id)
+          .is('deleted_at', null)
+          .order('is_cover', { ascending: false })
+          .order('sort_order', { ascending: true });
+        
+        const photos = listingPhotos?.map(p => p.url) || [];
 
         setDraft({
           id: existingDraft.id,

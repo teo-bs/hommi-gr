@@ -7,6 +7,10 @@ interface GalleryProps {
   photos: Array<{
     url: string;
     alt_text?: string;
+    thumbnail_url?: string;
+    medium_url?: string;
+    large_url?: string;
+    is_cover?: boolean;
   }>;
   title: string;
 }
@@ -15,22 +19,26 @@ export const Gallery = ({ photos, title }: GalleryProps) => {
   const [currentImage, setCurrentImage] = useState(0);
   const [failedImages, setFailedImages] = useState<Set<string>>(new Set());
   
-  // Mock photos if none provided
-  const mockPhotos = [
-    { url: "https://images.unsplash.com/photo-1586023492125-27b2c045efd7?w=800&h=600&fit=crop", alt_text: "Main room view" },
-    { url: "https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=800&h=600&fit=crop", alt_text: "Room detail 1" },
-    { url: "https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?w=800&h=600&fit=crop", alt_text: "Room detail 2" },
-    { url: "https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=800&h=600&fit=crop", alt_text: "Common area" },
-    { url: "https://images.unsplash.com/photo-1556909075-f3e64e6b1065?w=800&h=600&fit=crop", alt_text: "Kitchen" }
-  ];
-  
   // Filter out broken images
-  const validPhotos = (photos.length > 0 ? photos : mockPhotos).filter(
-    photo => !failedImages.has(photo.url)
-  );
-  
-  const displayPhotos = validPhotos.length > 0 ? validPhotos : mockPhotos;
+  const displayPhotos = photos.filter(photo => !failedImages.has(photo.url));
   const totalPhotos = displayPhotos.length;
+
+  // Empty state if no photos
+  if (displayPhotos.length === 0) {
+    return (
+      <div className="space-y-4">
+        <div className="flex items-center justify-between">
+          <h1 className="text-3xl font-bold">{title}</h1>
+        </div>
+        <div className="bg-muted rounded-2xl h-96 flex items-center justify-center">
+          <div className="text-center text-muted-foreground">
+            <Camera className="h-12 w-12 mx-auto mb-2 opacity-50" />
+            <p>No photos available</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   const handleImageError = async (url: string) => {
     setFailedImages(prev => new Set(prev).add(url));
@@ -68,7 +76,7 @@ export const Gallery = ({ photos, title }: GalleryProps) => {
           onClick={() => setCurrentImage(0)}
         >
           <img
-            src={displayPhotos[0]?.url}
+            src={displayPhotos[0]?.large_url || displayPhotos[0]?.medium_url || displayPhotos[0]?.url}
             alt={displayPhotos[0]?.alt_text || title}
             className="w-full h-full object-cover transition-transform group-hover:scale-105"
             onError={() => handleImageError(displayPhotos[0]?.url)}
@@ -83,7 +91,7 @@ export const Gallery = ({ photos, title }: GalleryProps) => {
             onClick={() => setCurrentImage(index + 1)}
           >
             <img
-              src={photo.url}
+              src={photo.thumbnail_url || photo.medium_url || photo.url}
               alt={photo.alt_text || `${title} photo ${index + 2}`}
               className="w-full h-full object-cover transition-transform group-hover:scale-105"
               onError={() => handleImageError(photo.url)}

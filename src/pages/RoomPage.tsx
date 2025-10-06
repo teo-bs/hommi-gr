@@ -129,12 +129,15 @@ const RoomPage = () => {
           return;
         }
 
-        // Fetch photos
+        // Fetch photos with proper ordering (cover first)
         const { data: photos, error: photosError } = await supabase
           .from('room_photos')
-          .select('*')
+          .select('id, url, is_cover, sort_order, created_at, thumbnail_url, medium_url, large_url, alt_text')
           .eq('room_id', room.id)
-          .order('sort_order');
+          .is('deleted_at', null)
+          .order('is_cover', { ascending: false })
+          .order('sort_order', { ascending: true })
+          .order('created_at', { ascending: true });
 
         console.log('Photos fetch result:', { photos, photosError });
 
