@@ -39,7 +39,6 @@ const Search = () => {
   // Pagination state - initialize from URL
   const initialPage = Math.max(1, parseInt(searchParams.get('page') || '1', 10) || 1);
   const [currentPage, setCurrentPage] = useState(initialPage);
-  const itemsPerPage = 30;
 
   // Fetch current user and profile for matching
   const { data: currentUserProfile } = useQuery({
@@ -82,8 +81,8 @@ const Search = () => {
     bounds: undefined
   });
 
-  // Use optimized search hook
-  const { data: listings = [], isLoading } = useOptimizedSearch({
+  // Use optimized search hook with pagination
+  const { data: listings = [], totalCount, isLoading, page: currentPageFromHook, pageSize: itemsPerPage } = useOptimizedSearch({
     filters: {
       budget: { min: filters.budget[0], max: filters.budget[1] },
       flatmates: filters.flatmatesCount,
@@ -99,11 +98,8 @@ const Search = () => {
       ) : undefined,
       sort: filters.sort,
       bounds: filters.bounds,
-      bedType: filters.bedType,
-      services: filters.services,
-      houseRules: filters.houseRules,
-      propertySize: filters.propertySize[0] !== 0 || filters.propertySize[1] !== 1000 ? 
-        { min: filters.propertySize[0], max: filters.propertySize[1] } : undefined,
+      page: currentPage,
+      pageSize: 24,
     }
   });
 

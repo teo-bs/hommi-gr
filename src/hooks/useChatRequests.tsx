@@ -31,11 +31,24 @@ export const useChatRequests = () => {
     try {
       console.log('Creating chat request:', { listingId, hostProfileId, seekerId: profile.id });
 
+      // Get room_id from listing
+      const { data: room, error: roomError } = await supabase
+        .from('rooms')
+        .select('id')
+        .eq('listing_id', listingId)
+        .single();
+
+      if (roomError || !room) {
+        console.error('Error fetching room:', roomError);
+        return { success: false, error: "Room not found" };
+      }
+
       // Check if thread already exists
       const { data: existingThread, error: checkError } = await supabase
         .from('threads')
         .select('*')
         .eq('listing_id', listingId)
+        .eq('room_id', room.id)
         .eq('seeker_id', profile.id)
         .eq('host_id', hostProfileId)
         .maybeSingle();
@@ -76,6 +89,7 @@ export const useChatRequests = () => {
         .from('threads')
         .insert({
           listing_id: listingId,
+          room_id: room.id,
           seeker_id: profile.id,
           host_id: hostProfileId,
           status: 'pending'

@@ -42,7 +42,7 @@ export const useMessageFlow = (listingId?: string) => {
       setLoading(true);
       console.log('Creating chat request for listing:', listingId);
       
-      // Get the listing to find the host
+      // Get the listing to find the host and room
       const { data: listing, error: listingError } = await supabase
         .from('listings')
         .select('owner_id')
@@ -54,13 +54,26 @@ export const useMessageFlow = (listingId?: string) => {
         throw new Error('Listing not found');
       }
 
-      console.log('Found listing owner:', listing.owner_id);
+      // Get room_id from listing
+      const { data: room, error: roomError } = await supabase
+        .from('rooms')
+        .select('id')
+        .eq('listing_id', listingId)
+        .single();
+
+      if (roomError || !room) {
+        console.error('Room error:', roomError);
+        throw new Error('Room not found');
+      }
+
+      console.log('Found listing owner:', listing.owner_id, 'and room:', room.id);
 
       // Check if thread already exists
       const { data: existingThread } = await supabase
         .from('threads')
         .select('*')
         .eq('listing_id', listingId)
+        .eq('room_id', room.id)
         .eq('seeker_id', profile.id)
         .eq('host_id', listing.owner_id)
         .maybeSingle();
@@ -80,6 +93,7 @@ export const useMessageFlow = (listingId?: string) => {
         .from('threads')
         .insert([{
           listing_id: listingId,
+          room_id: room.id,
           seeker_id: profile.id,
           host_id: listing.owner_id,
           status: 'pending'
