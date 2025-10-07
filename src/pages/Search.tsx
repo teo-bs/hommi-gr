@@ -272,12 +272,12 @@ const Search = () => {
       />
 
       {/* Results Counter */}
-      <ResultsCounter 
-        count={listings.length} 
-        isLoading={isLoading}
-        currentPage={currentPage}
-        itemsPerPage={itemsPerPage}
-      />
+        <ResultsCounter 
+          count={totalCount} 
+          isLoading={isLoading}
+          currentPage={currentPage}
+          itemsPerPage={itemsPerPage}
+        />
 
       {/* Main Content - Always Split View on Desktop */}
       <div className="container mx-auto px-6 pb-6">

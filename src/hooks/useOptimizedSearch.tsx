@@ -10,6 +10,9 @@ export interface OptimizedListing {
   city: string;
   neighborhood: string;
   availability_date: string;
+  availability_to?: string;
+  min_stay_months?: number;
+  max_stay_months?: number;
   flatmates_count: number;
   couples_accepted: boolean;
   pets_allowed: boolean;
@@ -23,6 +26,8 @@ export interface OptimizedListing {
   lister_type?: string;
   amenity_keys?: string[];
   formatted_address?: string;
+  published_at?: string;
+  listing_created_at?: string;
   
   // Lister data
   lister_profile_id?: string;
@@ -58,6 +63,8 @@ export interface SearchFilters {
     east: number;
     west: number;
   };
+  page?: number;
+  pageSize?: number;
 }
 
 interface UseOptimizedSearchProps {
@@ -65,90 +72,71 @@ interface UseOptimizedSearchProps {
   enabled?: boolean;
 }
 
-export const useOptimizedSearch = ({ filters, enabled = true }: UseOptimizedSearchProps) => {
-  return useQuery({
-    queryKey: ['optimized-search', filters],
+interface SearchResult {
+  data: OptimizedListing[];
+  totalCount: number;
+  page: number;
+  pageSize: number;
+  isLoading: boolean;
+  error: any;
+}
+
+export const useOptimizedSearch = ({ filters, enabled = true }: UseOptimizedSearchProps): SearchResult => {
+  const pageSize = filters.pageSize ?? 24;
+  const page = Math.max(1, filters.page ?? 1);
+  const from = (page - 1) * pageSize;
+  const to = from + pageSize - 1;
+
+  // Count query
+  const { data: countData } = useQuery({
+    queryKey: ['search-count', filters],
+    queryFn: async () => {
+      let countQuery = supabase
+        .from('room_search_cache')
+        .select('room_id', { count: 'exact', head: true });
+
+      // Apply all filters for count
+      countQuery = applyFilters(countQuery, filters);
+
+      const { count, error } = await countQuery;
+      if (error) throw error;
+      return count ?? 0;
+    },
+    enabled,
+    staleTime: 30000,
+    gcTime: 300000,
+  });
+
+  // Data query
+  const { data, isLoading, error } = useQuery({
+    queryKey: ['optimized-search', filters, page],
     queryFn: async (): Promise<OptimizedListing[]> => {
       let query = supabase
         .from('room_search_cache')
         .select('*');
 
-  // Apply filters
-  if (filters.budget?.min) {
-    query = query.gte('price_month', filters.budget.min);
-  }
-  if (filters.budget?.max) {
-    query = query.lte('price_month', filters.budget.max);
-  }
-  if (filters.flatmates !== undefined) {
-    query = query.eq('flatmates_count', filters.flatmates);
-  }
-  if (filters.couplesAccepted !== undefined) {
-    query = query.eq('couples_accepted', filters.couplesAccepted);
-  }
-  if (filters.petsAllowed !== undefined) {
-    query = query.eq('pets_allowed', filters.petsAllowed);
-  }
-  if (filters.billsIncluded !== undefined) {
-    query = query.eq('bills_included', filters.billsIncluded);
-  }
-  if (filters.verifiedLister) {
-    query = query.eq('kyc_status', 'approved');
-  }
-  if (filters.listerType) {
-    query = query.eq('lister_type', filters.listerType);
-  }
-  if (filters.moveInDate) {
-    query = query.gte('availability_date', filters.moveInDate.toISOString().split('T')[0]);
-  }
-  if (filters.duration) {
-    if (filters.duration > 0) {
-      query = query.lte('min_stay_months', filters.duration);
-    }
-  }
-  if (filters.amenities && filters.amenities.length > 0) {
-    query = query.contains('amenity_keys', filters.amenities);
-  }
-  if (filters.city) {
-    query = query.eq('city', filters.city);
-  }
-  if (filters.propertySize) {
-    query = query.gte('property_size_m2', filters.propertySize.min);
-    query = query.lte('property_size_m2', filters.propertySize.max);
-  }
+      // Apply all filters
+      query = applyFilters(query, filters);
 
-      // Geographic bounds filtering
-      if (filters.bounds) {
-        const { north, south, east, west } = filters.bounds;
-        query = query
-          .gte('lat', south)
-          .lte('lat', north)
-          .gte('lng', west)
-          .lte('lng', east);
-      }
-
-      // Full-text search on title/neighborhood
-      if (filters.searchText && filters.searchText.trim()) {
-        const searchTerm = `%${filters.searchText.trim().toLowerCase()}%`;
-        query = query.or(`title.ilike.${searchTerm},neighborhood.ilike.${searchTerm},city.ilike.${searchTerm}`);
-      }
-
-      // Apply sorting
+      // Stable sorting BEFORE pagination
       switch (filters.sort) {
+        case 'newest':
+          query = query.order('published_at', { ascending: false, nullsFirst: false })
+                       .order('listing_created_at', { ascending: false });
+          break;
         case 'price_low':
           query = query.order('price_month', { ascending: true });
           break;
         case 'price_high':
           query = query.order('price_month', { ascending: false });
           break;
-        default:
-          // Default: featured
+        default: // 'featured'
           query = query.order('price_month', { ascending: true });
           break;
       }
 
-      // Limit results for performance
-      query = query.limit(100);
+      // Pagination
+      query = query.range(from, to);
 
       const { data, error } = await query;
 
@@ -160,7 +148,96 @@ export const useOptimizedSearch = ({ filters, enabled = true }: UseOptimizedSear
       return data || [];
     },
     enabled,
-    staleTime: 30000, // 30 seconds
-    gcTime: 300000, // 5 minutes
+    staleTime: 30000,
+    gcTime: 300000,
   });
+
+  return {
+    data: data ?? [],
+    totalCount: countData ?? 0,
+    page,
+    pageSize,
+    isLoading,
+    error,
+  };
 };
+
+// Helper function to apply filters to a query
+function applyFilters(query: any, filters: SearchFilters) {
+  // Budget
+  if (filters.budget?.min != null) {
+    query = query.gte('price_month', filters.budget.min);
+  }
+  if (filters.budget?.max != null) {
+    query = query.lte('price_month', filters.budget.max);
+  }
+
+  // Flatmates
+  if (filters.flatmates !== undefined) {
+    query = query.eq('flatmates_count', filters.flatmates);
+  }
+
+  // House rules
+  if (filters.couplesAccepted !== undefined) {
+    query = query.eq('couples_accepted', filters.couplesAccepted);
+  }
+  if (filters.petsAllowed !== undefined) {
+    query = query.eq('pets_allowed', filters.petsAllowed);
+  }
+
+  // Bills included
+  if (filters.billsIncluded !== undefined) {
+    query = query.eq('bills_included', filters.billsIncluded);
+  }
+
+  // Verified lister
+  if (filters.verifiedLister) {
+    query = query.eq('kyc_status', 'approved');
+  }
+
+  // Lister type
+  if (filters.listerType) {
+    query = query.eq('lister_type', filters.listerType);
+  }
+
+  // Availability date with open-ended support
+  if (filters.moveInDate) {
+    const dateStr = filters.moveInDate.toISOString().split('T')[0];
+    query = query.lte('availability_date', dateStr);
+    // Open-ended: availability_to IS NULL OR availability_to >= date
+    query = query.or(`availability_to.is.null,availability_to.gte.${dateStr}`);
+  }
+
+  // Duration (min_stay_months constraint)
+  if (filters.duration) {
+    query = query.or(`min_stay_months.is.null,min_stay_months.lte.${filters.duration}`);
+  }
+
+  // City
+  if (filters.city) {
+    query = query.eq('city', filters.city);
+  }
+
+  // Amenities (ANY-of using overlaps)
+  if (filters.amenities && filters.amenities.length > 0) {
+    query = query.overlaps('amenity_keys', filters.amenities);
+  }
+
+  // Map bounds
+  if (filters.bounds) {
+    const { north, south, east, west } = filters.bounds;
+    query = query
+      .gte('lat', south)
+      .lte('lat', north)
+      .gte('lng', west)
+      .lte('lng', east);
+  }
+
+  // Full-text search on title/neighborhood/city
+  if (filters.searchText && filters.searchText.trim()) {
+    const searchTerm = `%${filters.searchText.trim().toLowerCase()}%`;
+    query = query.or(`title.ilike.${searchTerm},neighborhood.ilike.${searchTerm},city.ilike.${searchTerm}`);
+  }
+
+  return query;
+}

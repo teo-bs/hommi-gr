@@ -133,32 +133,45 @@ export type Database = {
       applications: {
         Row: {
           created_at: string | null
+          deleted_at: string | null
           id: string
           listing_id: string
           match_score: number | null
+          room_id: string
           seeker_id: string
           status: string | null
           why_json: Json | null
         }
         Insert: {
           created_at?: string | null
+          deleted_at?: string | null
           id?: string
           listing_id: string
           match_score?: number | null
+          room_id: string
           seeker_id: string
           status?: string | null
           why_json?: Json | null
         }
         Update: {
           created_at?: string | null
+          deleted_at?: string | null
           id?: string
           listing_id?: string
           match_score?: number | null
+          room_id?: string
           seeker_id?: string
           status?: string | null
           why_json?: Json | null
         }
         Relationships: [
+          {
+            foreignKeyName: "applications_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "listing_card_view"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "applications_listing_id_fkey"
             columns: ["listing_id"]
@@ -186,6 +199,48 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "v_room_detail_by_slug"
             referencedColumns: ["listing_id"]
+          },
+          {
+            foreignKeyName: "applications_room_id_fkey"
+            columns: ["room_id"]
+            isOneToOne: false
+            referencedRelation: "mv_room_amenity_facets"
+            referencedColumns: ["room_id"]
+          },
+          {
+            foreignKeyName: "applications_room_id_fkey"
+            columns: ["room_id"]
+            isOneToOne: false
+            referencedRelation: "room_card_view"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "applications_room_id_fkey"
+            columns: ["room_id"]
+            isOneToOne: false
+            referencedRelation: "room_search_cache"
+            referencedColumns: ["room_id"]
+          },
+          {
+            foreignKeyName: "applications_room_id_fkey"
+            columns: ["room_id"]
+            isOneToOne: false
+            referencedRelation: "rooms"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "applications_room_id_fkey"
+            columns: ["room_id"]
+            isOneToOne: false
+            referencedRelation: "v_room_amenities_grouped"
+            referencedColumns: ["room_id"]
+          },
+          {
+            foreignKeyName: "applications_room_id_fkey"
+            columns: ["room_id"]
+            isOneToOne: false
+            referencedRelation: "v_room_detail_by_slug"
+            referencedColumns: ["room_id"]
           },
           {
             foreignKeyName: "applications_seeker_id_fkey"
@@ -260,6 +315,13 @@ export type Database = {
             foreignKeyName: "broken_photos_log_room_id_fkey"
             columns: ["room_id"]
             isOneToOne: false
+            referencedRelation: "room_card_view"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "broken_photos_log_room_id_fkey"
+            columns: ["room_id"]
+            isOneToOne: false
             referencedRelation: "room_search_cache"
             referencedColumns: ["room_id"]
           },
@@ -291,9 +353,11 @@ export type Database = {
           amount: number
           created_at: string | null
           currency: string | null
+          deleted_at: string | null
           id: string
           listing_id: string
           released_at: string | null
+          room_id: string
           seeker_id: string
           status: string | null
           stripe_payment_intent_id: string | null
@@ -302,9 +366,11 @@ export type Database = {
           amount: number
           created_at?: string | null
           currency?: string | null
+          deleted_at?: string | null
           id?: string
           listing_id: string
           released_at?: string | null
+          room_id: string
           seeker_id: string
           status?: string | null
           stripe_payment_intent_id?: string | null
@@ -313,14 +379,23 @@ export type Database = {
           amount?: number
           created_at?: string | null
           currency?: string | null
+          deleted_at?: string | null
           id?: string
           listing_id?: string
           released_at?: string | null
+          room_id?: string
           seeker_id?: string
           status?: string | null
           stripe_payment_intent_id?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "holds_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "listing_card_view"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "holds_listing_id_fkey"
             columns: ["listing_id"]
@@ -348,6 +423,48 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "v_room_detail_by_slug"
             referencedColumns: ["listing_id"]
+          },
+          {
+            foreignKeyName: "holds_room_id_fkey"
+            columns: ["room_id"]
+            isOneToOne: false
+            referencedRelation: "mv_room_amenity_facets"
+            referencedColumns: ["room_id"]
+          },
+          {
+            foreignKeyName: "holds_room_id_fkey"
+            columns: ["room_id"]
+            isOneToOne: false
+            referencedRelation: "room_card_view"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "holds_room_id_fkey"
+            columns: ["room_id"]
+            isOneToOne: false
+            referencedRelation: "room_search_cache"
+            referencedColumns: ["room_id"]
+          },
+          {
+            foreignKeyName: "holds_room_id_fkey"
+            columns: ["room_id"]
+            isOneToOne: false
+            referencedRelation: "rooms"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "holds_room_id_fkey"
+            columns: ["room_id"]
+            isOneToOne: false
+            referencedRelation: "v_room_amenities_grouped"
+            referencedColumns: ["room_id"]
+          },
+          {
+            foreignKeyName: "holds_room_id_fkey"
+            columns: ["room_id"]
+            isOneToOne: false
+            referencedRelation: "v_room_detail_by_slug"
+            referencedColumns: ["room_id"]
           },
           {
             foreignKeyName: "holds_seeker_id_fkey"
@@ -433,6 +550,13 @@ export type Database = {
             foreignKeyName: "listing_amenities_listing_id_fkey"
             columns: ["listing_id"]
             isOneToOne: false
+            referencedRelation: "listing_card_view"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "listing_amenities_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
             referencedRelation: "listings"
             referencedColumns: ["id"]
           },
@@ -480,6 +604,13 @@ export type Database = {
             foreignKeyName: "listing_house_rules_listing_id_fkey"
             columns: ["listing_id"]
             isOneToOne: false
+            referencedRelation: "listing_card_view"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "listing_house_rules_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
             referencedRelation: "listings"
             referencedColumns: ["id"]
           },
@@ -517,6 +648,7 @@ export type Database = {
         Row: {
           alt_text: string | null
           created_at: string
+          deleted_at: string | null
           id: string
           is_cover: boolean
           listing_id: string
@@ -527,6 +659,7 @@ export type Database = {
         Insert: {
           alt_text?: string | null
           created_at?: string
+          deleted_at?: string | null
           id?: string
           is_cover?: boolean
           listing_id: string
@@ -537,6 +670,7 @@ export type Database = {
         Update: {
           alt_text?: string | null
           created_at?: string
+          deleted_at?: string | null
           id?: string
           is_cover?: boolean
           listing_id?: string
@@ -545,6 +679,13 @@ export type Database = {
           url?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "listing_photos_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "listing_card_view"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "listing_photos_listing_id_fkey"
             columns: ["listing_id"]
@@ -577,6 +718,7 @@ export type Database = {
       }
       listings: {
         Row: {
+          archived_at: string | null
           audience_preferences: Json | null
           availability_date: string | null
           availability_to: string | null
@@ -591,6 +733,7 @@ export type Database = {
           couples_accepted: boolean | null
           cover_photo_id: string | null
           created_at: string | null
+          deleted_at: string | null
           deposit: number | null
           deposit_required: boolean | null
           description: string | null
@@ -625,11 +768,13 @@ export type Database = {
           property_size_m2: number | null
           property_type: string | null
           publish_warnings: Json | null
+          published_at: string | null
           region: string | null
           required_verifications: string[] | null
           room_size_m2: number | null
           search_tsv: unknown | null
           services: string[] | null
+          slug: string | null
           smoking_allowed: boolean | null
           status: Database["public"]["Enums"]["publish_status_enum"]
           step_completed: number | null
@@ -637,10 +782,11 @@ export type Database = {
           street_address: string | null
           street_number: string | null
           title: string
-          updated_at: string | null
+          updated_at: string
           wc_count: number | null
         }
         Insert: {
+          archived_at?: string | null
           audience_preferences?: Json | null
           availability_date?: string | null
           availability_to?: string | null
@@ -655,6 +801,7 @@ export type Database = {
           couples_accepted?: boolean | null
           cover_photo_id?: string | null
           created_at?: string | null
+          deleted_at?: string | null
           deposit?: number | null
           deposit_required?: boolean | null
           description?: string | null
@@ -689,11 +836,13 @@ export type Database = {
           property_size_m2?: number | null
           property_type?: string | null
           publish_warnings?: Json | null
+          published_at?: string | null
           region?: string | null
           required_verifications?: string[] | null
           room_size_m2?: number | null
           search_tsv?: unknown | null
           services?: string[] | null
+          slug?: string | null
           smoking_allowed?: boolean | null
           status?: Database["public"]["Enums"]["publish_status_enum"]
           step_completed?: number | null
@@ -701,10 +850,11 @@ export type Database = {
           street_address?: string | null
           street_number?: string | null
           title: string
-          updated_at?: string | null
+          updated_at?: string
           wc_count?: number | null
         }
         Update: {
+          archived_at?: string | null
           audience_preferences?: Json | null
           availability_date?: string | null
           availability_to?: string | null
@@ -719,6 +869,7 @@ export type Database = {
           couples_accepted?: boolean | null
           cover_photo_id?: string | null
           created_at?: string | null
+          deleted_at?: string | null
           deposit?: number | null
           deposit_required?: boolean | null
           description?: string | null
@@ -753,11 +904,13 @@ export type Database = {
           property_size_m2?: number | null
           property_type?: string | null
           publish_warnings?: Json | null
+          published_at?: string | null
           region?: string | null
           required_verifications?: string[] | null
           room_size_m2?: number | null
           search_tsv?: unknown | null
           services?: string[] | null
+          slug?: string | null
           smoking_allowed?: boolean | null
           status?: Database["public"]["Enums"]["publish_status_enum"]
           step_completed?: number | null
@@ -765,7 +918,7 @@ export type Database = {
           street_address?: string | null
           street_number?: string | null
           title?: string
-          updated_at?: string | null
+          updated_at?: string
           wc_count?: number | null
         }
         Relationships: [
@@ -796,6 +949,7 @@ export type Database = {
         Row: {
           body: string
           created_at: string | null
+          deleted_at: string | null
           id: string
           sender_id: string
           thread_id: string
@@ -803,6 +957,7 @@ export type Database = {
         Insert: {
           body: string
           created_at?: string | null
+          deleted_at?: string | null
           id?: string
           sender_id: string
           thread_id: string
@@ -810,6 +965,7 @@ export type Database = {
         Update: {
           body?: string
           created_at?: string | null
+          deleted_at?: string | null
           id?: string
           sender_id?: string
           thread_id?: string
@@ -1137,6 +1293,13 @@ export type Database = {
             foreignKeyName: "fk_room_amenities_room_id"
             columns: ["room_id"]
             isOneToOne: false
+            referencedRelation: "room_card_view"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_room_amenities_room_id"
+            columns: ["room_id"]
+            isOneToOne: false
             referencedRelation: "room_search_cache"
             referencedColumns: ["room_id"]
           },
@@ -1167,7 +1330,9 @@ export type Database = {
         Row: {
           alt_text: string | null
           created_at: string | null
+          deleted_at: string | null
           id: string
+          is_cover: boolean | null
           large_url: string | null
           medium_url: string | null
           room_id: string
@@ -1178,7 +1343,9 @@ export type Database = {
         Insert: {
           alt_text?: string | null
           created_at?: string | null
+          deleted_at?: string | null
           id?: string
+          is_cover?: boolean | null
           large_url?: string | null
           medium_url?: string | null
           room_id: string
@@ -1189,7 +1356,9 @@ export type Database = {
         Update: {
           alt_text?: string | null
           created_at?: string | null
+          deleted_at?: string | null
           id?: string
+          is_cover?: boolean | null
           large_url?: string | null
           medium_url?: string | null
           room_id?: string
@@ -1204,6 +1373,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "mv_room_amenity_facets"
             referencedColumns: ["room_id"]
+          },
+          {
+            foreignKeyName: "room_photos_room_id_fkey"
+            columns: ["room_id"]
+            isOneToOne: false
+            referencedRelation: "room_card_view"
+            referencedColumns: ["id"]
           },
           {
             foreignKeyName: "room_photos_room_id_fkey"
@@ -1275,6 +1451,13 @@ export type Database = {
             foreignKeyName: "room_stats_room_id_fkey"
             columns: ["room_id"]
             isOneToOne: true
+            referencedRelation: "room_card_view"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "room_stats_room_id_fkey"
+            columns: ["room_id"]
+            isOneToOne: true
             referencedRelation: "room_search_cache"
             referencedColumns: ["room_id"]
           },
@@ -1304,63 +1487,76 @@ export type Database = {
       rooms: {
         Row: {
           created_at: string | null
+          deleted_at: string | null
           has_bed: boolean | null
           id: string
           is_interior: boolean | null
           listing_id: string
+          price_month: number | null
           room_size_m2: number | null
           room_type: string
           slug: string
-          updated_at: string | null
+          updated_at: string
         }
         Insert: {
           created_at?: string | null
+          deleted_at?: string | null
           has_bed?: boolean | null
           id?: string
           is_interior?: boolean | null
           listing_id: string
+          price_month?: number | null
           room_size_m2?: number | null
           room_type?: string
           slug: string
-          updated_at?: string | null
+          updated_at?: string
         }
         Update: {
           created_at?: string | null
+          deleted_at?: string | null
           has_bed?: boolean | null
           id?: string
           is_interior?: boolean | null
           listing_id?: string
+          price_month?: number | null
           room_size_m2?: number | null
           room_type?: string
           slug?: string
-          updated_at?: string | null
+          updated_at?: string
         }
         Relationships: [
           {
             foreignKeyName: "fk_rooms_listing_id"
             columns: ["listing_id"]
-            isOneToOne: true
+            isOneToOne: false
+            referencedRelation: "listing_card_view"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_rooms_listing_id"
+            columns: ["listing_id"]
+            isOneToOne: false
             referencedRelation: "listings"
             referencedColumns: ["id"]
           },
           {
             foreignKeyName: "fk_rooms_listing_id"
             columns: ["listing_id"]
-            isOneToOne: true
+            isOneToOne: false
             referencedRelation: "room_search_cache"
             referencedColumns: ["listing_id"]
           },
           {
             foreignKeyName: "fk_rooms_listing_id"
             columns: ["listing_id"]
-            isOneToOne: true
+            isOneToOne: false
             referencedRelation: "v_listing_cards"
             referencedColumns: ["id"]
           },
           {
             foreignKeyName: "fk_rooms_listing_id"
             columns: ["listing_id"]
-            isOneToOne: true
+            isOneToOne: false
             referencedRelation: "v_room_detail_by_slug"
             referencedColumns: ["listing_id"]
           },
@@ -1369,18 +1565,21 @@ export type Database = {
       saved_rooms: {
         Row: {
           created_at: string
+          deleted_at: string | null
           id: string
           room_id: string
           user_id: string
         }
         Insert: {
           created_at?: string
+          deleted_at?: string | null
           id?: string
           room_id: string
           user_id: string
         }
         Update: {
           created_at?: string
+          deleted_at?: string | null
           id?: string
           room_id?: string
           user_id?: string
@@ -1392,6 +1591,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "mv_room_amenity_facets"
             referencedColumns: ["room_id"]
+          },
+          {
+            foreignKeyName: "saved_rooms_room_id_fkey"
+            columns: ["room_id"]
+            isOneToOne: false
+            referencedRelation: "room_card_view"
+            referencedColumns: ["id"]
           },
           {
             foreignKeyName: "saved_rooms_room_id_fkey"
@@ -1428,11 +1634,12 @@ export type Database = {
           accepted_at: string | null
           created_at: string | null
           declined_at: string | null
+          deleted_at: string | null
           host_id: string
           id: string
           last_message_at: string | null
           listing_id: string
-          room_id: string | null
+          room_id: string
           seeker_id: string
           status: Database["public"]["Enums"]["thread_status_enum"] | null
           unread_count_host: number | null
@@ -1442,11 +1649,12 @@ export type Database = {
           accepted_at?: string | null
           created_at?: string | null
           declined_at?: string | null
+          deleted_at?: string | null
           host_id: string
           id?: string
           last_message_at?: string | null
           listing_id: string
-          room_id?: string | null
+          room_id: string
           seeker_id: string
           status?: Database["public"]["Enums"]["thread_status_enum"] | null
           unread_count_host?: number | null
@@ -1456,11 +1664,12 @@ export type Database = {
           accepted_at?: string | null
           created_at?: string | null
           declined_at?: string | null
+          deleted_at?: string | null
           host_id?: string
           id?: string
           last_message_at?: string | null
           listing_id?: string
-          room_id?: string | null
+          room_id?: string
           seeker_id?: string
           status?: Database["public"]["Enums"]["thread_status_enum"] | null
           unread_count_host?: number | null
@@ -1480,6 +1689,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "room_search_cache"
             referencedColumns: ["lister_profile_id"]
+          },
+          {
+            foreignKeyName: "threads_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "listing_card_view"
+            referencedColumns: ["id"]
           },
           {
             foreignKeyName: "threads_listing_id_fkey"
@@ -1515,6 +1731,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "mv_room_amenity_facets"
             referencedColumns: ["room_id"]
+          },
+          {
+            foreignKeyName: "threads_room_id_fkey"
+            columns: ["room_id"]
+            isOneToOne: false
+            referencedRelation: "room_card_view"
+            referencedColumns: ["id"]
           },
           {
             foreignKeyName: "threads_room_id_fkey"
@@ -1614,29 +1837,42 @@ export type Database = {
       viewings: {
         Row: {
           created_at: string | null
+          deleted_at: string | null
           id: string
           listing_id: string
           proposed_date: string | null
+          room_id: string
           seeker_id: string
           status: string | null
         }
         Insert: {
           created_at?: string | null
+          deleted_at?: string | null
           id?: string
           listing_id: string
           proposed_date?: string | null
+          room_id: string
           seeker_id: string
           status?: string | null
         }
         Update: {
           created_at?: string | null
+          deleted_at?: string | null
           id?: string
           listing_id?: string
           proposed_date?: string | null
+          room_id?: string
           seeker_id?: string
           status?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "viewings_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "listing_card_view"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "viewings_listing_id_fkey"
             columns: ["listing_id"]
@@ -1666,6 +1902,48 @@ export type Database = {
             referencedColumns: ["listing_id"]
           },
           {
+            foreignKeyName: "viewings_room_id_fkey"
+            columns: ["room_id"]
+            isOneToOne: false
+            referencedRelation: "mv_room_amenity_facets"
+            referencedColumns: ["room_id"]
+          },
+          {
+            foreignKeyName: "viewings_room_id_fkey"
+            columns: ["room_id"]
+            isOneToOne: false
+            referencedRelation: "room_card_view"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "viewings_room_id_fkey"
+            columns: ["room_id"]
+            isOneToOne: false
+            referencedRelation: "room_search_cache"
+            referencedColumns: ["room_id"]
+          },
+          {
+            foreignKeyName: "viewings_room_id_fkey"
+            columns: ["room_id"]
+            isOneToOne: false
+            referencedRelation: "rooms"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "viewings_room_id_fkey"
+            columns: ["room_id"]
+            isOneToOne: false
+            referencedRelation: "v_room_amenities_grouped"
+            referencedColumns: ["room_id"]
+          },
+          {
+            foreignKeyName: "viewings_room_id_fkey"
+            columns: ["room_id"]
+            isOneToOne: false
+            referencedRelation: "v_room_detail_by_slug"
+            referencedColumns: ["room_id"]
+          },
+          {
             foreignKeyName: "viewings_seeker_id_fkey"
             columns: ["seeker_id"]
             isOneToOne: false
@@ -1683,6 +1961,36 @@ export type Database = {
       }
     }
     Views: {
+      listing_card_view: {
+        Row: {
+          city: string | null
+          cover_url: string | null
+          id: string | null
+          price_month: number | null
+          slug: string | null
+          status: Database["public"]["Enums"]["publish_status_enum"] | null
+          title: string | null
+        }
+        Insert: {
+          city?: string | null
+          cover_url?: never
+          id?: string | null
+          price_month?: number | null
+          slug?: string | null
+          status?: Database["public"]["Enums"]["publish_status_enum"] | null
+          title?: string | null
+        }
+        Update: {
+          city?: string | null
+          cover_url?: never
+          id?: string | null
+          price_month?: number | null
+          slug?: string | null
+          status?: Database["public"]["Enums"]["publish_status_enum"] | null
+          title?: string | null
+        }
+        Relationships: []
+      }
       mv_listing_amenity_facets: {
         Row: {
           amenity_keys: string[] | null
@@ -1697,16 +2005,64 @@ export type Database = {
         }
         Relationships: []
       }
+      room_card_view: {
+        Row: {
+          cover_url: string | null
+          id: string | null
+          listing_id: string | null
+          price_month: number | null
+          slug: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fk_rooms_listing_id"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "listing_card_view"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_rooms_listing_id"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "listings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_rooms_listing_id"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "room_search_cache"
+            referencedColumns: ["listing_id"]
+          },
+          {
+            foreignKeyName: "fk_rooms_listing_id"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "v_listing_cards"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_rooms_listing_id"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "v_room_detail_by_slug"
+            referencedColumns: ["listing_id"]
+          },
+        ]
+      }
       room_search_cache: {
         Row: {
           amenity_keys: string[] | null
           audience_preferences: Json | null
           availability_date: string | null
+          availability_to: string | null
           bills_included: boolean | null
           city: string | null
           couples_accepted: boolean | null
           cover_photo_url: string | null
           flatmates_count: number | null
+          formatted_address: string | null
           kyc_status: string | null
           lat: number | null
           lister_avatar_url: string | null
@@ -1715,11 +2071,15 @@ export type Database = {
           lister_profile_id: string | null
           lister_score: number | null
           lister_type: Database["public"]["Enums"]["lister_type_enum"] | null
+          listing_created_at: string | null
           listing_id: string | null
           lng: number | null
+          max_stay_months: number | null
+          min_stay_months: number | null
           neighborhood: string | null
           pets_allowed: boolean | null
           price_month: number | null
+          published_at: string | null
           room_id: string | null
           room_type: string | null
           slug: string | null
@@ -1870,8 +2230,24 @@ export type Database = {
       }
     }
     Functions: {
+      current_profile_id: {
+        Args: Record<PropertyKey, never>
+        Returns: string
+      }
+      ensure_unique_listing_slug: {
+        Args: { p_base: string; p_id: string }
+        Returns: string
+      }
+      ensure_unique_room_slug: {
+        Args: { p_base: string; p_id: string }
+        Returns: string
+      }
       generate_greek_safe_slug: {
         Args: { input_text: string; p_listing_id?: string }
+        Returns: string
+      }
+      generate_room_slug: {
+        Args: { _listing_id: string; _suffix?: string }
         Returns: string
       }
       get_listing_amenities_grouped: {
@@ -1936,6 +2312,18 @@ export type Database = {
       set_room_amenities_by_keys: {
         Args: { p_keys: string[]; p_room_id: string }
         Returns: undefined
+      }
+      slugify: {
+        Args: { input: string }
+        Returns: string
+      }
+      unaccent: {
+        Args: { "": string }
+        Returns: string
+      }
+      unaccent_init: {
+        Args: { "": unknown }
+        Returns: unknown
       }
       update_thread_status: {
         Args: {
