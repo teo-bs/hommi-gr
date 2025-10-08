@@ -5,20 +5,28 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Calendar, Eye, Heart, Home, MessageCircle, Plus, Users, Edit, FileText, Archive, AlertTriangle, Trash2 } from "lucide-react";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Calendar, Eye, Heart, Home, MessageCircle, Plus, Users, Edit, FileText, Archive, AlertTriangle, Trash2, ChevronLeft, ChevronRight } from "lucide-react";
 import { DeleteConfirmDialog } from "@/components/owner/DeleteConfirmDialog";
 import { Link } from "react-router-dom";
-import { useMyListings } from "@/hooks/useMyListings";
+import { useMyListings, OwnerListingFilters as FilterType } from "@/hooks/useMyListings";
 import { Skeleton } from "@/components/ui/skeleton";
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 import { useQuery } from '@tanstack/react-query';
+import { OwnerListingFiltersComponent } from '@/components/owner/OwnerListingFilters';
+import { BulkActionsBar } from '@/components/owner/BulkActionsBar';
 
 const MyListings = () => {
   const [activeTab, setActiveTab] = useState<'draft' | 'published' | 'archived'>('published');
-  const { data: listings = [], isLoading, error, refetch } = useMyListings(activeTab);
+  const [filters, setFilters] = useState<FilterType>({ status: 'published', page: 1, pageSize: 24 });
+  const [selectedListings, setSelectedListings] = useState<Set<string>>(new Set());
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [listingToDelete, setListingToDelete] = useState<string | null>(null);
+  
+  const { data, isLoading, error, refetch } = useMyListings(filters);
+  const listings = data?.listings || [];
+  const totalCount = data?.totalCount || 0;
 
   // Query broken photos for current user's listings
   const { data: brokenPhotos = [] } = useQuery({
@@ -94,6 +102,7 @@ const MyListings = () => {
       });
       
       refetch();
+      setSelectedListings(new Set());
     } catch (error) {
       console.error('Error deleting listing:', error);
       toast({
@@ -106,6 +115,74 @@ const MyListings = () => {
       setListingToDelete(null);
     }
   };
+
+  // Bulk actions
+  const handleBulkPublish = async () => {
+    const ids = Array.from(selectedListings);
+    try {
+      await supabase.from('listings').update({ status: 'published' }).in('id', ids);
+      toast({ title: "Επιτυχής ενημέρωση", description: `${ids.length} αγγελίες δημοσιεύτηκαν` });
+      refetch();
+      setSelectedListings(new Set());
+    } catch (error) {
+      toast({ title: "Σφάλμα", description: "Αποτυχία δημοσίευσης", variant: "destructive" });
+    }
+  };
+
+  const handleBulkUnpublish = async () => {
+    const ids = Array.from(selectedListings);
+    try {
+      await supabase.from('listings').update({ status: 'draft' }).in('id', ids);
+      toast({ title: "Επιτυχής ενημέρωση", description: `${ids.length} αγγελίες αποσύρθηκαν` });
+      refetch();
+      setSelectedListings(new Set());
+    } catch (error) {
+      toast({ title: "Σφάλμα", description: "Αποτυχία απόσυρσης", variant: "destructive" });
+    }
+  };
+
+  const handleBulkArchive = async () => {
+    const ids = Array.from(selectedListings);
+    const nowISO = new Date().toISOString();
+    try {
+      await supabase.from('listings').update({ deleted_at: nowISO }).in('id', ids);
+      toast({ title: "Επιτυχής αρχειοθέτηση", description: `${ids.length} αγγελίες αρχειοθετήθηκαν` });
+      refetch();
+      setSelectedListings(new Set());
+    } catch (error) {
+      toast({ title: "Σφάλμα", description: "Αποτυχία αρχειοθέτησης", variant: "destructive" });
+    }
+  };
+
+  const handleBulkRestore = async () => {
+    const ids = Array.from(selectedListings);
+    try {
+      await supabase.from('listings').update({ deleted_at: null }).in('id', ids);
+      toast({ title: "Επιτυχής επαναφορά", description: `${ids.length} αγγελίες επαναφέρθηκαν` });
+      refetch();
+      setSelectedListings(new Set());
+    } catch (error) {
+      toast({ title: "Σφάλμα", description: "Αποτυχία επαναφοράς", variant: "destructive" });
+    }
+  };
+
+  const handleTabChange = (value: string) => {
+    setActiveTab(value as 'draft' | 'published' | 'archived');
+    setFilters({ ...filters, status: value as 'draft' | 'published' | 'archived', page: 1 });
+    setSelectedListings(new Set());
+  };
+
+  const toggleSelection = (id: string) => {
+    const newSet = new Set(selectedListings);
+    if (newSet.has(id)) {
+      newSet.delete(id);
+    } else {
+      newSet.add(id);
+    }
+    setSelectedListings(newSet);
+  };
+
+  const totalPages = Math.ceil(totalCount / (filters.pageSize || 24));
 
   if (error) {
     return (
@@ -153,6 +230,12 @@ const MyListings = () => {
               </Link>
             </div>
 
+            {/* Filters */}
+            <OwnerListingFiltersComponent
+              filters={filters}
+              onFiltersChange={(newFilters) => setFilters({ ...filters, ...newFilters, page: 1 })}
+            />
+
             {/* Broken Photos Warning Banner */}
             {brokenPhotos.length > 0 && (
               <Alert variant="destructive" className="mb-6">
@@ -166,7 +249,7 @@ const MyListings = () => {
             )}
 
             {/* Tabs */}
-            <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as 'draft' | 'published' | 'archived')} className="mb-6">
+            <Tabs value={activeTab} onValueChange={handleTabChange} className="mb-6">
               <TabsList className="grid w-full grid-cols-3">
                 <TabsTrigger value="draft" className="flex items-center gap-2">
                   <FileText className="h-4 w-4" />
@@ -213,10 +296,18 @@ const MyListings = () => {
                   <div className="space-y-6">
                     {listings.map((listing) => {
                       const hasBrokenPhotos = brokenPhotosByListing.has(listing.id);
+                      const isSelected = selectedListings.has(listing.id);
                       return (
-                      <Card key={listing.id} className={`overflow-hidden ${hasBrokenPhotos ? 'border-destructive border-2' : ''}`}>
+                      <Card key={listing.id} className={`overflow-hidden ${hasBrokenPhotos ? 'border-destructive border-2' : ''} ${isSelected ? 'ring-2 ring-primary' : ''}`}>
                         <CardContent className="p-6">
                           <div className="flex gap-6">
+                            {/* Selection Checkbox */}
+                            <div className="flex items-start pt-2">
+                              <Checkbox
+                                checked={isSelected}
+                                onCheckedChange={() => toggleSelection(listing.id)}
+                              />
+                            </div>
                             {/* Image */}
                             <div className="relative w-48 h-32 bg-muted rounded-lg overflow-hidden flex-shrink-0">
                               {listing.cover_photo_url ? (
@@ -362,6 +453,54 @@ const MyListings = () => {
                   </div>
                 )}
 
+                {/* Pagination */}
+                {!isLoading && totalPages > 1 && (
+                  <div className="flex items-center justify-center gap-2 mt-8">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setFilters({ ...filters, page: Math.max(1, (filters.page || 1) - 1) })}
+                      disabled={(filters.page || 1) === 1}
+                    >
+                      <ChevronLeft className="h-4 w-4 mr-1" />
+                      Προηγούμενη
+                    </Button>
+                    
+                    <div className="flex items-center gap-2">
+                      {Array.from({ length: totalPages }, (_, i) => i + 1)
+                        .filter(page => {
+                          const current = filters.page || 1;
+                          return page === 1 || page === totalPages || Math.abs(page - current) <= 1;
+                        })
+                        .map((page, idx, arr) => (
+                          <>
+                            {idx > 0 && arr[idx - 1] !== page - 1 && (
+                              <span key={`ellipsis-${page}`} className="px-2">...</span>
+                            )}
+                            <Button
+                              key={page}
+                              variant={(filters.page || 1) === page ? "default" : "outline"}
+                              size="sm"
+                              onClick={() => setFilters({ ...filters, page })}
+                            >
+                              {page}
+                            </Button>
+                          </>
+                        ))}
+                    </div>
+
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setFilters({ ...filters, page: Math.min(totalPages, (filters.page || 1) + 1) })}
+                      disabled={(filters.page || 1) >= totalPages}
+                    >
+                      Επόμενη
+                      <ChevronRight className="h-4 w-4 ml-1" />
+                    </Button>
+                  </div>
+                )}
+
                 {/* Empty State */}
                 {!isLoading && listings.length === 0 && (
                   <Card className="text-center py-12">
@@ -433,6 +572,18 @@ const MyListings = () => {
             </Card>
           </div>
         </div>
+
+        {/* Bulk Actions Bar */}
+        <BulkActionsBar
+          selectedCount={selectedListings.size}
+          onSelectAll={() => setSelectedListings(new Set(listings.map(l => l.id)))}
+          onDeselectAll={() => setSelectedListings(new Set())}
+          onPublish={handleBulkPublish}
+          onUnpublish={handleBulkUnpublish}
+          onArchive={handleBulkArchive}
+          onRestore={handleBulkRestore}
+          showRestore={filters.showArchived === true}
+        />
 
         <DeleteConfirmDialog
           open={deleteDialogOpen}

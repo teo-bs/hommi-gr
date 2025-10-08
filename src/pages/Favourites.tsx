@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Helmet } from "react-helmet-async";
-import { Heart, Search, MapPin, User, Calendar } from "lucide-react";
+import { Heart, Search, MapPin, User, Calendar, ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Badge } from '@/components/ui/badge';
@@ -40,6 +40,9 @@ const Favourites = () => {
   const { savedRooms, loading: savedRoomsLoading } = useSavedRooms();
   const [savedRoomsWithDetails, setSavedRoomsWithDetails] = useState<SavedRoomWithDetails[]>([]);
   const [loading, setLoading] = useState(true);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalCount, setTotalCount] = useState(0);
+  const pageSize = 24;
 
   useEffect(() => {
     if (!user) return;
@@ -47,6 +50,19 @@ const Favourites = () => {
     const fetchSavedRoomsWithDetails = async () => {
       setLoading(true);
       try {
+        const from = (currentPage - 1) * pageSize;
+        const to = from + pageSize - 1;
+
+        // Get total count
+        const { count } = await supabase
+          .from('saved_rooms')
+          .select('*', { count: 'exact', head: true })
+          .eq('user_id', user.id)
+          .is('deleted_at', null);
+
+        setTotalCount(count || 0);
+
+        // Get paginated data
         const { data, error } = await supabase
           .from('saved_rooms')
           .select(`
@@ -74,7 +90,9 @@ const Favourites = () => {
             )
           `)
           .eq('user_id', user.id)
-          .order('created_at', { ascending: false });
+          .is('deleted_at', null)
+          .order('created_at', { ascending: false })
+          .range(from, to);
 
         if (error) {
           console.error('Error fetching saved rooms with details:', error);
@@ -90,7 +108,7 @@ const Favourites = () => {
     };
 
     fetchSavedRoomsWithDetails();
-  }, [user, savedRoomsLoading]);
+  }, [user, savedRoomsLoading, currentPage]);
 
   if (!user) {
     return (
@@ -173,7 +191,7 @@ const Favourites = () => {
           <div className="mb-8">
             <h1 className="text-3xl font-bold text-foreground mb-2">Αγαπημένα</h1>
             <p className="text-muted-foreground">
-              {savedRoomsWithDetails.length} αποθηκευμένα δωμάτια
+              {totalCount} αποθηκευμέν{totalCount === 1 ? 'ο' : 'α'} δωμάτι{totalCount === 1 ? 'ο' : 'α'}
             </p>
           </div>
 
@@ -289,6 +307,54 @@ const Favourites = () => {
                   </Card>
                 );
               })}
+            </div>
+          )}
+
+          {/* Pagination */}
+          {totalCount > pageSize && (
+            <div className="flex items-center justify-center gap-2 mt-8">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                disabled={currentPage === 1}
+              >
+                <ChevronLeft className="h-4 w-4 mr-1" />
+                Προηγούμενη
+              </Button>
+              
+              <div className="flex items-center gap-2">
+                {Array.from({ length: Math.ceil(totalCount / pageSize) }, (_, i) => i + 1)
+                  .filter(page => {
+                    const maxPages = Math.ceil(totalCount / pageSize);
+                    return page === 1 || page === maxPages || Math.abs(page - currentPage) <= 1;
+                  })
+                  .map((page, idx, arr) => (
+                    <>
+                      {idx > 0 && arr[idx - 1] !== page - 1 && (
+                        <span key={`ellipsis-${page}`} className="px-2">...</span>
+                      )}
+                      <Button
+                        key={page}
+                        variant={currentPage === page ? "default" : "outline"}
+                        size="sm"
+                        onClick={() => setCurrentPage(page)}
+                      >
+                        {page}
+                      </Button>
+                    </>
+                  ))}
+              </div>
+
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setCurrentPage(p => Math.min(Math.ceil(totalCount / pageSize), p + 1))}
+                disabled={currentPage >= Math.ceil(totalCount / pageSize)}
+              >
+                Επόμενη
+                <ChevronRight className="h-4 w-4 ml-1" />
+              </Button>
             </div>
           )}
         </div>

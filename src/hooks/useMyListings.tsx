@@ -20,13 +20,30 @@ export interface MyListing {
   request_count: number;
 }
 
-export const useMyListings = (status?: 'draft' | 'published' | 'archived') => {
-  const { profile } = useAuth();
-  return useQuery({
-    queryKey: ['my-listings', status, profile?.id],
-    queryFn: async (): Promise<MyListing[]> => {
-      if (!profile?.id) return [];
+export interface OwnerListingFilters {
+  status?: 'draft' | 'published' | 'archived';
+  city?: string;
+  priceMin?: number;
+  priceMax?: number;
+  showArchived?: boolean;
+  page?: number;
+  pageSize?: number;
+}
 
+export const useMyListings = (filters: OwnerListingFilters = {}) => {
+  const { profile } = useAuth();
+  
+  return useQuery({
+    queryKey: ['my-listings', filters, profile?.id],
+    queryFn: async (): Promise<{ listings: MyListing[]; totalCount: number }> => {
+      if (!profile?.id) return { listings: [], totalCount: 0 };
+
+      const pageSize = filters.pageSize || 24;
+      const page = Math.max(1, filters.page || 1);
+      const from = (page - 1) * pageSize;
+      const to = from + pageSize - 1;
+
+      // Build base query
       let query = supabase
         .from('listings')
         .select(`
@@ -42,6 +59,7 @@ export const useMyListings = (status?: 'draft' | 'published' | 'archived') => {
           couples_accepted,
           pets_allowed,
           photos,
+          deleted_at,
           rooms (
             id,
             room_photos (
@@ -53,22 +71,45 @@ export const useMyListings = (status?: 'draft' | 'published' | 'archived') => {
               request_count
             )
           )
-        `)
-        .eq('owner_id', profile.id)
-        .order('created_at', { ascending: false });
+        `, { count: 'exact' })
+        .eq('owner_id', profile.id);
 
-      if (status) {
-        query = query.eq('status', status);
+      // Apply filters
+      if (filters.showArchived === true) {
+        query = query.not('deleted_at', 'is', null);
+      } else if (filters.showArchived === false || filters.showArchived === undefined) {
+        query = query.is('deleted_at', null);
       }
 
-      const { data: listings, error } = await query;
+      if (filters.status) {
+        query = query.eq('status', filters.status);
+      }
+
+      if (filters.city) {
+        query = query.ilike('city', `%${filters.city}%`);
+      }
+
+      if (filters.priceMin != null) {
+        query = query.gte('price_month', filters.priceMin);
+      }
+
+      if (filters.priceMax != null) {
+        query = query.lte('price_month', filters.priceMax);
+      }
+
+      // Apply sorting and pagination
+      query = query
+        .order('updated_at', { ascending: false })
+        .range(from, to);
+
+      const { data: listings, error, count } = await query;
 
       if (error) {
         console.error('Error fetching my listings:', error);
         throw error;
       }
 
-      return (listings || []).map(listing => {
+      const mappedListings = (listings || []).map(listing => {
         // Normalize nested relations which may come as object or array depending on FK inference
         const rooms = Array.isArray(listing.rooms)
           ? listing.rooms
@@ -110,6 +151,11 @@ export const useMyListings = (status?: 'draft' | 'published' | 'archived') => {
           request_count: statsArr[0]?.request_count || 0,
         };
       });
+
+      return {
+        listings: mappedListings,
+        totalCount: count || 0,
+      };
     },
     enabled: !!profile?.id,
     staleTime: 60000, // 1 minute

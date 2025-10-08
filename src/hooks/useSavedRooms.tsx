@@ -16,7 +16,7 @@ export const useSavedRooms = () => {
   const [savedRooms, setSavedRooms] = useState<SavedRoom[]>([]);
   const [loading, setLoading] = useState(false);
 
-  // Fetch user's saved rooms
+  // Fetch user's saved rooms (only active, not soft-deleted)
   const fetchSavedRooms = async () => {
     if (!user) return;
 
@@ -26,6 +26,7 @@ export const useSavedRooms = () => {
         .from('saved_rooms')
         .select('*')
         .eq('user_id', user.id)
+        .is('deleted_at', null)
         .order('created_at', { ascending: false });
 
       if (error) {
@@ -46,7 +47,7 @@ export const useSavedRooms = () => {
     return savedRooms.some(saved => saved.room_id === roomId);
   };
 
-  // Save a room
+  // Save a room (upsert with deduplication + restore if previously deleted)
   const saveRoom = async (roomId: string): Promise<{ success: boolean; error?: string }> => {
     if (!user) {
       toast({
@@ -57,17 +58,14 @@ export const useSavedRooms = () => {
       return { success: false, error: 'Not authenticated' };
     }
 
-    if (isRoomSaved(roomId)) {
-      return { success: false, error: 'Room already saved' };
-    }
-
     try {
+      // Use upsert with onConflict to dedupe and restore if previously deleted
       const { data, error } = await supabase
         .from('saved_rooms')
-        .insert({
-          user_id: user.id,
-          room_id: roomId
-        })
+        .upsert(
+          [{ user_id: user.id, room_id: roomId, deleted_at: null }],
+          { onConflict: 'user_id,room_id' }
+        )
         .select()
         .single();
 
@@ -81,7 +79,9 @@ export const useSavedRooms = () => {
         return { success: false, error: error.message };
       }
 
-      setSavedRooms(prev => [data, ...prev]);
+      // Refresh the list
+      await fetchSavedRooms();
+      
       toast({
         title: "Αποθηκεύτηκε",
         description: "Το δωμάτιο αποθηκεύτηκε στα αγαπημένα σας",
@@ -94,18 +94,21 @@ export const useSavedRooms = () => {
     }
   };
 
-  // Unsave a room
+  // Unsave a room (soft delete instead of hard delete)
   const unsaveRoom = async (roomId: string): Promise<{ success: boolean; error?: string }> => {
     if (!user) {
       return { success: false, error: 'Not authenticated' };
     }
 
     try {
+      const nowISO = new Date().toISOString();
+      
       const { error } = await supabase
         .from('saved_rooms')
-        .delete()
+        .update({ deleted_at: nowISO })
         .eq('user_id', user.id)
-        .eq('room_id', roomId);
+        .eq('room_id', roomId)
+        .is('deleted_at', null);
 
       if (error) {
         console.error('Error unsaving room:', error);
@@ -117,7 +120,9 @@ export const useSavedRooms = () => {
         return { success: false, error: error.message };
       }
 
-      setSavedRooms(prev => prev.filter(saved => saved.room_id !== roomId));
+      // Refresh the list
+      await fetchSavedRooms();
+      
       toast({
         title: "Αφαιρέθηκε",
         description: "Το δωμάτιο αφαιρέθηκε από τα αγαπημένα σας",
