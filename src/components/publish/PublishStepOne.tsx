@@ -63,9 +63,11 @@ export default function PublishStepOne({
       lng: location.lng,
       formatted_address: location.formatted_address,
       street_address: location.formatted_address,
-      neighborhood: location.region || location.city
+      neighborhood: location.region || location.city,
+      // Set default title from location if not already set
+      title: draft.title || `${location.region || location.city} - Διαθέσιμο Δωμάτιο`
     });
-  }, [onUpdate]);
+  }, [onUpdate, draft.title]);
 
   const handleMapLocationChange = useCallback((location: LocationData) => {
     setAddressInput(location.formatted_address);
@@ -82,6 +84,15 @@ export default function PublishStepOne({
           Πείτε μας πού βρίσκεται το ακίνητο σας
         </p>
       </div>
+
+      {!draft.city && (
+        <Alert>
+          <Info className="h-4 w-4" />
+          <AlertDescription>
+            💡 Επιλέξτε μια διεύθυνση για να συνεχίσετε. Η αγγελία θα αποθηκευτεί αυτόματα.
+          </AlertDescription>
+        </Alert>
+      )}
 
       <Card>
         <CardHeader>

@@ -53,6 +53,8 @@ export default function PublishStepReview({
 }: PublishStepReviewProps) {
 
   const totalFlatmates = (draft.flatmates_count || 0) + (draft.i_live_here ? 1 : 0);
+  const hasDraftId = !!draft.id;
+  const canActuallyPublish = canPublish && hasDraftId;
 
   return (
     <div className="space-y-6">
@@ -63,8 +65,33 @@ export default function PublishStepReview({
         </p>
       </div>
 
+      {/* Save Warning - Critical */}
+      {!hasDraftId && (
+        <Card className="border-destructive/50 bg-destructive/5">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-destructive">
+              <AlertCircle className="w-5 h-5" />
+              Η αγγελία σας δεν έχει αποθηκευτεί
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-sm text-destructive mb-2">
+              Παρακαλώ επιστρέψτε στο βήμα 1 και συμπληρώστε τα υποχρεωτικά πεδία (Τίτλος, Πόλη) για να αποθηκευτεί η αγγελία.
+            </p>
+            <Button 
+              variant="outline" 
+              size="sm"
+              onClick={() => onJumpToStep(1)}
+              className="mt-2"
+            >
+              Πήγαινε στο Βήμα 1
+            </Button>
+          </CardContent>
+        </Card>
+      )}
+
       {/* Validation Warnings */}
-      {!canPublish && (
+      {!canPublish && hasDraftId && (
         <Card className="border-destructive/50 bg-destructive/5">
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-destructive">
@@ -317,7 +344,7 @@ export default function PublishStepReview({
         <Button 
           size="lg" 
           onClick={onPublish} 
-          disabled={!canPublish || isPublishing}
+          disabled={!canActuallyPublish || isPublishing}
           className="min-w-[200px]"
         >
           {isPublishing ? 'Δημοσίευση...' : '🚀 Δημοσίευση'}

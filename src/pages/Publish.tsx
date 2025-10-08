@@ -363,7 +363,18 @@ export default function Publish() {
           .select()
           .single();
         
-        if (data && !error) {
+        if (error) {
+          console.error('Error creating listing:', error);
+          const errorMessage = error.message || 'Δεν ήταν δυνατή η δημιουργία της αγγελίας';
+          toast({
+            title: "Σφάλμα αποθήκευσης",
+            description: errorMessage,
+            variant: "destructive"
+          });
+          throw error; // Stop execution if listing creation fails
+        }
+        
+        if (data) {
           setDraft(prev => ({ ...prev, id: data.id }));
           
           // Create room entry and handle amenities for this listing
@@ -376,12 +387,27 @@ export default function Publish() {
       }
       
       setLastSaved(new Date());
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error saving draft:', error);
+      
+      // Check for specific validation errors
+      let errorDescription = "Δεν ήταν δυνατή η αποθήκευση των αλλαγών.";
+      
+      if (error?.message?.includes('title')) {
+        errorDescription = "Ο τίτλος είναι υποχρεωτικός";
+      } else if (error?.message?.includes('city')) {
+        errorDescription = "Η πόλη είναι υποχρεωτική";
+      } else if (error?.message?.includes('price')) {
+        errorDescription = "Η τιμή είναι υποχρεωτική";
+      } else if (error?.code === '23502') {
+        errorDescription = "Συμπληρώστε όλα τα υποχρεωτικά πεδία";
+      }
+      
       toast({
         title: "Σφάλμα αποθήκευσης",
-        description: "Δεν ήταν δυνατή η αποθήκευση των αλλαγών.",
-        variant: "destructive"
+        description: errorDescription,
+        variant: "destructive",
+        duration: 5000
       });
     } finally {
       setIsSaving(false);
@@ -435,9 +461,26 @@ export default function Publish() {
     // Don't set URL param, just proceed with empty draft
   };
 
-  const nextStep = (updates?: Partial<ListingDraft>) => {
+  const nextStep = async (updates?: Partial<ListingDraft>) => {
+    // Save and wait for completion if there are updates
     if (updates) {
-      saveDraft(updates);
+      try {
+        await saveDraft(updates);
+      } catch (error) {
+        // Don't proceed if save fails
+        console.error('Cannot proceed to next step - save failed:', error);
+        return;
+      }
+    }
+    
+    // Check if draft has been saved (has ID) before proceeding
+    if (!draft.id && currentStep > 0) {
+      toast({
+        title: "Αποθήκευση απαιτείται",
+        description: "Παρακαλώ συμπληρώστε τα υποχρεωτικά πεδία πρώτα (Τίτλος, Πόλη).",
+        variant: "destructive"
+      });
+      return;
     }
     
     // Mark current step as completed
