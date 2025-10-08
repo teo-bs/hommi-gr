@@ -7,6 +7,7 @@ import { Home, User, MessageSquare, Plus, Globe, Menu, X, Settings, Search, Cale
 import { useAuth } from "@/hooks/useAuth";
 import { useListingFlow } from "@/hooks/useListingFlow";
 import { useListingsCount } from "@/hooks/useListingsCount";
+import { useUnreadCount } from "@/hooks/useUnreadCount";
 import { AuthFlowManager } from "@/components/auth/AuthFlowManager";
 import { ListingWizard } from "@/components/listing/ListingWizard";
 import { useToast } from "@/hooks/use-toast";
@@ -15,6 +16,7 @@ export const Header = () => {
   const { user, profile, signOut, updateProfile } = useAuth();
   const listingFlow = useListingFlow();
   const { count: listingsCount } = useListingsCount();
+  const { unreadCount } = useUnreadCount();
   const navigate = useNavigate();
   const location = useLocation();
   const { toast } = useToast();
@@ -167,7 +169,7 @@ export const Header = () => {
     },
     { 
       href: "/inbox", 
-      label: language === 'el' ? 'Μηνύματα' : 'Inbox',
+      label: `${language === 'el' ? 'Μηνύματα' : 'Inbox'}${unreadCount > 0 ? ` (${unreadCount})` : ''}`,
       icon: MessageSquare
     },
     { 
@@ -192,7 +194,7 @@ export const Header = () => {
     ] : []),
     { 
       href: "/inbox", 
-      label: language === 'el' ? 'Μηνύματα' : 'Inbox',
+      label: `${language === 'el' ? 'Μηνύματα' : 'Inbox'}${unreadCount > 0 ? ` (${unreadCount})` : ''}`,
       icon: MessageSquare
     },
     { 
