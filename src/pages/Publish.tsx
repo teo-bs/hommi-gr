@@ -259,7 +259,7 @@ export default function Publish() {
           floor: existingDraft.floor || undefined,
           price_month: existingDraft.price_month || undefined,
           deposit_required: existingDraft.deposit_required ?? true,
-          bills_included: existingDraft.bills_included || false,
+          bills_included_any: existingDraft.bills_included ?? false,
           has_lift: existingDraft.has_lift || false,
           bedrooms_single: existingDraft.bedrooms_single || 0,
           bedrooms_double: existingDraft.bedrooms_double || 0,
@@ -296,13 +296,14 @@ export default function Publish() {
     }
   };
 
-  const saveDraft = async (updates: Partial<ListingDraft>) => {
+  const saveDraft = async (updates: Partial<ListingDraft>): Promise<string | undefined> => {
     if (!user || !profile) return;
 
     setIsSaving(true);
     const updatedDraft = { ...draft, ...updates };
 
     try {
+      let newId: string | undefined = updatedDraft.id;
       const draftData = {
         title: updatedDraft.title,
         city: updatedDraft.city,
@@ -325,14 +326,12 @@ export default function Publish() {
         i_live_here: updatedDraft.i_live_here,
         orientation: updatedDraft.orientation,
         bed_type: updatedDraft.bed_type,
-        house_rules: updatedDraft.house_rules,
         availability_date: updatedDraft.availability_date?.toISOString().split('T')[0],
         availability_to: updatedDraft.availability_to?.toISOString().split('T')[0],
         min_stay_months: updatedDraft.min_stay_months,
         max_stay_months: updatedDraft.max_stay_months,
         bills_note: updatedDraft.bills_note,
-        services: updatedDraft.services,
-        photos: updatedDraft.photos,
+        bills_included: !!updatedDraft.bills_included_any,
         description: updatedDraft.description,
         preferred_gender: updatedDraft.preferred_gender,
         preferred_age_min: updatedDraft.preferred_age_min,
@@ -345,7 +344,6 @@ export default function Publish() {
         required_verifications: updatedDraft.required_verifications,
         status: 'draft' as const
       };
-
       if (updatedDraft.id) {
         await supabase
           .from('listings')
@@ -357,9 +355,18 @@ export default function Publish() {
           await handleAmenitiesUpdate(updatedDraft.id, updatedDraft);
         }
       } else {
+        const insertPayload = { ...draftData, owner_id: profile.id } as any;
+        // Ensure required fields for initial draft insert
+        const ensuredPayload = {
+          ...insertPayload,
+          title: (draftData.title && draftData.title.trim()) ? draftData.title.trim() : 'Προσωρινή αγγελία',
+          city: (draftData.city && draftData.city.trim()) ? draftData.city.trim() : 'Προς ορισμό',
+          price_month: draftData.price_month ?? 1
+        };
+
         const { data, error } = await supabase
           .from('listings')
-          .insert({ ...draftData, owner_id: profile.id })
+          .insert(ensuredPayload)
           .select()
           .single();
         
@@ -376,6 +383,7 @@ export default function Publish() {
         
         if (data) {
           setDraft(prev => ({ ...prev, id: data.id }));
+          newId = data.id;
           
           // Create room entry and handle amenities for this listing
           await createRoomForListing(data.id, updatedDraft);
@@ -387,6 +395,7 @@ export default function Publish() {
       }
       
       setLastSaved(new Date());
+      return newId;
     } catch (error: any) {
       console.error('Error saving draft:', error);
       
@@ -409,6 +418,7 @@ export default function Publish() {
         variant: "destructive",
         duration: 5000
       });
+      throw error;
     } finally {
       setIsSaving(false);
     }
@@ -473,16 +483,37 @@ export default function Publish() {
       }
     }
     
-    // Check if draft has been saved (has ID) before proceeding beyond Location step
-    if (!draft.id && currentStep >= 2) {
-      toast({
-        title: "Χρειάζεται Τοποθεσία",
-        description: "Σε πάω στο βήμα Τοποθεσία να συμπληρώσεις την πόλη.",
-        variant: "destructive",
-        duration: 4000
-      });
-      setSearchParams({ step: '2' });
-      return;
+    // Ensure draft exists in DB from Location step onwards
+    if (!draft.id) {
+      if (currentStep === 2) {
+        try {
+          const newId = await saveDraft({});
+          if (!newId) {
+            toast({ 
+              title: "Αποθήκευση απαιτείται",
+              description: "Δεν μπόρεσα να δημιουργήσω πρόχειρο. Δοκιμάστε ξανά.",
+              variant: "destructive"
+            });
+            return;
+          }
+        } catch (e) {
+          toast({ 
+            title: "Αποθήκευση απαιτείται",
+            description: "Δεν μπόρεσα να δημιουργήσω πρόχειρο. Δοκιμάστε ξανά.",
+            variant: "destructive"
+          });
+          return;
+        }
+      } else if (currentStep > 2) {
+        toast({
+          title: "Χρειάζεται Τοποθεσία",
+          description: "Σε πάω στο βήμα Τοποθεσία να συμπληρώσεις την πόλη.",
+          variant: "destructive",
+          duration: 4000
+        });
+        setSearchParams({ step: '2' });
+        return;
+      }
     }
     
     // Mark current step as completed
