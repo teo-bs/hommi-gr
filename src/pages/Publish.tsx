@@ -473,13 +473,15 @@ export default function Publish() {
       }
     }
     
-    // Check if draft has been saved (has ID) before proceeding
-    if (!draft.id && currentStep > 0) {
+    // Check if draft has been saved (has ID) before proceeding beyond Location step
+    if (!draft.id && currentStep >= 2) {
       toast({
-        title: "Αποθήκευση απαιτείται",
-        description: "Παρακαλώ συμπληρώστε τα υποχρεωτικά πεδία πρώτα (Τίτλος, Πόλη).",
-        variant: "destructive"
+        title: "Χρειάζεται Τοποθεσία",
+        description: "Σε πάω στο βήμα Τοποθεσία να συμπληρώσεις την πόλη.",
+        variant: "destructive",
+        duration: 4000
       });
+      setSearchParams({ step: '2' });
       return;
     }
     
@@ -840,10 +842,10 @@ export default function Publish() {
   const handleFixField = (field: string) => {
     // Navigate to appropriate step based on field
     const fieldStepMap: Record<string, number> = {
-      title: 4,
-      city: 1,
-      price_month: 2,
-      photos: 4,
+      title: 6,
+      city: 2,
+      price_month: 8,
+      photos: 5,
       date_of_birth: 0 // Will redirect to profile
     };
 

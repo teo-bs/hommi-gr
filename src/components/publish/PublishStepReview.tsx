@@ -76,15 +76,15 @@ export default function PublishStepReview({
           </CardHeader>
           <CardContent>
             <p className="text-sm text-destructive mb-2">
-              Παρακαλώ επιστρέψτε στο βήμα 1 και συμπληρώστε τα υποχρεωτικά πεδία (Τίτλος, Πόλη) για να αποθηκευτεί η αγγελία.
+              Παρακαλώ συμπληρώστε την τοποθεσία (Πόλη) για να αποθηκευτεί η αγγελία.
             </p>
             <Button 
               variant="outline" 
               size="sm"
-              onClick={() => onJumpToStep(1)}
+              onClick={() => onJumpToStep(2)}
               className="mt-2"
             >
-              Πήγαινε στο Βήμα 1
+              Πήγαινε στην Τοποθεσία
             </Button>
           </CardContent>
         </Card>
@@ -118,7 +118,7 @@ export default function PublishStepReview({
                 <MapPin className="w-5 h-5" />
                 Τοποθεσία
               </CardTitle>
-              <Button variant="ghost" size="sm" onClick={() => onJumpToStep(1)}>
+              <Button variant="ghost" size="sm" onClick={() => onJumpToStep(2)}>
                 <Edit className="w-4 h-4" />
               </Button>
             </div>
@@ -141,7 +141,7 @@ export default function PublishStepReview({
                 <Home className="w-5 h-5" />
                 Ακίνητο & Δωμάτιο
               </CardTitle>
-              <Button variant="ghost" size="sm" onClick={() => onJumpToStep(2)}>
+              <Button variant="ghost" size="sm" onClick={() => onJumpToStep(3)}>
                 <Edit className="w-4 h-4" />
               </Button>
             </div>
@@ -174,7 +174,7 @@ export default function PublishStepReview({
                 <Image className="w-5 h-5" />
                 Φωτογραφίες
               </CardTitle>
-              <Button variant="ghost" size="sm" onClick={() => onJumpToStep(4)}>
+              <Button variant="ghost" size="sm" onClick={() => onJumpToStep(5)}>
                 <Edit className="w-4 h-4" />
               </Button>
             </div>
@@ -210,7 +210,7 @@ export default function PublishStepReview({
                 <FileText className="w-5 h-5" />
                 Τίτλος & Περιγραφή
               </CardTitle>
-              <Button variant="ghost" size="sm" onClick={() => onJumpToStep(5)}>
+              <Button variant="ghost" size="sm" onClick={() => onJumpToStep(6)}>
                 <Edit className="w-4 h-4" />
               </Button>
             </div>
@@ -231,7 +231,7 @@ export default function PublishStepReview({
                 <CheckCircle className="w-5 h-5" />
                 Απαιτούμενες Επαληθεύσεις
               </CardTitle>
-              <Button variant="ghost" size="sm" onClick={() => onJumpToStep(6)}>
+              <Button variant="ghost" size="sm" onClick={() => onJumpToStep(7)}>
                 <Edit className="w-4 h-4" />
               </Button>
             </div>
@@ -259,7 +259,7 @@ export default function PublishStepReview({
                 <Euro className="w-5 h-5" />
                 Τιμή & Διαθεσιμότητα
               </CardTitle>
-              <Button variant="ghost" size="sm" onClick={() => onJumpToStep(7)}>
+              <Button variant="ghost" size="sm" onClick={() => onJumpToStep(8)}>
                 <Edit className="w-4 h-4" />
               </Button>
             </div>
