@@ -777,6 +777,7 @@ export default function Publish() {
               room_id: atomicResult.room_id,
               url: photo as string,
               sort_order: index,
+              is_cover: index === 0, // Mark first photo as cover
               alt_text: `Room photo ${index + 1}`
             }));
 
