@@ -103,10 +103,31 @@ const Search = () => {
     }
   });
 
+  // Fetch ALL listings for map (without pagination)
+  const { data: allListingsForMap = [] } = useOptimizedSearch({
+    filters: {
+      budget: { min: filters.budget[0], max: filters.budget[1] },
+      flatmates: filters.flatmatesCount,
+      couplesAccepted: filters.houseRules.includes('couples'),
+      petsAllowed: filters.houseRules.includes('pets'),
+      listerType: filters.listerType !== 'any' ? filters.listerType as 'individual' | 'agency' : undefined,
+      amenities: [...filters.roomAmenities, ...filters.flatAmenities],
+      moveInDate: filters.moveInDate,
+      duration: filters.duration !== 'any' ? (
+        filters.duration === 'short' ? 5 :
+        filters.duration === 'medium' ? 11 :
+        filters.duration === 'long' ? 12 : undefined
+      ) : undefined,
+      sort: filters.sort,
+      bounds: filters.bounds,
+      page: 1,
+      pageSize: 1000, // Fetch all results for map
+    }
+  });
 
-  // Convert listings to map format
+  // Convert ALL listings to map format (not paginated)
   const mapListings = useMemo(() => {
-    return listings.map(listing => ({
+    return allListingsForMap.map(listing => ({
       id: listing.room_id,
       room_id: listing.room_id,
       title: listing.title,
@@ -120,7 +141,7 @@ const Search = () => {
       geo: listing.lat && listing.lng ? { lat: listing.lat, lng: listing.lng } : undefined,
       formatted_address: (listing as any).formatted_address
     }));
-  }, [listings]);
+  }, [allListingsForMap]);
 
   // Restore state when coming back from listing
   useEffect(() => {
