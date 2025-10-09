@@ -7,19 +7,30 @@ interface PreferredFlatmateBlockProps {
     couples_accepted?: boolean;
     smoking_allowed?: boolean;
     pets_allowed?: boolean;
+    preferred_age_min?: number;
+    preferred_age_max?: number;
+    preferred_gender?: string[];
   };
 }
 
 export const PreferredFlatmateBlock = ({ listing }: PreferredFlatmateBlockProps) => {
+  const ageRange = listing.preferred_age_min && listing.preferred_age_max
+    ? `${listing.preferred_age_min}-${listing.preferred_age_max} years`
+    : 'Any age';
+
+  const genderPreference = listing.preferred_gender && listing.preferred_gender.length > 0
+    ? listing.preferred_gender.join(', ')
+    : 'Any gender welcome';
+
   const preferences = [
     {
       label: 'Age range',
-      value: '22-35 years',
+      value: ageRange,
       type: 'info'
     },
     {
       label: 'Gender',
-      value: 'Any gender welcome',
+      value: genderPreference,
       type: 'success'
     },
     {

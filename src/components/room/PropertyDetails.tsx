@@ -9,6 +9,10 @@ interface PropertyDetailsProps {
   listing: {
     availability_date?: string;
     flatmates_count: number;
+    bathrooms?: number;
+    bedrooms_single?: number;
+    bedrooms_double?: number;
+    property_size_m2?: number;
   };
 }
 
@@ -17,21 +21,29 @@ export const PropertyDetails = ({ room, listing }: PropertyDetailsProps) => {
     ? format(new Date(listing.availability_date), 'MMM dd, yyyy')
     : 'Available now';
 
+  const totalBedrooms = (listing.bedrooms_single || 0) + (listing.bedrooms_double || 0);
+  const bathroomCount = listing.bathrooms || 1;
+
   const details = [
     {
       icon: Home,
       label: 'Bathrooms',
-      value: '2 bathrooms'
+      value: `${bathroomCount} bathroom${bathroomCount !== 1 ? 's' : ''}`
     },
     {
       icon: Home,
       label: 'Bedrooms',
-      value: `${listing.flatmates_count + 1} bedrooms`
+      value: totalBedrooms > 0 ? `${totalBedrooms} bedroom${totalBedrooms !== 1 ? 's' : ''}` : 'Not specified'
     },
     {
       icon: Maximize2,
-      label: 'Size',
-      value: room.room_size_m2 ? `${room.room_size_m2}m²` : '80m²'
+      label: 'Room Size',
+      value: room.room_size_m2 ? `${room.room_size_m2}m²` : 'Not specified'
+    },
+    {
+      icon: Maximize2,
+      label: 'Property Size',
+      value: listing.property_size_m2 ? `${listing.property_size_m2}m²` : 'Not specified'
     },
     {
       icon: Calendar,

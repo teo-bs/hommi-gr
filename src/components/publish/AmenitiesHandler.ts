@@ -6,31 +6,37 @@ interface ListingDraft {
   [key: string]: any;
 }
 
+// Helper to map amenity keys to IDs
+const mapAmenityKeysToIds = async (keys: string[]): Promise<string[]> => {
+  if (!keys || keys.length === 0) return [];
+  
+  const { data } = await supabase
+    .from('amenities')
+    .select('id, key')
+    .in('key', keys)
+    .eq('is_active', true);
+  
+  return data?.map(a => a.id) || [];
+};
+
 export const handleAmenitiesUpdate = async (listingId: string, draft: ListingDraft) => {
   try {
     // Handle property amenities
     if (draft.amenities_property?.length > 0) {
-      // Get amenity IDs for property amenities
-      const { data: propertyAmenities } = await supabase
-        .from('amenities')
-        .select('id, key')
-        .in('key', draft.amenities_property.map(name => 
-          // Convert display names to keys (simple mapping for now)
-          name.toLowerCase().replace(/\s+/g, '_').replace(/[^\w]/g, '')
-        ));
+      // Map amenity keys to IDs
+      const propertyAmenityIds = await mapAmenityKeysToIds(draft.amenities_property);
 
-      if (propertyAmenities?.length > 0) {
+      if (propertyAmenityIds.length > 0) {
         // Clear existing property amenities
         await supabase
           .from('listing_amenities')
           .delete()
-          .eq('listing_id', listingId)
-          .eq('scope', 'property');
+          .eq('listing_id', listingId);
 
         // Insert new property amenities
-        const amenityInserts = propertyAmenities.map(amenity => ({
+        const amenityInserts = propertyAmenityIds.map(amenityId => ({
           listing_id: listingId,
-          amenity_id: amenity.id,
+          amenity_id: amenityId,
           scope: 'property'
         }));
 
@@ -47,19 +53,13 @@ export const handleAmenitiesUpdate = async (listingId: string, draft: ListingDra
         .from('rooms')
         .select('id')
         .eq('listing_id', listingId)
-        .single();
+        .maybeSingle();
 
       if (room) {
-        // Get amenity IDs for room amenities
-        const { data: roomAmenities } = await supabase
-          .from('amenities')
-          .select('id, key')
-          .in('key', draft.amenities_room.map(name =>
-            // Convert display names to keys (simple mapping for now)
-            name.toLowerCase().replace(/\s+/g, '_').replace(/[^\w]/g, '')
-          ));
+        // Map amenity keys to IDs
+        const roomAmenityIds = await mapAmenityKeysToIds(draft.amenities_room);
 
-        if (roomAmenities?.length > 0) {
+        if (roomAmenityIds.length > 0) {
           // Clear existing room amenities
           await supabase
             .from('room_amenities')
@@ -67,9 +67,9 @@ export const handleAmenitiesUpdate = async (listingId: string, draft: ListingDra
             .eq('room_id', room.id);
 
           // Insert new room amenities
-          const roomAmenityInserts = roomAmenities.map(amenity => ({
+          const roomAmenityInserts = roomAmenityIds.map(amenityId => ({
             room_id: room.id,
-            amenity_id: amenity.id
+            amenity_id: amenityId
           }));
 
           await supabase

@@ -181,13 +181,25 @@ const RoomPage = () => {
           roomAmenitiesData = amenitiesQuery.data || [];
         }
 
-        // For now, we'll use a mock listing amenities until we fix the database access
-        // TODO: Fix listing amenities fetch once we resolve the database access issues
-        const listingAmenitiesData: any[] = [
-          { key: 'wifi', name_en: 'WiFi', name_el: 'Wi-Fi', icon: 'wifi' },
-          { key: 'air_conditioning', name_en: 'Air conditioning', name_el: 'Κλιματισμός', icon: 'snowflake' },
-          { key: 'kitchen', name_en: 'Kitchen', name_el: 'Κουζίνα', icon: 'utensils' }
-        ];
+        // Fetch listing amenities from listing_amenities table
+        const listingAmenitiesQuery = await (supabase as any)
+          .from('listing_amenities')
+          .select('amenity_id')
+          .eq('listing_id', listing.id);
+
+        console.log('Listing amenities raw:', listingAmenitiesQuery);
+
+        let listingAmenitiesData: any[] = [];
+        if (listingAmenitiesQuery.data && listingAmenitiesQuery.data.length > 0) {
+          const listingAmenityIds = listingAmenitiesQuery.data.map((la: any) => la.amenity_id);
+          const amenitiesQuery = await (supabase as any)
+            .from('amenities')
+            .select('*')
+            .in('id', listingAmenityIds)
+            .eq('is_active', true);
+          console.log('Listing amenities data fetch:', amenitiesQuery);
+          listingAmenitiesData = amenitiesQuery.data || [];
+        }
 
         console.log('Amenities data:', { 
           roomAmenitiesData,

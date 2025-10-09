@@ -33,6 +33,7 @@ interface ListingDraft {
   city: string;
   neighborhood: string;
   street_address?: string;
+  formatted_address?: string;
   lat?: number;
   lng?: number;
   property_type: 'room' | 'apartment';
@@ -251,6 +252,7 @@ export default function Publish() {
           city: existingDraft.city || '',
           neighborhood: existingDraft.neighborhood || '',
           street_address: existingDraft.street_address || '',
+          formatted_address: existingDraft.formatted_address || '',
           lat: existingDraft.lat ? Number(existingDraft.lat) : undefined,
           lng: existingDraft.lng ? Number(existingDraft.lng) : undefined,
           property_type: (existingDraft.property_type as 'room' | 'apartment') || 'room',
@@ -309,6 +311,7 @@ export default function Publish() {
         city: updatedDraft.city,
         neighborhood: updatedDraft.neighborhood,
         street_address: updatedDraft.street_address,
+        formatted_address: updatedDraft.formatted_address,
         lat: updatedDraft.lat,
         lng: updatedDraft.lng,
         property_type: updatedDraft.property_type,
