@@ -373,7 +373,7 @@ const RoomPage = () => {
               />
               
               <LocationMiniMap 
-                geo={listing.geo}
+                geo={listing?.lat && listing?.lng ? { lat: Number(listing.lat), lng: Number(listing.lng) } : undefined}
                 neighborhood={listing.neighborhood}
                 city={listing.city}
                 formatted_address={listing.formatted_address}

@@ -34,7 +34,7 @@ const Search = () => {
   const { saveState, restoreState } = useSearchStateCache();
   const [hoveredListingId, setHoveredListingId] = useState<string | null>(null);
   const [selectedListingId, setSelectedListingId] = useState<string | null>(null);
-  const [autoSearch, setAutoSearch] = useState<boolean>(false);
+  const [autoSearch, setAutoSearch] = useState<boolean>(true);
   
   // Pagination state - initialize from URL
   const initialPage = Math.max(1, parseInt(searchParams.get('page') || '1', 10) || 1);

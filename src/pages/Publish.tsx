@@ -795,6 +795,34 @@ export default function Publish() {
             } else {
               console.log('✅ Room photos inserted successfully:', insertedPhotos);
             }
+
+            // Also insert into listing_photos for consistency (used by search cache)
+            // Delete existing listing_photos first to prevent duplicates
+            await supabase
+              .from('listing_photos')
+              .delete()
+              .eq('listing_id', atomicResult.listing_id);
+
+            const listingPhotos = draft.photos
+              .filter(photo => typeof photo === 'string' && photo.length > 0 && photo.includes('http'))
+              .map((photo, index) => ({
+                listing_id: atomicResult.listing_id,
+                url: photo as string,
+                sort_order: index,
+                is_cover: index === 0,
+                alt_text: `Photo ${index + 1}`
+              }));
+
+            const { error: listingPhotosError } = await supabase
+              .from('listing_photos')
+              .insert(listingPhotos);
+
+            if (listingPhotosError) {
+              console.error('❌ Error inserting listing photos:', listingPhotosError);
+              // Don't throw - room_photos are primary, listing_photos are for cache consistency
+            } else {
+              console.log('✅ Listing photos inserted successfully for search cache');
+            }
           } else {
             console.warn('⚠️ No valid photos to insert');
           }
