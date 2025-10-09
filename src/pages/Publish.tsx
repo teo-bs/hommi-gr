@@ -804,7 +804,7 @@ export default function Publish() {
               .eq('listing_id', atomicResult.listing_id);
 
             const listingPhotos = draft.photos
-              .filter(photo => typeof photo === 'string' && photo.length > 0 && photo.includes('http'))
+              .filter(photo => typeof photo === 'string' && photo.startsWith('https://'))
               .map((photo, index) => ({
                 listing_id: atomicResult.listing_id,
                 url: photo as string,
@@ -857,12 +857,17 @@ export default function Publish() {
       // Show success message with celebration
       toast({
         title: "🎉 Επιτυχής δημοσίευση!",
-        description: "Η αγγελία σας είναι τώρα διαθέσιμη στην αναζήτηση!"
+        description: "Η καταχώρησή σας δημοσιεύτηκε και εμφανίζεται στον χάρτη.",
+        action: draft.city ? (
+          <a href={`/search?city=${encodeURIComponent(draft.city)}`} className="text-primary underline font-medium">
+            Δες στον χάρτη →
+          </a>
+        ) : undefined,
       });
 
       // Small delay to show completion before navigating
       setTimeout(() => {
-        navigate('/my-listings');
+        navigate(`/listing/${atomicResult.slug}`);
       }, 1500);
       
     } catch (error) {
