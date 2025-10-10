@@ -82,7 +82,7 @@ export const ListingCard = ({
     <Link
       to={`/listing/${listing.slug}`}
       state={{ fromSearch: true }}
-      className="block group animate-fade-in"
+      className="block group animate-fade-in touch-manipulation"
       onClick={(e) => {
         onClick?.(listing.room_id);
       }}
@@ -95,30 +95,30 @@ export const ListingCard = ({
         setIsHovered(false);
       }}
     >
-      <div className={`transition-all duration-200 ${isHighlighted ? 'scale-[1.02]' : ''}`}>
+      <div className={`transition-all duration-200 active:scale-[0.98] ${isHighlighted ? 'scale-[1.02]' : ''}`}>
         {/* Cover Image */}
-        <div className="relative aspect-[4/3] mb-3 rounded-xl overflow-hidden bg-muted">
+        <div className="relative aspect-[4/3] mb-3 rounded-xl sm:rounded-2xl overflow-hidden bg-muted">
           <img
             src={imageError ? '/placeholder.svg' : getOptimizedImageUrl(imageUrl, 720)}
             srcSet={!imageError ? getImageSrcSet(imageUrl) : undefined}
-            sizes="(min-width: 1024px) 320px, 100vw"
+            sizes="(min-width: 1024px) 320px, (min-width: 768px) 50vw, 100vw"
             alt={listing.title}
             loading="lazy"
             decoding="async"
-            className={`w-full h-full object-cover transition-opacity duration-200 ${imageLoaded ? 'opacity-100' : 'opacity-0'}`}
+            className={`w-full h-full object-cover transition-all duration-300 ${imageLoaded ? 'opacity-100' : 'opacity-0'} ${isHovered ? 'scale-105' : 'scale-100'}`}
             onLoad={() => setImageLoaded(true)}
             onError={() => setImageError(true)}
           />
           
           {!imageLoaded && !imageError && (
-            <div className="absolute inset-0 flex items-center justify-center">
-              <div className="animate-pulse text-muted-foreground text-sm">Loading...</div>
+            <div className="absolute inset-0 flex items-center justify-center bg-muted">
+              <div className="animate-pulse text-muted-foreground text-sm">Φόρτωση...</div>
             </div>
           )}
           
           {/* Good Fit Badge - Top Left */}
           {isGoodFit && (
-            <Badge className="absolute top-3 left-3 bg-background text-foreground shadow-md border-0 font-semibold z-10">
+            <Badge className="absolute top-2 left-2 sm:top-3 sm:left-3 bg-background text-foreground shadow-md border-0 font-semibold z-10 text-xs sm:text-sm animate-scale-in">
               YOU'RE A GOOD FIT
             </Badge>
           )}
@@ -128,7 +128,7 @@ export const ListingCard = ({
             roomId={listing.room_id}
             size="sm"
             variant="ghost"
-            className="absolute top-3 right-3 bg-background/80 hover:bg-background shadow-sm z-10"
+            className="absolute top-2 right-2 sm:top-3 sm:right-3 bg-background/90 hover:bg-background shadow-sm z-10 min-h-[36px] min-w-[36px] sm:min-h-[44px] sm:min-w-[44px] touch-manipulation active:scale-90 transition-transform"
           />
           
           {/* Lister Badge - Bottom Right */}
@@ -141,25 +141,25 @@ export const ListingCard = ({
         </div>
 
         {/* Content */}
-        <div className="space-y-1">
+        <div className="space-y-1 px-1">
           {/* Room Type & Flatmates */}
           <p className="text-xs text-muted-foreground uppercase tracking-wide">
             {roomTypeLabel} · {flatmatesLabel}
           </p>
           
           {/* Title */}
-          <h3 className="font-semibold text-lg line-clamp-2 leading-tight group-hover:underline">
+          <h3 className="font-semibold text-base sm:text-lg line-clamp-2 leading-tight group-hover:underline">
             {listing.title}
           </h3>
           
           {/* Price & Bills */}
           <div className="flex items-baseline justify-between pt-1">
             <div className="flex items-baseline gap-1">
-              <span className="font-bold text-lg tabular-nums">€{listing.price_month}</span>
-              <span className="text-sm text-muted-foreground">/month</span>
+              <span className="font-bold text-lg sm:text-xl tabular-nums">€{listing.price_month}</span>
+              <span className="text-sm text-muted-foreground">/μήνα</span>
             </div>
-            <div className="text-sm text-muted-foreground">
-              Bills: {listing.bills_included ? 'Included' : 'Not included'}
+            <div className="text-xs sm:text-sm text-muted-foreground">
+              {listing.bills_included ? '✓ Με λογαριασμούς' : 'Χωρίς λογαριασμούς'}
             </div>
           </div>
         </div>

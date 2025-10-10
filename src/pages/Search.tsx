@@ -302,29 +302,36 @@ const Search = () => {
           {/* Listings Panel */}
           <div className="flex-1 max-w-2xl">
             {isLoading ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
                 {Array.from({ length: 6 }).map((_, i) => (
                   <div key={i} className="animate-pulse">
-                    <div className="aspect-[4/3] bg-muted rounded-xl mb-3"></div>
-                    <div className="h-4 bg-muted rounded w-3/4 mb-2"></div>
-                    <div className="h-4 bg-muted rounded w-1/2"></div>
+                    <div className="aspect-[4/3] bg-muted rounded-xl sm:rounded-2xl mb-3 animate-scale-in"></div>
+                    <div className="space-y-2">
+                      <div className="h-4 bg-muted rounded w-3/4"></div>
+                      <div className="h-4 bg-muted rounded w-1/2"></div>
+                    </div>
                   </div>
                 ))}
               </div>
             ) : (
               <>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  {paginatedListings.map((listing) => (
-                    <ListingCard
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
+                  {paginatedListings.map((listing, index) => (
+                    <div 
                       key={listing.room_id}
-                      listing={listing}
-                      coverPhoto={listing.cover_photo_url}
-                      currentUserProfileExtras={currentUserProfile?.profile_extras}
-                      hoveredListingId={hoveredListingId}
-                      selectedListingId={selectedListingId}
-                      onHover={handleListingHover}
-                      onClick={handleListingClick}
-                    />
+                      className="animate-fade-in"
+                      style={{ animationDelay: `${index * 50}ms` }}
+                    >
+                      <ListingCard
+                        listing={listing}
+                        coverPhoto={listing.cover_photo_url}
+                        currentUserProfileExtras={currentUserProfile?.profile_extras}
+                        hoveredListingId={hoveredListingId}
+                        selectedListingId={selectedListingId}
+                        onHover={handleListingHover}
+                        onClick={handleListingClick}
+                      />
+                    </div>
                   ))}
                 </div>
                 

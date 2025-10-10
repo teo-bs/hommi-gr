@@ -26,6 +26,7 @@ import { ShareButton } from "@/components/room/ShareButton";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
+import { MobileActionBar } from "@/components/room/MobileActionBar";
 
 interface RoomData {
   room: any;
@@ -266,19 +267,25 @@ const RoomPage = () => {
 
   if (loading) {
     return (
-      <div className="container mx-auto px-4 py-8">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          <div className="lg:col-span-2">
-            <Skeleton className="h-96 w-full mb-6" />
-            <div className="space-y-4">
-              <Skeleton className="h-8 w-3/4" />
-              <Skeleton className="h-4 w-full" />
-              <Skeleton className="h-4 w-2/3" />
+      <div className="container mx-auto px-4 py-4 sm:py-8">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 sm:gap-8">
+          <div className="lg:col-span-2 space-y-4 sm:space-y-6">
+            <Skeleton className="h-64 sm:h-80 md:h-96 w-full rounded-2xl animate-pulse" />
+            <div className="space-y-3 sm:space-y-4 animate-fade-in">
+              <Skeleton className="h-8 sm:h-10 w-3/4 rounded-lg" />
+              <Skeleton className="h-4 w-full rounded" />
+              <Skeleton className="h-4 w-full rounded" />
+              <Skeleton className="h-4 w-2/3 rounded" />
+            </div>
+            <div className="grid grid-cols-2 gap-3 sm:gap-4">
+              <Skeleton className="h-24 sm:h-32 w-full rounded-xl" />
+              <Skeleton className="h-24 sm:h-32 w-full rounded-xl" />
             </div>
           </div>
-          <div className="space-y-4">
-            <Skeleton className="h-64 w-full" />
-            <Skeleton className="h-32 w-full" />
+          <div className="space-y-3 sm:space-y-4">
+            <Skeleton className="h-48 sm:h-64 w-full rounded-2xl" />
+            <Skeleton className="h-24 sm:h-32 w-full rounded-xl" />
+            <Skeleton className="h-16 sm:h-20 w-full rounded-xl" />
           </div>
         </div>
       </div>
@@ -301,24 +308,25 @@ const RoomPage = () => {
         />
       </Helmet>
 
-      <div className="container mx-auto px-4 py-8">
+      <div className="container mx-auto px-4 py-4 sm:py-8 pb-24 lg:pb-8">
         {/* Back to Search Button */}
         {location.state?.fromSearch && (
-          <div className="mb-4">
+          <div className="mb-3 sm:mb-4 animate-fade-in">
             <Button 
               variant="ghost" 
               onClick={() => navigate('/search', { state: { fromListing: true } })}
-              className="gap-2"
+              className="gap-2 -ml-2 min-h-[44px] touch-manipulation active:scale-95 transition-transform"
             >
               <ArrowLeft className="h-4 w-4" />
-              Επιστροφή στα αποτελέσματα
+              <span className="hidden sm:inline">Επιστροφή στα αποτελέσματα</span>
+              <span className="sm:hidden">Πίσω</span>
             </Button>
           </div>
         )}
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 sm:gap-8">
           {/* Main Content */}
-          <div className="lg:col-span-2 space-y-8">
+          <div className="lg:col-span-2 space-y-6 sm:space-y-8 animate-fade-in">
             <Gallery 
               photos={photos} 
               title={listing.title}
@@ -383,10 +391,10 @@ const RoomPage = () => {
             </div>
           </div>
 
-          {/* Right Sidebar - Sticky */}
+          {/* Right Sidebar - Sticky on desktop, natural flow on mobile */}
           <div className="lg:col-span-1">
             {/* Lister Card - Not Sticky */}
-            <div className="mb-4">
+            <div className="mb-3 sm:mb-4 animate-scale-in">
               <ListerCard 
                 lister={listerProfile}
                 verificationBadge={listerProfile?.kyc_status === 'approved'}
@@ -397,8 +405,8 @@ const RoomPage = () => {
               />
             </div>
             
-            {/* Sticky Section */}
-            <div className="sticky top-4 space-y-4">
+            {/* Sticky Section on desktop, fixed bottom bar on mobile */}
+            <div className="lg:sticky lg:top-4 space-y-3 sm:space-y-4">
               <PriceBox 
                 price={listing.price_month}
                 billsIncluded={!listing.bills_note || listing.bills_note.toLowerCase().includes('included')}
@@ -422,9 +430,18 @@ const RoomPage = () => {
                 onOpenConversation={() => messageFlow.handleMessageSent("")}
                 onRequestAgain={handleRequestChat}
               />
-            </div>
           </div>
         </div>
+
+        {/* Mobile Action Bar - Fixed at bottom */}
+        <MobileActionBar 
+          roomId={room.id}
+          listingSlug={slug || id || ''}
+          listingTitle={listing.title}
+          price={listing.price_month}
+          onRequestChat={handleRequestChat}
+        />
+      </div>
       </div>
 
       <AuthFlowManager 

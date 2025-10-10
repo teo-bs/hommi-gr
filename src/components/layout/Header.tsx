@@ -365,9 +365,10 @@ export const Header = () => {
             <Button
               variant="ghost"
               size="sm"
-              className="lg:hidden"
+              className="lg:hidden min-h-[44px] min-w-[44px] touch-manipulation active:scale-95 transition-transform"
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
               data-testid="mobile-menu-btn"
+              aria-label={mobileMenuOpen ? "Κλείσιμο μενού" : "Άνοιγμα μενού"}
             >
               {mobileMenuOpen ? (
                 <X className="h-5 w-5" />
@@ -379,7 +380,7 @@ export const Header = () => {
 
           {/* Mobile Menu */}
           {mobileMenuOpen && (
-            <div className="lg:hidden border-t border-border py-4">
+            <div className="lg:hidden border-t border-border py-4 animate-slide-in-right">
               {/* Mobile Search - Only for tenants */}
               {currentRole === 'tenant' && (
                 <div className="px-4 mb-4">
@@ -391,7 +392,7 @@ export const Header = () => {
                         placeholder={locationLoading ? "Εντοπισμός..." : "Πού θέλετε να μείνετε;"}
                         value={searchLocation}
                         onChange={(e) => setSearchLocation(e.target.value)}
-                        className="pl-10 pr-4 w-full"
+                        className="pl-10 pr-4 w-full min-h-[44px]"
                         disabled={locationLoading}
                       />
                     </div>
@@ -399,15 +400,15 @@ export const Header = () => {
                 </div>
               )}
 
-              <nav className="space-y-2 px-4">
+              <nav className="space-y-1 px-4">
                 {currentNavItems.map((item) => (
                   <Link
                     key={item.href}
                     to={item.href}
-                    className="block px-3 py-2 text-base font-medium text-muted-foreground hover:text-foreground hover:bg-muted rounded-md transition-colors flex items-center space-x-2"
+                    className="block px-3 py-3 text-base font-medium text-muted-foreground hover:text-foreground hover:bg-muted rounded-lg transition-all duration-200 flex items-center space-x-3 min-h-[44px] touch-manipulation active:scale-95"
                     onClick={() => setMobileMenuOpen(false)}
                   >
-                    <item.icon className="h-4 w-4" />
+                    <item.icon className="h-5 w-5" />
                     <span>{item.label}</span>
                   </Link>
                 ))}
@@ -418,7 +419,7 @@ export const Header = () => {
                   variant="ghost"
                   size="sm"
                   onClick={toggleLanguage}
-                  className="w-full justify-start"
+                  className="w-full justify-start min-h-[44px] touch-manipulation active:scale-95 transition-transform"
                 >
                   <Globe className="h-4 w-4 mr-2" />
                   {language === 'el' ? 'English' : 'Ελληνικά'}
@@ -429,7 +430,7 @@ export const Header = () => {
                   <Button 
                     variant="outline" 
                     size="sm" 
-                    className="w-full justify-start border-foreground/20"
+                    className="w-full justify-start border-foreground/20 min-h-[44px] touch-manipulation active:scale-95 transition-transform"
                     onClick={() => {
                       handlePublishListing();
                       setMobileMenuOpen(false);
