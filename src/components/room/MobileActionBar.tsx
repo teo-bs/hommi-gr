@@ -36,8 +36,6 @@ export const MobileActionBar = ({
             {/* Save Button */}
             <SaveRoomButton 
               roomId={roomId}
-              size="md"
-              variant="outline"
               className="min-h-[44px] min-w-[44px] touch-manipulation active:scale-95 transition-transform"
             />
 
