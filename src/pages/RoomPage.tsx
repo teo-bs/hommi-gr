@@ -207,15 +207,15 @@ const RoomPage = () => {
           listingAmenitiesData
         });
 
-        // Process room amenities
+        // Process room amenities - prefer Greek names
         const processedRoomAmenities = roomAmenitiesData.map(amenity => ({
-          name: amenity.name_en || amenity.name_el || 'Unknown',
+          name: amenity.name_el || amenity.name_en || 'Δεν έχει καθοριστεί',
           icon: amenity.key || amenity.icon || 'home'
         }));
 
-        // Process listing/property amenities
+        // Process listing/property amenities - prefer Greek names
         const processedPropertyAmenities = listingAmenitiesData.map(amenity => ({
-          name: amenity.name_en || amenity.name_el || 'Unknown',
+          name: amenity.name_el || amenity.name_en || 'Δεν έχει καθοριστεί',
           icon: amenity.key || amenity.icon || 'home'
         }));
 
@@ -232,7 +232,20 @@ const RoomPage = () => {
           stats
         };
 
-        console.log('Setting room data:', roomData);
+        console.log('🔍 Final room data:', {
+          listing_id: listing.id,
+          has_lift: listing.has_lift,
+          floor: listing.floor,
+          deposit: listing.deposit,
+          deposit_required: listing.deposit_required,
+          bills_included: listing.bills_included,
+          flatmates_count: listing.flatmates_count,
+          bathrooms: listing.bathrooms,
+          amenities_property_count: processedPropertyAmenities.length,
+          amenities_room_count: processedRoomAmenities.length,
+          published_at: listing.published_at,
+          created_at: listing.created_at
+        });
         setRoomData(roomData);
 
         // Increment view count
@@ -352,7 +365,7 @@ const RoomPage = () => {
             
             <div className="space-y-6">
               <StatsBar 
-                publishedDate={listing.created_at}
+                publishedDate={listing.published_at || listing.created_at}
                 viewCount={stats?.view_count || 0}
                 requestCount={stats?.request_count || 0}
               />
@@ -409,8 +422,8 @@ const RoomPage = () => {
             <div className="lg:sticky lg:top-4 space-y-3 sm:space-y-4">
               <PriceBox 
                 price={listing.price_month}
+                deposit={listing.deposit}
                 billsIncluded={listing.bills_included}
-                deposit={listing.deposit_required ? listing.price_month : 0}
               />
               
               <div className="space-y-2">

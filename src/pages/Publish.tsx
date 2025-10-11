@@ -42,6 +42,7 @@ interface ListingDraft {
   room_size_m2?: number;
   floor?: number;
   price_month?: number;
+  deposit?: number;
   deposit_required: boolean;
   has_lift: boolean;
   bedrooms_single: number;
@@ -270,6 +271,7 @@ export default function Publish() {
           room_size_m2: existingDraft.room_size_m2 || undefined,
           floor: existingDraft.floor || undefined,
           price_month: existingDraft.price_month || undefined,
+          deposit: existingDraft.deposit || undefined,
           deposit_required: existingDraft.deposit_required ?? true,
           bills_included_any: existingDraft.bills_included ?? false,
           has_lift: existingDraft.has_lift || false,
@@ -329,6 +331,7 @@ export default function Publish() {
         room_size_m2: updatedDraft.room_size_m2,
         floor: updatedDraft.floor,
         price_month: updatedDraft.price_month,
+        deposit: updatedDraft.deposit,
         deposit_required: updatedDraft.deposit_required,
         has_lift: updatedDraft.has_lift,
         bedrooms_single: updatedDraft.bedrooms_single,
@@ -717,6 +720,15 @@ export default function Publish() {
       setPublishingStage("Επικύρωση στοιχείων...");
       setPublishProgress(40);
       console.log('🔍 Validating listing data...');
+      
+      // Validation warnings for missing amenities
+      if (!draft.amenities_property || draft.amenities_property.length === 0) {
+        console.warn('⚠️ No property amenities selected');
+      }
+      if (!draft.amenities_room || draft.amenities_room.length === 0) {
+        console.warn('⚠️ No room amenities selected');
+      }
+      
       const validationResult = await validateListing(draft);
       
       console.log('🔍 Validation result:', validationResult);

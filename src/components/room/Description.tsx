@@ -37,8 +37,8 @@ export const Description = ({ title, description }: DescriptionProps) => {
         <div className="prose prose-sm max-w-none">
           <p className="text-foreground leading-relaxed whitespace-pre-wrap">
             {isTranslated 
-              ? "Translation feature coming soon..."
-              : (description || "Δεν έχει προστεθεί περιγραφή ακόμα.")
+              ? "Η λειτουργία μετάφρασης έρχεται σύντομα..."
+              : (description || "Δεν έχει καθοριστεί")
             }
           </p>
         </div>

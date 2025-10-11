@@ -15,19 +15,19 @@ export const StatsBar = ({ publishedDate, viewCount, requestCount }: StatsBarPro
     <div className="flex items-center space-x-4 py-3 border-b">
       <Badge variant="secondary">
         <Clock className="h-3 w-3 mr-1" />
-        Published {timeAgo}
+        Δημοσιεύτηκε {timeAgo}
       </Badge>
       
       <div className="flex items-center space-x-1 text-small text-muted-foreground tracking-wide">
         <Users className="h-4 w-4" />
         <span className="font-medium text-foreground tabular-nums">{requestCount}</span>
-        <span>candidates sent a request</span>
+        <span>αιτήματα</span>
       </div>
       
       <div className="flex items-center space-x-1 text-small text-muted-foreground tracking-wide">
         <Eye className="h-4 w-4" />
         <span className="tabular-nums">{viewCount}</span>
-        <span>views</span>
+        <span>προβολές</span>
       </div>
     </div>
   );

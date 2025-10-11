@@ -10,16 +10,17 @@ interface QuickFactsProps {
     has_bed: boolean;
   };
   listing: {
-    amenities_property?: any[];
+    has_lift?: boolean;
     floor?: number | null;
   };
 }
 
 export const QuickFacts = ({ room, listing }: QuickFactsProps) => {
-  const hasLift = listing.amenities_property?.some(amenity => 
-    amenity.name?.toLowerCase().includes('ασανσέρ') || 
-    amenity.name?.toLowerCase().includes('lift')
-  );
+  const getRoomTypeLabel = (roomType: string) => {
+    if (roomType === 'entire_place') return 'Ολόκληρο κατάλυμα';
+    if (roomType === 'private') return 'Ιδιωτικό δωμάτιο';
+    return 'Συγκάτοικο';
+  };
 
   const getFloorLabel = (floor: number | null | undefined) => {
     if (floor === null || floor === undefined) return null;
@@ -30,11 +31,12 @@ export const QuickFacts = ({ room, listing }: QuickFactsProps) => {
   };
 
   const floorLabel = getFloorLabel(listing.floor);
+  const hasLift = listing.has_lift ?? false;
 
   const facts = [
     {
       icon: Home,
-      label: room.room_type === 'private' ? 'Private room' : 'Shared room',
+      label: getRoomTypeLabel(room.room_type),
       variant: 'default'
     },
     ...(room.room_size_m2 ? [{
@@ -44,7 +46,7 @@ export const QuickFacts = ({ room, listing }: QuickFactsProps) => {
     }] : []),
     {
       icon: room.is_interior ? Home : Home,
-      label: room.is_interior ? 'Interior' : 'Exterior',
+      label: room.is_interior ? 'Εσωτερικό' : 'Εξωτερικό',
       variant: room.is_interior ? 'secondary' : 'default'
     },
     ...(floorLabel ? [{
@@ -54,12 +56,12 @@ export const QuickFacts = ({ room, listing }: QuickFactsProps) => {
     }] : []),
     {
       icon: ArrowUp,
-      label: hasLift ? 'Lift' : 'No lift',
+      label: hasLift ? 'Ασανσέρ' : 'Χωρίς ασανσέρ',
       variant: hasLift ? 'default' : 'outline'
     },
     {
       icon: Bed,
-      label: room.has_bed ? 'Bed included' : 'No bed',
+      label: room.has_bed ? 'Με κρεβάτι' : 'Χωρίς κρεβάτι',
       variant: room.has_bed ? 'default' : 'outline'
     }
   ];
@@ -67,7 +69,7 @@ export const QuickFacts = ({ room, listing }: QuickFactsProps) => {
   return (
     <Card>
       <CardContent className="p-4">
-        <h3 className="font-semibold mb-3">Quick facts</h3>
+        <h3 className="font-semibold mb-3">Γρήγορα στοιχεία</h3>
         <div className="flex flex-wrap gap-2">
           {facts.map((fact, index) => (
             <Badge key={index} variant={fact.variant as "default" | "secondary" | "destructive" | "outline"} className="text-xs">

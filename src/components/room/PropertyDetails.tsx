@@ -18,36 +18,36 @@ interface PropertyDetailsProps {
 
 export const PropertyDetails = ({ room, listing }: PropertyDetailsProps) => {
   const availabilityDate = listing.availability_date 
-    ? format(new Date(listing.availability_date), 'MMM dd, yyyy')
-    : 'Available now';
+    ? format(new Date(listing.availability_date), 'dd/MM/yyyy')
+    : 'Δεν έχει καθοριστεί';
 
   const totalBedrooms = (listing.bedrooms_single || 0) + (listing.bedrooms_double || 0);
-  const bathroomCount = listing.bathrooms || 1;
+  const bathroomCount = listing.bathrooms;
 
   const details = [
     {
       icon: Home,
-      label: 'Bathrooms',
-      value: `${bathroomCount} bathroom${bathroomCount !== 1 ? 's' : ''}`
+      label: 'Μπάνια',
+      value: bathroomCount ? `${bathroomCount}` : 'Δεν έχει καθοριστεί'
     },
     {
       icon: Home,
-      label: 'Bedrooms',
-      value: totalBedrooms > 0 ? `${totalBedrooms} bedroom${totalBedrooms !== 1 ? 's' : ''}` : 'Not specified'
+      label: 'Υπνοδωμάτια',
+      value: totalBedrooms > 0 ? `${totalBedrooms}` : 'Δεν έχει καθοριστεί'
     },
     {
       icon: Maximize2,
-      label: 'Room Size',
-      value: room.room_size_m2 ? `${room.room_size_m2}m²` : 'Not specified'
+      label: 'Μέγεθος δωματίου',
+      value: room.room_size_m2 ? `${room.room_size_m2}m²` : 'Δεν έχει καθοριστεί'
     },
     {
       icon: Maximize2,
-      label: 'Property Size',
-      value: listing.property_size_m2 ? `${listing.property_size_m2}m²` : 'Not specified'
+      label: 'Μέγεθος ακινήτου',
+      value: listing.property_size_m2 ? `${listing.property_size_m2}m²` : 'Δεν έχει καθοριστεί'
     },
     {
       icon: Calendar,
-      label: 'Availability',
+      label: 'Διαθεσιμότητα',
       value: availabilityDate
     }
   ];
@@ -55,7 +55,7 @@ export const PropertyDetails = ({ room, listing }: PropertyDetailsProps) => {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Property details</CardTitle>
+        <CardTitle>Λεπτομέρειες ακινήτου</CardTitle>
       </CardHeader>
       
       <CardContent>

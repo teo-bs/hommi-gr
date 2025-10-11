@@ -19,6 +19,7 @@ interface ListingDraft {
   min_stay_months?: number;
   max_stay_months?: number;
   price_month?: number;
+  deposit?: number;
   deposit_required: boolean;
   bills_note?: string;
   bills_included_any?: boolean;
@@ -308,6 +309,22 @@ export default function PublishStepThree({
                   <Label htmlFor="deposit_required">Απαιτείται εγγύηση</Label>
                 </div>
 
+                {draft.deposit_required && (
+                  <div className="space-y-2">
+                    <Label htmlFor="deposit">Ποσό εγγύησης (€)</Label>
+                    <Input
+                      id="deposit"
+                      type="number"
+                      placeholder={draft.price_month ? draft.price_month.toString() : "Π.χ. 400"}
+                      defaultValue={draft.deposit || ''}
+                      onBlur={(e) => onUpdate({ deposit: parseInt(e.target.value) || undefined })}
+                    />
+                    <p className="text-xs text-muted-foreground">
+                      Συνήθως ίσο με το μηνιαίο ενοίκιο
+                    </p>
+                  </div>
+                )}
+
                 {!draft.deposit_required && (
                   <div className="p-3 bg-green-50 dark:bg-green-950 border border-green-200 dark:border-green-800 rounded-lg">
                     <p className="text-sm text-green-800 dark:text-green-200">
@@ -335,7 +352,7 @@ export default function PublishStepThree({
                   <span>Εγγύηση:</span>
                   <span className="font-semibold">
                     {draft.deposit_required 
-                      ? (draft.price_month ? `${draft.price_month}€` : '-')
+                      ? (draft.deposit ? `${draft.deposit}€` : (draft.price_month ? `${draft.price_month}€` : '-'))
                       : 'Χωρίς εγγύηση'
                     }
                   </span>
@@ -345,7 +362,7 @@ export default function PublishStepThree({
                   <span>Σύνολο αρχικό κόστος:</span>
                   <span>
                     {draft.price_month 
-                      ? `${draft.deposit_required ? draft.price_month * 2 : draft.price_month}€`
+                      ? `${draft.price_month + (draft.deposit_required ? (draft.deposit || draft.price_month) : 0)}€`
                       : '-'
                     }
                   </span>

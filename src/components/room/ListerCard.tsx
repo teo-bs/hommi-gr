@@ -74,78 +74,74 @@ export const ListerCard = ({
           
           <div className="flex-1">
             <h3 className="font-semibold text-lg">
-              {lister.display_name || 'Hommi User'}
+              {lister.display_name || 'Χρήστης Hommi'}
             </h3>
-            
-            <div className="flex items-center space-x-1 mt-1">
-              <Star className="h-4 w-4 fill-warning text-warning" />
-              <span className="font-medium">4.8</span>
-              <span className="text-sm text-muted-foreground">(24 reviews)</span>
-            </div>
           </div>
         </div>
       </CardHeader>
       
       <CardContent className="space-y-4">
         {/* Status Badges */}
-        <div className="flex flex-wrap gap-2">
-          {verificationBadge && (
+        {verificationBadge && (
+          <div className="flex flex-wrap gap-2">
             <Badge variant="secondary" className="text-xs">
               <Star className="h-3 w-3 mr-1" />
-              Gov.gr Verified
+              Επαληθευμένο Gov.gr
             </Badge>
-          )}
-          <Badge variant="secondary" className="text-xs">
-            <Star className="h-3 w-3 mr-1" />
-            Superhost
-          </Badge>
-        </div>
+          </div>
+        )}
 
         {/* Member info */}
         <div className="space-y-2 text-sm">
-          <div className="flex items-center justify-between">
-            <span className="text-muted-foreground">Member since</span>
-            <div className="flex items-center">
-              <Calendar className="h-4 w-4 mr-1 text-muted-foreground" />
-              <span>{memberSince}</span>
+          {(propMemberSince || lister.member_since) && (
+            <div className="flex items-center justify-between">
+              <span className="text-muted-foreground">Μέλος από</span>
+              <div className="flex items-center">
+                <Calendar className="h-4 w-4 mr-1 text-muted-foreground" />
+                <span>{memberSince}</span>
+              </div>
             </div>
-          </div>
+          )}
           
-          <div className="flex items-center justify-between">
-            <span className="text-muted-foreground">Last active</span>
-            <div className="flex items-center">
-              <Clock className="h-4 w-4 mr-1 text-muted-foreground" />
-              <span>{lastActive}</span>
+          {(propLastActive || lister.last_active) && (
+            <div className="flex items-center justify-between">
+              <span className="text-muted-foreground">Τελευταία δραστηριότητα</span>
+              <div className="flex items-center">
+                <Clock className="h-4 w-4 mr-1 text-muted-foreground" />
+                <span>{lastActive}</span>
+              </div>
             </div>
-          </div>
+          )}
           
           {(propProfession || lister.profession) && (
             <div className="flex items-center justify-between">
-              <span className="text-muted-foreground">Profession</span>
+              <span className="text-muted-foreground">Επάγγελμα</span>
               <span>{propProfession || lister.profession}</span>
             </div>
           )}
         </div>
 
         {/* Languages */}
-        <div>
-          <div className="flex items-center space-x-2 mb-2">
-            <Globe className="h-4 w-4 text-muted-foreground" />
-            <span className="text-sm font-medium">Languages</span>
+        {displayLanguages.length > 0 && (
+          <div>
+            <div className="flex items-center space-x-2 mb-2">
+              <Globe className="h-4 w-4 text-muted-foreground" />
+              <span className="text-sm font-medium">Γλώσσες</span>
+            </div>
+            <div className="flex flex-wrap gap-1">
+              {displayLanguages.slice(0, 3).map((lang, index) => (
+                <Badge key={index} variant="outline" className="text-xs">
+                  {getLanguageLabel(lang)}
+                </Badge>
+              ))}
+              {displayLanguages.length > 3 && (
+                <Badge variant="outline" className="text-xs">
+                  +{displayLanguages.length - 3}
+                </Badge>
+              )}
+            </div>
           </div>
-          <div className="flex flex-wrap gap-1">
-            {displayLanguages.slice(0, 3).map((lang, index) => (
-              <Badge key={index} variant="outline" className="text-xs">
-                {getLanguageLabel(lang)}
-              </Badge>
-            ))}
-            {displayLanguages.length > 3 && (
-              <Badge variant="outline" className="text-xs">
-                +{displayLanguages.length - 3}
-              </Badge>
-            )}
-          </div>
-        </div>
+        )}
       </CardContent>
     </Card>
   );

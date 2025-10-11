@@ -125,14 +125,14 @@ export const AmenitiesGrid = ({ propertyAmenities, roomAmenities }: AmenitiesGri
       {/* Property Amenities */}
       <Card>
         <CardHeader>
-          <CardTitle>Property amenities</CardTitle>
+          <CardTitle>Παροχές ακινήτου</CardTitle>
         </CardHeader>
         <CardContent>
           {propertyAmenities.length > 0 ? (
             renderAmenityGrid(propertyAmenities)
           ) : (
             <p className="text-sm text-muted-foreground">
-              No property amenities listed
+              Δεν έχει καθοριστεί
             </p>
           )}
         </CardContent>
@@ -141,14 +141,14 @@ export const AmenitiesGrid = ({ propertyAmenities, roomAmenities }: AmenitiesGri
       {/* Room Amenities */}
       <Card>
         <CardHeader>
-          <CardTitle>Room amenities</CardTitle>
+          <CardTitle>Παροχές δωματίου</CardTitle>
         </CardHeader>
         <CardContent>
           {roomAmenities.length > 0 ? (
             renderAmenityGrid(roomAmenities)
           ) : (
             <p className="text-sm text-muted-foreground">
-              No room amenities listed
+              Δεν έχει καθοριστεί
             </p>
           )}
         </CardContent>

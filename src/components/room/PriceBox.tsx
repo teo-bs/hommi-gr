@@ -2,45 +2,55 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Euro } from "lucide-react";
 
 interface PriceBoxProps {
-  price: number;
-  deposit: number;
-  billsIncluded?: boolean;
+  price?: number | null;
+  deposit?: number | null;
+  billsIncluded?: boolean | null;
 }
 
-export const PriceBox = ({ price, deposit, billsIncluded = true }: PriceBoxProps) => {
+export const PriceBox = ({ price, deposit, billsIncluded }: PriceBoxProps) => {
+  const hasPrice = price != null;
+  const hasDeposit = deposit != null;
+  const totalMoveIn = hasPrice && hasDeposit ? price + deposit : null;
+  
   return (
     <Card className="border-2">
       <CardHeader className="pb-3">
         <div className="flex items-baseline space-x-1">
-          <span className="text-3xl font-bold">€{price}</span>
-          <span className="text-muted-foreground">/month</span>
+          <span className="text-3xl font-bold">
+            {hasPrice ? `€${price}` : 'Δεν έχει καθοριστεί'}
+          </span>
+          {hasPrice && <span className="text-muted-foreground">/μήνα</span>}
         </div>
       </CardHeader>
       
       <CardContent className="space-y-3">
         <div className="space-y-2 text-sm">
           <div className="flex justify-between">
-            <span className="text-muted-foreground">Monthly rent</span>
-            <span className="font-medium">€{price}</span>
+            <span className="text-muted-foreground">Μηνιαίο ενοίκιο</span>
+            <span className="font-medium">
+              {hasPrice ? `€${price}` : 'Δεν έχει καθοριστεί'}
+            </span>
           </div>
           
           <div className="flex justify-between">
-            <span className="text-muted-foreground">Deposit</span>
-            <span className="font-medium">€{deposit}</span>
+            <span className="text-muted-foreground">Εγγύηση</span>
+            <span className="font-medium">
+              {hasDeposit ? `€${deposit}` : 'Δεν έχει καθοριστεί'}
+            </span>
           </div>
           
           <div className="flex justify-between">
-            <span className="text-muted-foreground">Bills</span>
-            <span className={`font-medium ${billsIncluded ? 'text-success' : 'text-warning'}`}>
-              {billsIncluded ? 'Included' : 'Not included'}
+            <span className="text-muted-foreground">Λογαριασμοί</span>
+            <span className={`font-medium ${billsIncluded === true ? 'text-success' : billsIncluded === false ? 'text-warning' : ''}`}>
+              {billsIncluded === true ? 'Συμπεριλαμβάνονται' : billsIncluded === false ? 'Δεν συμπεριλαμβάνονται' : 'Δεν έχει καθοριστεί'}
             </span>
           </div>
         </div>
         
         <div className="border-t pt-3">
           <div className="flex justify-between font-semibold">
-            <span>Total move-in cost</span>
-            <span>€{price + deposit}</span>
+            <span>Σύνολο αρχικό κόστος</span>
+            <span>{totalMoveIn != null ? `€${totalMoveIn}` : '-'}</span>
           </div>
         </div>
       </CardContent>
