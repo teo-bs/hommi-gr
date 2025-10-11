@@ -126,6 +126,7 @@ export default function Publish() {
   const [completedSteps, setCompletedSteps] = useState<number[]>([]);
   const [showDraftWarning, setShowDraftWarning] = useState(false);
   const [existingDraftId, setExistingDraftId] = useState<string | null>(null);
+  const [isInPublishFlow, setIsInPublishFlow] = useState(false);
   
   // Search cache refresh hook
   const { mutateAsync: refreshSearchCache } = useSearchCacheRefresh();
@@ -199,8 +200,8 @@ export default function Publish() {
           .limit(1)
           .maybeSingle();
         
-        if (data && !existingDraftId) {
-          // Found a draft - show warning once (but not when editing a specific listing)
+        if (data && !existingDraftId && !isInPublishFlow) {
+          // Found a draft - show warning once (but not when editing a specific listing or in publish flow)
           setExistingDraftId(data.id);
           setShowDraftWarning(true);
           return;
@@ -345,6 +346,8 @@ export default function Publish() {
         pets_allowed: updatedDraft.pets_allowed,
         smoking_allowed: updatedDraft.smoking_allowed,
         required_verifications: updatedDraft.required_verifications,
+        house_rules: updatedDraft.house_rules,
+        services: updatedDraft.services,
         status: 'draft' as const
       };
       if (updatedDraft.id) {
@@ -353,8 +356,8 @@ export default function Publish() {
           .update(draftData)
           .eq('id', updatedDraft.id);
           
-        // Handle amenities via separate tables after save
-        if (updates.amenities_room || updates.amenities_property) {
+        // Always handle amenities if present (not just when in updates)
+        if (updatedDraft.amenities_room?.length || updatedDraft.amenities_property?.length) {
           await handleAmenitiesUpdate(updatedDraft.id, updatedDraft);
         }
       } else {
@@ -648,6 +651,7 @@ export default function Publish() {
   const publishListing = async () => {
     console.log('🚀 Starting publish process...');
     setIsPublishing(true);
+    setIsInPublishFlow(true);
     setPublishError(null);
     setPublishProgress(0);
 
@@ -882,6 +886,7 @@ export default function Publish() {
       });
     } finally {
       setIsPublishing(false);
+      setIsInPublishFlow(false);
       setPublishProgress(0);
       setPublishingStage("");
     }
@@ -889,12 +894,24 @@ export default function Publish() {
 
   const handleProfileCompleted = async () => {
     setShowProfileModal(false);
-    // Refetch profile to get updated completion percentage
-    window.location.reload(); // Simple way to refresh profile data
-    // Then attempt to publish again
-    setTimeout(() => {
-      publishListing();
-    }, 1000);
+    
+    // Refetch verifications to check phone status
+    await refetchVerifications();
+    const phoneVerification = verifications.find(v => v.kind === 'phone');
+    
+    // If phone verification is missing, show verification modal directly
+    if (!phoneVerification || phoneVerification.status !== 'verified') {
+      console.log('📱 Profile complete, showing verification modal...');
+      setTimeout(() => {
+        setShowVerificationModal(true);
+      }, 300);
+    } else {
+      // All prerequisites met, proceed to publish
+      console.log('✅ All prerequisites met, publishing...');
+      setTimeout(() => {
+        publishListing();
+      }, 500);
+    }
   };
 
   const handleVerificationCompleted = async () => {
