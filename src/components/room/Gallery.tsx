@@ -3,6 +3,8 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Heart, Share2, Camera } from "lucide-react";
 import { OwnerGalleryActions } from "@/components/owner/OwnerGalleryActions";
+import { SaveRoomButton } from "@/components/room/SaveRoomButton";
+import { ShareButton } from "@/components/room/ShareButton";
 
 interface GalleryProps {
   photos: Array<{
@@ -15,6 +17,11 @@ interface GalleryProps {
     is_cover?: boolean;
   }>;
   title: string;
+  roomId: string;
+  listingSlug: string;
+  listingTitle: string;
+  flatmatesCount?: number;
+  roomType?: string;
   isOwner?: boolean;
   photoType?: 'listing_photos' | 'room_photos';
   parentId?: string; // listing_id or room_id
@@ -23,12 +30,26 @@ interface GalleryProps {
 
 export const Gallery = ({ 
   photos, 
-  title, 
+  title,
+  roomId,
+  listingSlug,
+  listingTitle,
+  flatmatesCount,
+  roomType,
   isOwner = false,
   photoType = 'room_photos',
   parentId,
   onPhotosUpdate
 }: GalleryProps) => {
+  const getRoomTypeLabel = (type?: string) => {
+    if (!type) return '';
+    const labels: Record<string, string> = {
+      'private': 'Ιδιωτικό Δωμάτιο',
+      'shared': 'Κοινόχρηστο Δωμάτιο',
+      'entire': 'Ολόκληρο Διαμέρισμα'
+    };
+    return labels[type] || type;
+  };
   const [currentImage, setCurrentImage] = useState(0);
   const [failedImages, setFailedImages] = useState<Set<string>>(new Set());
   
@@ -70,14 +91,23 @@ export const Gallery = ({
       <div className="flex items-center justify-between">
         <div className="flex items-center space-x-2">
           <span className="text-sm text-muted-foreground uppercase tracking-wide">
-            Private Room • 2 Flatmates
+            {roomType && getRoomTypeLabel(roomType)}
+            {flatmatesCount && flatmatesCount > 0 && ` • ${flatmatesCount} Συγκάτοικοι`}
           </span>
         </div>
-        <div className="flex items-center space-x-2">
-          <Button variant="outline" size="sm">
-            <Share2 className="h-4 w-4 mr-1" />
-            Share
-          </Button>
+        <div className="flex items-center gap-2">
+          <ShareButton 
+            listingSlug={listingSlug}
+            listingTitle={listingTitle}
+            variant="ghost"
+            size="sm"
+          />
+          <SaveRoomButton 
+            roomId={roomId}
+            variant="ghost"
+            size="sm"
+            showText
+          />
         </div>
       </div>
 

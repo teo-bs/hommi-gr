@@ -338,6 +338,11 @@ const RoomPage = () => {
             <Gallery 
               photos={photos} 
               title={listing.title}
+              roomId={room.id}
+              listingSlug={slug || id || ''}
+              listingTitle={listing.title}
+              flatmatesCount={listing.flatmates_count}
+              roomType={room.room_type}
               isOwner={isOwner}
               photoType="room_photos"
               parentId={room.id}
@@ -364,6 +369,8 @@ const RoomPage = () => {
                 viewCount={stats?.view_count || 0}
                 requestCount={stats?.request_count || 0}
               />
+              
+              <QuickFacts room={room} listing={listing} />
               
               <Description 
                 title={listing.title}
@@ -425,17 +432,7 @@ const RoomPage = () => {
                 billsNote={listing.bills_note}
               />
               
-              <div className="space-y-2">
-                <SaveRoomButton roomId={room.id} />
-                <ShareButton 
-                  listingSlug={slug || id || ''}
-                  listingTitle={listing.title}
-                />
-              </div>
-              
               <CTAStack onRequestChat={handleRequestChat} />
-              
-              <QuickFacts room={room} listing={listing} />
               
               <RequestStatus 
                 status={messageFlow.requestStatus}

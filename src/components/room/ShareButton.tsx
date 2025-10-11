@@ -5,9 +5,18 @@ import { useState } from 'react';
 interface ShareButtonProps {
   listingSlug: string;
   listingTitle: string;
+  variant?: 'default' | 'destructive' | 'outline' | 'secondary' | 'ghost' | 'link';
+  size?: 'default' | 'sm' | 'lg' | 'icon';
+  className?: string;
 }
 
-export const ShareButton = ({ listingSlug, listingTitle }: ShareButtonProps) => {
+export const ShareButton = ({ 
+  listingSlug, 
+  listingTitle,
+  variant = 'outline',
+  size = 'sm',
+  className
+}: ShareButtonProps) => {
   const [copied, setCopied] = useState(false);
   
   const shareUrl = `${window.location.origin}/listing/${listingSlug}?utm_source=share&utm_medium=web&utm_campaign=listing_share`;
@@ -50,10 +59,10 @@ export const ShareButton = ({ listingSlug, listingTitle }: ShareButtonProps) => 
   
   return (
     <Button
-      variant="outline"
-      size="sm"
+      variant={variant}
+      size={size}
       onClick={handleShare}
-      className="w-full"
+      className={className}
     >
       {copied ? (
         <>
