@@ -3,6 +3,7 @@ import mapboxgl from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
 import { useMapState } from "@/hooks/useMapState";
 import { MapControls } from "./MapControls";
+import { supabase } from '@/integrations/supabase/client';
 
 export interface Listing {
   id: string;
@@ -364,7 +365,7 @@ export const MapContainer = ({
             });
             
             // Add hover handlers
-            el.addEventListener('mouseenter', () => {
+            el.addEventListener('mouseenter', async () => {
               if (!map.current) return;
               setHoveredPinId(id);
               onListingHover?.(id);
@@ -374,8 +375,29 @@ export const MapContainer = ({
                 hoverPopup.current.remove();
               }
               
-              const photos = JSON.parse(props.photos || '[]');
-              const photoUrls = photos.length > 0 ? photos : ['/placeholder.svg'];
+              // Fetch photos for this specific room
+              let photoUrls: string[] = [];
+              try {
+                const { data: roomPhotosData, error } = await supabase
+                  .from('room_photos')
+                  .select('url, medium_url, thumbnail_url, sort_order')
+                  .eq('room_id', id)
+                  .is('deleted_at', null)
+                  .order('sort_order', { ascending: true })
+                  .limit(6);
+                
+                if (!error && roomPhotosData && roomPhotosData.length > 0) {
+                  photoUrls = roomPhotosData.map(p => p.medium_url || p.url || p.thumbnail_url).filter(Boolean) as string[];
+                }
+              } catch (err) {
+                console.error('Error fetching room photos:', err);
+              }
+              
+              // Fallback to original photo if fetch failed
+              if (photoUrls.length === 0) {
+                const photos = JSON.parse(props.photos || '[]');
+                photoUrls = photos.length > 0 ? photos : ['/placeholder.svg'];
+              }
               
               hoverPopup.current = new mapboxgl.Popup({
                 closeButton: false,

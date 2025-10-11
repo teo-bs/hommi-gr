@@ -102,6 +102,47 @@ const Search = () => {
     }
   });
 
+  // Extract room_ids for current page to fetch photos
+  const roomIds = useMemo(() => listings.map(l => l.room_id), [listings]);
+
+  // Fetch photos for current page's rooms
+  const { data: roomPhotos = [] } = useQuery({
+    queryKey: ['room-photos', roomIds],
+    queryFn: async () => {
+      if (roomIds.length === 0) return [];
+      
+      const { data, error } = await supabase
+        .from('room_photos')
+        .select('room_id, url, medium_url, thumbnail_url, sort_order')
+        .in('room_id', roomIds)
+        .is('deleted_at', null)
+        .order('sort_order', { ascending: true });
+      
+      if (error) {
+        console.error('Error fetching room photos:', error);
+        return [];
+      }
+      
+      return data;
+    },
+    enabled: roomIds.length > 0,
+  });
+
+  // Build photos map: room_id -> array of photo URLs
+  const photosByRoomId = useMemo(() => {
+    const map: Record<string, string[]> = {};
+    roomPhotos.forEach(photo => {
+      const url = photo.medium_url || photo.url || photo.thumbnail_url;
+      if (url) {
+        if (!map[photo.room_id]) {
+          map[photo.room_id] = [];
+        }
+        map[photo.room_id].push(url);
+      }
+    });
+    return map;
+  }, [roomPhotos]);
+
   // Fetch ALL listings for map (without pagination)
   const { data: allListingsForMap = [] } = useOptimizedSearch({
     filters: {
@@ -141,7 +182,8 @@ const Search = () => {
         room_slug: listing.slug,
         lat: listing.lat,
         lng: listing.lng,
-        formatted_address: (listing as any).formatted_address
+        formatted_address: (listing as any).formatted_address,
+        lister_first_name: listing.lister_first_name
       }));
   }, [allListingsForMap]);
 
@@ -318,23 +360,29 @@ const Search = () => {
             ) : (
               <>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
-                  {paginatedListings.map((listing, index) => (
-                    <div 
-                      key={listing.room_id}
-                      className="animate-fade-in"
-                      style={{ animationDelay: `${index * 50}ms` }}
-                    >
-                      <ListingCard
-                        listing={listing}
-                        coverPhoto={listing.cover_photo_url}
-                        currentUserProfileExtras={currentUserProfile?.profile_extras}
-                        hoveredListingId={hoveredListingId}
-                        selectedListingId={selectedListingId}
-                        onHover={handleListingHover}
-                        onClick={handleListingClick}
-                      />
-                    </div>
-                  ))}
+                  {paginatedListings.map((listing, index) => {
+                    // Decorate listing with photos array
+                    const photos = photosByRoomId[listing.room_id] ?? [listing.cover_photo_url].filter(Boolean);
+                    const listingWithPhotos = { ...listing, photos };
+                    
+                    return (
+                      <div 
+                        key={listing.room_id}
+                        className="animate-fade-in"
+                        style={{ animationDelay: `${index * 50}ms` }}
+                      >
+                        <ListingCard
+                          listing={listingWithPhotos}
+                          coverPhoto={listing.cover_photo_url}
+                          currentUserProfileExtras={currentUserProfile?.profile_extras}
+                          hoveredListingId={hoveredListingId}
+                          selectedListingId={selectedListingId}
+                          onHover={handleListingHover}
+                          onClick={handleListingClick}
+                        />
+                      </div>
+                    );
+                  })}
                 </div>
                 
                 {/* Pagination - always show when there are listings */}
