@@ -25,6 +25,7 @@ import { PublishWarningsBanner } from "@/components/publish/PublishWarningsBanne
 import { PublishProfileModal } from "@/components/publish/PublishProfileModal";
 import { PublishVerificationModal } from "@/components/publish/PublishVerificationModal";
 import { handleAmenitiesUpdate } from "@/components/publish/AmenitiesHandler";
+import { handleHouseRulesUpdate } from "@/components/publish/HouseRulesHandler";
 import { DraftWarningDialog } from "@/components/publish/DraftWarningDialog";
 
 interface ListingDraft {
@@ -217,6 +218,14 @@ export default function Publish() {
         
         const amenitiesPropertyKeys = listingAmenities?.map((la: any) => la.amenities.key) || [];
 
+        // Load house rules from junction table
+        const { data: listingHouseRules } = await supabase
+          .from('listing_house_rules')
+          .select('house_rule_types(key, name_el)')
+          .eq('listing_id', existingDraft.id);
+        
+        const houseRulesLabels = listingHouseRules?.map((hr: any) => hr.house_rule_types.name_el) || [];
+
         // Load room amenities if listing is published
         let amenitiesRoomKeys: string[] = [];
         if (existingDraft.status === 'published' || existingDraft.status === 'archived') {
@@ -272,7 +281,7 @@ export default function Publish() {
           i_live_here: existingDraft.i_live_here || false,
           orientation: (existingDraft.orientation as 'exterior' | 'interior') || 'exterior',
           bed_type: existingDraft.bed_type || undefined,
-          house_rules: Array.isArray(existingDraft.house_rules) ? existingDraft.house_rules as string[] : [],
+          house_rules: houseRulesLabels,
           amenities_property: amenitiesPropertyKeys,
           amenities_room: amenitiesRoomKeys,
           availability_date: existingDraft.availability_date ? new Date(existingDraft.availability_date) : undefined,
@@ -280,7 +289,7 @@ export default function Publish() {
           min_stay_months: existingDraft.min_stay_months || undefined,
           max_stay_months: existingDraft.max_stay_months || undefined,
           bills_note: existingDraft.bills_note || '',
-          services: Array.isArray(existingDraft.services) ? existingDraft.services as string[] : [],
+          services: [], // Deprecated field, not used
           photos: photos,
           description: existingDraft.description || '',
           preferred_gender: Array.isArray(existingDraft.preferred_gender) ? existingDraft.preferred_gender as string[] : [],
@@ -346,9 +355,8 @@ export default function Publish() {
         pets_allowed: updatedDraft.pets_allowed,
         smoking_allowed: updatedDraft.smoking_allowed,
         required_verifications: updatedDraft.required_verifications,
-        house_rules: updatedDraft.house_rules,
-        services: updatedDraft.services,
         status: 'draft' as const
+        // NOTE: house_rules and services are saved via junction tables, not as arrays
       };
       if (updatedDraft.id) {
         await supabase
@@ -356,9 +364,13 @@ export default function Publish() {
           .update(draftData)
           .eq('id', updatedDraft.id);
           
-        // Always handle amenities if present (not just when in updates)
+        // Always handle amenities and house rules if present
         if (updatedDraft.amenities_room?.length || updatedDraft.amenities_property?.length) {
           await handleAmenitiesUpdate(updatedDraft.id, updatedDraft);
+        }
+        
+        if (updatedDraft.house_rules?.length || updatedDraft.house_rules?.length === 0) {
+          await handleHouseRulesUpdate(updatedDraft.id, updatedDraft);
         }
       } else {
         const insertPayload = { ...draftData, owner_id: profile.id } as any;
@@ -391,9 +403,10 @@ export default function Publish() {
           setDraft(prev => ({ ...prev, id: data.id }));
           newId = data.id;
           
-          // Create room entry and handle amenities for this listing
+          // Create room entry and handle amenities and house rules for this listing
           await createRoomForListing(data.id, updatedDraft);
           await handleAmenitiesUpdate(data.id, updatedDraft);
+          await handleHouseRulesUpdate(data.id, updatedDraft);
           
           // Create lister profile if it doesn't exist
           await ensureListerProfile();

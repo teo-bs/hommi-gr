@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -23,6 +23,7 @@ interface PublishStepRoomDetailsProps {
   onPrev: () => void;
 }
 
+// Greek labels - these will be mapped to database keys by the handler
 const ROOM_AMENITIES = [
   'Τηλεόραση', 'Ιδιωτικό μπάνιο', 'Κλιματισμός δωματίου', 
   'Μπαλκόνι', 'Γραφείο', 'Καρέκλα', 'Ντουλάπα', 'Συρτάρια', 
@@ -41,13 +42,20 @@ export default function PublishStepRoomDetails({
   onNext, 
   onPrev 
 }: PublishStepRoomDetailsProps) {
+  // Local state for batch updates
+  const [localAmenities, setLocalAmenities] = useState(draft.amenities_room || []);
   
   const toggleAmenity = (amenity: string) => {
-    const current = draft.amenities_room || [];
-    const updated = current.includes(amenity)
-      ? current.filter(a => a !== amenity)
-      : [...current, amenity];
-    onUpdate({ amenities_room: updated });
+    const updated = localAmenities.includes(amenity)
+      ? localAmenities.filter(a => a !== amenity)
+      : [...localAmenities, amenity];
+    setLocalAmenities(updated);
+  };
+
+  const handleNext = () => {
+    // Commit local selections before proceeding
+    onUpdate({ amenities_room: localAmenities });
+    onNext();
   };
 
   const isValid = draft.room_size_m2 && draft.bed_type;
@@ -155,7 +163,7 @@ export default function PublishStepRoomDetails({
               {ROOM_AMENITIES.map((amenity) => (
                 <Badge
                   key={amenity}
-                  variant={(draft.amenities_room || []).includes(amenity) ? 'default' : 'outline'}
+                  variant={localAmenities.includes(amenity) ? 'default' : 'outline'}
                   className="cursor-pointer"
                   onClick={() => toggleAmenity(amenity)}
                 >
@@ -172,7 +180,7 @@ export default function PublishStepRoomDetails({
         <Button variant="outline" onClick={onPrev}>
           Πίσω
         </Button>
-        <Button onClick={onNext} disabled={!isValid}>
+        <Button onClick={handleNext} disabled={!isValid}>
           Συνέχεια
         </Button>
       </div>

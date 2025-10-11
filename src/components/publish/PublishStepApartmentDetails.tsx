@@ -28,6 +28,7 @@ interface PublishStepApartmentDetailsProps {
   onPrev: () => void;
 }
 
+// Greek labels - these will be mapped to database keys by the handler
 const PROPERTY_AMENITIES = [
   'WiFi', 'Τηλεόραση', 'Κουζίνα', 'Πλυντήριο ρούχων', 'Πλυντήριο πιάτων',
   'Ιδιωτικό πάρκινγκ', 'Πάρκινγκ στην ιδιοκτησία με πληρωμή', 
@@ -38,6 +39,7 @@ const SPECIAL_AMENITIES = [
   'Ψησταριά μπάρμπεκιου', 'Υπαίθρια τραπεζαρία', 'Τζάκι', 'Εξοπλισμός γυμναστικής'
 ];
 
+// Greek labels - these will be mapped to database keys by the handler  
 const HOUSE_RULES = [
   'Όχι κάπνισμα', 'Όχι κατοικίδια', 'Όχι επισκέπτες αργά', 
   'Όχι πάρτι', 'Ησυχία μετά τις 22:00', 
@@ -50,20 +52,31 @@ export default function PublishStepApartmentDetails({
   onNext, 
   onPrev 
 }: PublishStepApartmentDetailsProps) {
+  // Local state for batch updates
+  const [localAmenities, setLocalAmenities] = useState(draft.amenities_property || []);
+  const [localHouseRules, setLocalHouseRules] = useState(draft.house_rules || []);
+  
   const toggleAmenity = (amenity: string) => {
-    const current = draft.amenities_property || [];
-    const updated = current.includes(amenity)
-      ? current.filter(a => a !== amenity)
-      : [...current, amenity];
-    onUpdate({ amenities_property: updated });
+    const updated = localAmenities.includes(amenity)
+      ? localAmenities.filter(a => a !== amenity)
+      : [...localAmenities, amenity];
+    setLocalAmenities(updated);
   };
 
   const toggleHouseRule = (rule: string) => {
-    const current = draft.house_rules || [];
-    const updated = current.includes(rule)
-      ? current.filter(r => r !== rule)
-      : [...current, rule];
-    onUpdate({ house_rules: updated });
+    const updated = localHouseRules.includes(rule)
+      ? localHouseRules.filter(r => r !== rule)
+      : [...localHouseRules, rule];
+    setLocalHouseRules(updated);
+  };
+
+  const handleNext = () => {
+    // Commit local selections before proceeding
+    onUpdate({
+      amenities_property: localAmenities,
+      house_rules: localHouseRules
+    });
+    onNext();
   };
 
   const totalFlatmates = (draft.flatmates_count || 0) + (draft.i_live_here ? 1 : 0);
@@ -213,37 +226,37 @@ export default function PublishStepApartmentDetails({
           </p>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div>
-            <h4 className="text-sm font-medium mb-3">Βασικές ανέσεις</h4>
-            <div className="flex flex-wrap gap-2">
-              {PROPERTY_AMENITIES.map((amenity) => (
-                <Badge
-                  key={amenity}
-                  variant={(draft.amenities_property || []).includes(amenity) ? 'default' : 'outline'}
-                  className="cursor-pointer"
-                  onClick={() => toggleAmenity(amenity)}
-                >
-                  {amenity}
-                </Badge>
-              ))}
+            <div>
+              <h4 className="text-sm font-medium mb-3">Βασικές ανέσεις</h4>
+              <div className="flex flex-wrap gap-2">
+                {PROPERTY_AMENITIES.map((amenity) => (
+                  <Badge
+                    key={amenity}
+                    variant={localAmenities.includes(amenity) ? 'default' : 'outline'}
+                    className="cursor-pointer"
+                    onClick={() => toggleAmenity(amenity)}
+                  >
+                    {amenity}
+                  </Badge>
+                ))}
+              </div>
             </div>
-          </div>
 
-          <div>
-            <h4 className="text-sm font-medium mb-3">Διαθέτετε ξεχωριστές παροχές;</h4>
-            <div className="flex flex-wrap gap-2">
-              {SPECIAL_AMENITIES.map((amenity) => (
-                <Badge
-                  key={amenity}
-                  variant={(draft.amenities_property || []).includes(amenity) ? 'default' : 'outline'}
-                  className="cursor-pointer"
-                  onClick={() => toggleAmenity(amenity)}
-                >
-                  {amenity}
-                </Badge>
-              ))}
+            <div>
+              <h4 className="text-sm font-medium mb-3">Διαθέτετε ξεχωριστές παροχές;</h4>
+              <div className="flex flex-wrap gap-2">
+                {SPECIAL_AMENITIES.map((amenity) => (
+                  <Badge
+                    key={amenity}
+                    variant={localAmenities.includes(amenity) ? 'default' : 'outline'}
+                    className="cursor-pointer"
+                    onClick={() => toggleAmenity(amenity)}
+                  >
+                    {amenity}
+                  </Badge>
+                ))}
+              </div>
             </div>
-          </div>
         </CardContent>
       </Card>
 
@@ -257,7 +270,7 @@ export default function PublishStepApartmentDetails({
             {HOUSE_RULES.map((rule) => (
               <Badge
                 key={rule}
-                variant={(draft.house_rules || []).includes(rule) ? 'default' : 'outline'}
+                variant={localHouseRules.includes(rule) ? 'default' : 'outline'}
                 className="cursor-pointer"
                 onClick={() => toggleHouseRule(rule)}
               >
@@ -273,7 +286,7 @@ export default function PublishStepApartmentDetails({
         <Button variant="outline" onClick={onPrev}>
           Πίσω
         </Button>
-        <Button onClick={onNext} disabled={!isValid}>
+        <Button onClick={handleNext} disabled={!isValid}>
           Συνέχεια
         </Button>
       </div>

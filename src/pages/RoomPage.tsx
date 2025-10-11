@@ -409,8 +409,8 @@ const RoomPage = () => {
             <div className="lg:sticky lg:top-4 space-y-3 sm:space-y-4">
               <PriceBox 
                 price={listing.price_month}
-                billsIncluded={!listing.bills_note || listing.bills_note.toLowerCase().includes('included')}
-                deposit={listing.deposit || 0}
+                billsIncluded={listing.bills_included}
+                deposit={listing.deposit_required ? listing.price_month : 0}
               />
               
               <div className="space-y-2">

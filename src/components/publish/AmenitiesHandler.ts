@@ -1,4 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
+import { mapGreekArrayToKeys } from "./GreekAmenityMapper";
 
 interface ListingDraft {
   amenities_property: string[];
@@ -6,15 +7,34 @@ interface ListingDraft {
   [key: string]: any;
 }
 
-// Helper to map amenity keys to IDs
+// Helper to map amenity keys (or Greek labels) to IDs
 const mapAmenityKeysToIds = async (keys: string[]): Promise<string[]> => {
   if (!keys || keys.length === 0) return [];
   
-  const { data } = await supabase
+  // First convert Greek labels to database keys
+  const dbKeys = mapGreekArrayToKeys(keys, false);
+  
+  if (dbKeys.length === 0) {
+    console.warn('No valid amenity keys after Greek mapping:', keys);
+    return [];
+  }
+  
+  const { data, error } = await supabase
     .from('amenities')
     .select('id, key')
-    .in('key', keys)
+    .in('key', dbKeys)
     .eq('is_active', true);
+  
+  if (error) {
+    console.error('Error fetching amenity IDs:', error);
+    return [];
+  }
+  
+  console.log(`Mapped ${keys.length} amenity labels to ${data?.length || 0} IDs:`, { 
+    input: keys, 
+    dbKeys, 
+    foundIds: data?.map(a => a.key) 
+  });
   
   return data?.map(a => a.id) || [];
 };

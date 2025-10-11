@@ -35,10 +35,10 @@ export const Description = ({ title, description }: DescriptionProps) => {
       
       <CardContent>
         <div className="prose prose-sm max-w-none">
-          <p className="text-foreground leading-relaxed">
+          <p className="text-foreground leading-relaxed whitespace-pre-wrap">
             {isTranslated 
-              ? "Beautiful room in the heart of the city. Perfect for young professionals or students. The room is fully furnished and includes all necessary amenities. The apartment is located in a quiet neighborhood with excellent transport connections."
-              : description || "Όμορφο δωμάτιο στην καρδιά της πόλης. Ιδανικό για νέους επαγγελματίες ή φοιτητές. Το δωμάτιο είναι πλήρως επιπλωμένο και περιλαμβάνει όλες τις απαραίτητες ανέσεις. Το διαμέρισμα βρίσκεται σε μια ήσυχη γειτονιά με εξαιρετικές συγκοινωνιακές συνδέσεις."
+              ? "Translation feature coming soon..."
+              : (description || "Δεν έχει προστεθεί περιγραφή ακόμα.")
             }
           </p>
         </div>
