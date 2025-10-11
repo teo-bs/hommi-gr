@@ -10,19 +10,14 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 
 interface FlatFilterPopoverProps {
-  services: string[];
   flatAmenities: string[];
   houseRules: string[];
   propertySize: [number, number];
-  onServicesChange: (services: string[]) => void;
   onFlatAmenitiesChange: (amenities: string[]) => void;
   onHouseRulesChange: (rules: string[]) => void;
   onPropertySizeChange: (size: [number, number]) => void;
 }
 
-const SERVICE_OPTIONS = [
-  { value: 'cleaning', label: 'Υπηρεσία καθαρισμού' },
-];
 
 const HOUSE_RULE_OPTIONS = [
   { value: 'smoking', label: 'Επιτρέπεται το κάπνισμα' },
@@ -31,11 +26,9 @@ const HOUSE_RULE_OPTIONS = [
 ];
 
 export const FlatFilterPopover = ({
-  services,
   flatAmenities,
   houseRules,
   propertySize,
-  onServicesChange,
   onFlatAmenitiesChange,
   onHouseRulesChange,
   onPropertySizeChange,
@@ -45,18 +38,10 @@ export const FlatFilterPopover = ({
   const [tempMinSize, setTempMinSize] = useState(propertySize[0].toString());
   const [tempMaxSize, setTempMaxSize] = useState(propertySize[1].toString());
   
-  const totalActive = services.length + flatAmenities.length + houseRules.length + 
+  const totalActive = flatAmenities.length + houseRules.length + 
     (propertySize[0] !== 0 || propertySize[1] !== 1000 ? 1 : 0);
   const isActive = totalActive > 0;
   const label = isActive ? `Flat +${totalActive}` : 'Flat';
-
-  const handleServiceToggle = (service: string) => {
-    if (services.includes(service)) {
-      onServicesChange(services.filter(s => s !== service));
-    } else {
-      onServicesChange([...services, service]);
-    }
-  };
 
   const handleAmenityToggle = (amenityKey: string) => {
     if (flatAmenities.includes(amenityKey)) {
@@ -89,7 +74,6 @@ export const FlatFilterPopover = ({
             isActive={isActive}
             onClick={() => setOpen(!open)}
             onRemove={isActive ? () => {
-              onServicesChange([]);
               onFlatAmenitiesChange([]);
               onHouseRulesChange([]);
               onPropertySizeChange([0, 1000]);
@@ -101,26 +85,6 @@ export const FlatFilterPopover = ({
       <PopoverContent className="w-96" align="start">
         <ScrollArea className="h-[500px] pr-4">
           <div className="space-y-6">
-            <div>
-              <h4 className="font-semibold text-small mb-3">Υπηρεσίες</h4>
-              <div className="space-y-2">
-                {SERVICE_OPTIONS.map((option) => (
-                  <div key={option.value} className="flex items-center space-x-2">
-                    <Checkbox
-                      id={`service-${option.value}`}
-                      checked={services.includes(option.value)}
-                      onCheckedChange={() => handleServiceToggle(option.value)}
-                    />
-                    <Label htmlFor={`service-${option.value}`} className="text-small cursor-pointer">
-                      {option.label}
-                    </Label>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            <Separator />
-
             <div>
               <h4 className="font-semibold text-small mb-3">Παροχές διαμερίσματος</h4>
               <div className="grid grid-cols-2 gap-2">

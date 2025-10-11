@@ -54,7 +54,6 @@ export interface SearchFilters {
   searchText?: string;
   sort?: string;
   bedType?: string[];
-  services?: string[];
   houseRules?: string[];
   propertySize?: { min: number; max: number };
   bounds?: {

@@ -74,7 +74,6 @@ const Search = () => {
     flatmatesGender: [],
     bedType: [],
     roomAmenities: [],
-    services: [],
     flatAmenities: [],
     houseRules: [],
     propertySize: [0, 1000],

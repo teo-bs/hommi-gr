@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { AvatarWithBadge } from "@/components/ui/avatar-with-badge";
 import { Badge } from "@/components/ui/badge";
 import { CheckCircle, XCircle, Clock, MapPin } from "lucide-react";
 import { useChatRequests } from "@/hooks/useChatRequests";
@@ -22,6 +22,8 @@ interface PendingRequest {
   seeker?: {
     display_name: string;
     avatar_url?: string;
+    profile_completion_pct?: number;
+    verifications_json?: Record<string, any>;
   };
 }
 
@@ -102,12 +104,15 @@ export const PendingRequests = () => {
           <div key={request.id} className="border rounded-lg p-4 space-y-3">
             <div className="flex items-start justify-between">
               <div className="flex items-center space-x-3">
-                <Avatar className="h-10 w-10">
-                  <AvatarImage src={request.seeker?.avatar_url} />
-                  <AvatarFallback>
-                    {request.seeker?.display_name?.charAt(0) || '?'}
-                  </AvatarFallback>
-                </Avatar>
+                <AvatarWithBadge
+                  src={request.seeker?.avatar_url}
+                  fallback={request.seeker?.display_name?.charAt(0) || '?'}
+                  showBadge={
+                    request.seeker?.profile_completion_pct === 100 &&
+                    request.seeker?.verifications_json?.phone === 'verified'
+                  }
+                  className="h-10 w-10"
+                />
                 <div className="space-y-1">
                   <p className="font-medium">
                     {request.seeker?.display_name || 'Unknown User'}

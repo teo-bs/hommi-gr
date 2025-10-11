@@ -64,7 +64,6 @@ interface ListingDraft {
   bills_note?: string;
   bills_included_any?: boolean;
   bills_included?: string[];
-  services: string[];
   photos: string[];
   description?: string;
   preferred_gender?: string[];
@@ -151,7 +150,6 @@ export default function Publish() {
     amenities_property: [],
     amenities_room: [],
     house_rules: [],
-    services: [],
     photos: [],
     step_completed: 0,
     couples_accepted: false,
@@ -291,7 +289,6 @@ export default function Publish() {
           min_stay_months: existingDraft.min_stay_months || undefined,
           max_stay_months: existingDraft.max_stay_months || undefined,
           bills_note: existingDraft.bills_note || '',
-          services: [], // Deprecated field, not used
           photos: photos,
           description: existingDraft.description || '',
           preferred_gender: Array.isArray(existingDraft.preferred_gender) ? existingDraft.preferred_gender as string[] : [],
@@ -359,7 +356,7 @@ export default function Publish() {
         smoking_allowed: updatedDraft.smoking_allowed,
         required_verifications: updatedDraft.required_verifications,
         status: 'draft' as const
-        // NOTE: house_rules are saved via junction table, services field removed (deprecated)
+        // NOTE: house_rules are saved via junction table
       };
       if (updatedDraft.id) {
         await supabase

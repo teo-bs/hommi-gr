@@ -24,7 +24,6 @@ interface ListingDraft {
   bills_note?: string;
   bills_included_any?: boolean;
   bills_included?: string[];
-  services: string[];
   property_size_m2?: number;
   room_size_m2?: number;
   property_type?: 'room' | 'apartment';
@@ -38,10 +37,6 @@ interface PublishStepThreeProps {
   onPrev: () => void;
 }
 
-const SERVICES = [
-  'Σύνταξη συμβολαίου', 
-  'Καθαρισμός'
-];
 
 const BILL_TYPES = [
   { key: 'electricity', label: 'Ρεύμα' },
@@ -57,14 +52,6 @@ export default function PublishStepThree({
   onNext, 
   onPrev 
 }: PublishStepThreeProps) {
-  
-  const toggleService = (service: string) => {
-    const current = draft.services || [];
-    const updated = current.includes(service)
-      ? current.filter(s => s !== service)
-      : [...current, service];
-    onUpdate({ services: updated });
-  };
 
   // Use room_size_m2 for room type, property_size_m2 for apartment type
   const sizeToUse = draft.property_type === 'room' 
@@ -181,26 +168,6 @@ export default function PublishStepThree({
                     onBlur={(e) => onUpdate({ max_stay_months: parseInt(e.target.value) || undefined })}
                   />
                 </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle>Υπηρεσίες</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="flex flex-wrap gap-2">
-                {SERVICES.map((service) => (
-                  <Badge
-                    key={service}
-                    variant={(draft.services || []).includes(service) ? 'default' : 'outline'}
-                    className="cursor-pointer"
-                    onClick={() => toggleService(service)}
-                  >
-                    {service}
-                  </Badge>
-                ))}
               </div>
             </CardContent>
           </Card>

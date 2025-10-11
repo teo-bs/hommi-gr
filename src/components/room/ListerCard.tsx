@@ -1,8 +1,9 @@
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { AvatarWithBadge } from "@/components/ui/avatar-with-badge";
 import { Star, Calendar, Clock, Globe } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
+import { useProfileVerification } from "@/hooks/useProfileVerification";
 
 interface ListerCardProps {
   lister?: {
@@ -14,6 +15,8 @@ interface ListerCardProps {
     kyc_status?: string;
     profession?: string;
     languages?: string[];
+    profile_completion_pct?: number;
+    verifications_json?: Record<string, any>;
   };
   verificationBadge?: boolean;
   languages?: string[];
@@ -61,16 +64,21 @@ export const ListerCard = ({
     return languageMap[code] || code;
   };
 
+  const { isVerified } = useProfileVerification({
+    profileCompletionPct: lister.profile_completion_pct,
+    verificationsJson: lister.verifications_json,
+  });
+
   return (
     <Card>
       <CardHeader className="pb-3">
         <div className="flex items-start space-x-4">
-          <Avatar className="h-16 w-16">
-            <AvatarImage src={lister.avatar_url} />
-            <AvatarFallback className="bg-primary/10 text-primary font-semibold text-lg">
-              {lister.display_name?.charAt(0)?.toUpperCase() || 'U'}
-            </AvatarFallback>
-          </Avatar>
+          <AvatarWithBadge
+            src={lister.avatar_url}
+            fallback={lister.display_name?.charAt(0)?.toUpperCase() || 'U'}
+            showBadge={isVerified}
+            className="h-16 w-16"
+          />
           
           <div className="flex-1">
             <h3 className="font-semibold text-lg">

@@ -1,5 +1,6 @@
-import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import { AvatarWithBadge } from "@/components/ui/avatar-with-badge";
 import { Badge } from "@/components/ui/badge";
+import { useProfileVerification } from "@/hooks/useProfileVerification";
 import { CheckCircle2 } from "lucide-react";
 import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/components/ui/hover-card";
 
@@ -22,18 +23,24 @@ export const ListerBadge = ({
   const verifiedItems = Object.entries(verifications).filter(
     ([_, status]) => status === 'verified' || status === 'approved'
   );
+
+  const { isVerified } = useProfileVerification({
+    profileCompletionPct: verifications?.profile_completion_pct,
+    verificationsJson: verifications,
+  });
   
   return (
     <HoverCard>
       <HoverCardTrigger asChild>
         <div className="absolute bottom-3 right-3 cursor-pointer z-10">
           <div className="relative">
-            <Avatar className="h-12 w-12 border-2 border-background shadow-lg">
-              <AvatarImage src={avatarUrl} alt={firstName} />
-              <AvatarFallback className="bg-primary text-primary-foreground">
-                {initials}
-              </AvatarFallback>
-            </Avatar>
+            <AvatarWithBadge
+              src={avatarUrl}
+              alt={firstName}
+              fallback={initials}
+              showBadge={isVerified}
+              className="h-12 w-12 border-2 border-background shadow-lg"
+            />
             
             {score > 0 && (
               <Badge 

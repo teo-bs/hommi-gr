@@ -16,7 +16,6 @@ export interface FilterBarState {
   flatmatesGender: string[];
   bedType: string[];
   roomAmenities: string[];
-  services: string[];
   flatAmenities: string[];
   houseRules: string[];
   propertySize: [number, number];
@@ -63,11 +62,9 @@ export const FilterBar = ({ filters, onFilterChange }: FilterBarProps) => {
             onRoomAmenitiesChange={(roomAmenities) => onFilterChange({ roomAmenities })}
           />
           <FlatFilterPopover
-            services={filters.services}
             flatAmenities={filters.flatAmenities}
             houseRules={filters.houseRules}
             propertySize={filters.propertySize}
-            onServicesChange={(services) => onFilterChange({ services })}
             onFlatAmenitiesChange={(flatAmenities) => onFilterChange({ flatAmenities })}
             onHouseRulesChange={(houseRules) => onFilterChange({ houseRules })}
             onPropertySizeChange={(propertySize) => onFilterChange({ propertySize })}

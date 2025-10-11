@@ -4,6 +4,8 @@ import { Button } from "@/components/ui/button";
 import { Edit, MapPin, Briefcase, Globe } from "lucide-react";
 import { TrustScoreWidget } from "./TrustScoreWidget";
 import { DataProvenanceLabel } from "./DataProvenanceLabel";
+import { AvatarWithBadge } from "@/components/ui/avatar-with-badge";
+import { useProfileVerification } from "@/hooks/useProfileVerification";
 
 interface ProfileOverviewProps {
   profile: any;
@@ -11,8 +13,31 @@ interface ProfileOverviewProps {
 }
 
 export const ProfileOverview = ({ profile, onEdit }: ProfileOverviewProps) => {
+  const { isVerified } = useProfileVerification({
+    profileCompletionPct: profile.profile_completion_pct,
+    verificationsJson: profile.verifications_json,
+  });
+
   return (
     <div className="space-y-6">
+      {/* Profile Header with Avatar */}
+      <Card className="p-6">
+        <div className="flex items-center gap-4 mb-6">
+          <AvatarWithBadge
+            src={profile.avatar_url}
+            fallback={profile.display_name?.charAt(0)?.toUpperCase() || profile.first_name?.charAt(0)?.toUpperCase() || 'U'}
+            showBadge={isVerified}
+            className="h-20 w-20"
+          />
+          <div className="flex-1">
+            <h2 className="text-2xl font-bold">
+              {profile.display_name || `${profile.first_name || ''} ${profile.last_name || ''}`.trim() || 'Χρήστης'}
+            </h2>
+            <p className="text-muted-foreground">{profile.email}</p>
+          </div>
+        </div>
+      </Card>
+
       {/* Trust Score */}
       <TrustScoreWidget
         profileCompletion={profile.profile_completion_pct || 0}
