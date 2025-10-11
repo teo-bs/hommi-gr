@@ -42,7 +42,7 @@ export default function PublishProgressStepper({
                   {isCompleted ? (
                     <Check className="w-5 h-5" />
                   ) : (
-                    <span className="text-sm">{step.id + 1}</span>
+                    <span className="text-sm">{step.id}</span>
                   )}
                 </div>
                 

@@ -75,7 +75,7 @@ export default function PublishStepThree({
     : null;
 
   const isValid = draft.availability_date && draft.price_month && 
-    draft.min_stay_months && draft.max_stay_months;
+    draft.min_stay_months;
 
   return (
     <div className="space-y-6">
@@ -170,7 +170,7 @@ export default function PublishStepThree({
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="max_stay">Μέγιστη διαμονή (μήνες) *</Label>
+                  <Label htmlFor="max_stay">Μέγιστη διαμονή (μήνες)</Label>
                   <Input
                     id="max_stay"
                     type="number"

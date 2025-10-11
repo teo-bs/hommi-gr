@@ -77,16 +77,16 @@ interface ListingDraft {
 }
 
 const STEPS = [
-  { id: 0, title: "Τύπος", key: "role" },
-  { id: 1, title: "Επισκόπηση", key: "overview" },
-  { id: 2, title: "Τοποθεσία", key: "location" },
-  { id: 3, title: "Ακίνητο", key: "apartment" },
-  { id: 4, title: "Δωμάτιο", key: "room" },
-  { id: 5, title: "Φωτογραφίες", key: "photos" },
-  { id: 6, title: "Τίτλος & Περιγραφή", key: "title" },
-  { id: 7, title: "Επαληθεύσεις", key: "verifications" },
-  { id: 8, title: "Διαθεσιμότητα & Τιμή", key: "availability" },
-  { id: 9, title: "Έλεγχος", key: "review" }
+  { id: 1, title: "Τύπος", key: "role" },
+  { id: 2, title: "Επισκόπηση", key: "overview" },
+  { id: 3, title: "Τοποθεσία", key: "location" },
+  { id: 4, title: "Ακίνητο", key: "apartment" },
+  { id: 5, title: "Δωμάτιο", key: "room" },
+  { id: 6, title: "Φωτογραφίες", key: "photos" },
+  { id: 7, title: "Τίτλος & Περιγραφή", key: "title" },
+  { id: 8, title: "Επαληθεύσεις", key: "verifications" },
+  { id: 9, title: "Διαθεσιμότητα & Τιμή", key: "availability" },
+  { id: 10, title: "Έλεγχος", key: "review" }
 ];
 
 export default function Publish() {
@@ -130,7 +130,7 @@ export default function Publish() {
   // Search cache refresh hook
   const { mutateAsync: refreshSearchCache } = useSearchCacheRefresh();
   
-  const currentStep = parseInt(searchParams.get('step') || '0');
+  const currentStep = parseInt(searchParams.get('step') || '1');
   const [draft, setDraft] = useState<ListingDraft>({
     title: '',
     city: '',
@@ -166,10 +166,10 @@ export default function Publish() {
     }
   }, [user, profile, editingId, forceNew]);
 
-  // Auto-advance from step 0 if it should be skipped
+  // Auto-advance from step 1 if it should be skipped
   useEffect(() => {
-    if (!shouldShowStepZero && currentStep === 0 && !searchParams.get('step')) {
-      setSearchParams({ step: '1' });
+    if (!shouldShowStepZero && currentStep === 1 && !searchParams.get('step')) {
+      setSearchParams({ step: '2' });
     }
   }, [shouldShowStepZero, currentStep, searchParams, setSearchParams]);
 
@@ -462,7 +462,7 @@ export default function Publish() {
   const handleGoToDraft = () => {
     setShowDraftWarning(false);
     if (existingDraftId) {
-      navigate(`/publish?id=${existingDraftId}&step=1`);
+      navigate(`/publish?id=${existingDraftId}&step=2`);
     } else {
       navigate('/my-listings?tab=draft');
     }
@@ -488,7 +488,7 @@ export default function Publish() {
     
     // Ensure draft exists in DB from Location step onwards
     if (!draft.id) {
-      if (currentStep === 2) {
+      if (currentStep === 3) {
         try {
           const newId = await saveDraft({});
           if (!newId) {
@@ -507,14 +507,14 @@ export default function Publish() {
           });
           return;
         }
-      } else if (currentStep > 2) {
+      } else if (currentStep > 3) {
         toast({
           title: "Χρειάζεται Τοποθεσία",
           description: "Σε πάω στο βήμα Τοποθεσία να συμπληρώσεις την πόλη.",
           variant: "destructive",
           duration: 4000
         });
-        setSearchParams({ step: '2' });
+        setSearchParams({ step: '3' });
         return;
       }
     }
@@ -525,24 +525,24 @@ export default function Publish() {
     }
     
     let next = currentStep + 1;
-    // Skip room details step (4) for apartments
-    if (next === 4 && draft.property_type === 'apartment') {
-      next = 5;
+    // Skip room details step (5) for apartments
+    if (next === 5 && draft.property_type === 'apartment') {
+      next = 6;
     }
     
-    if (next <= 9) {
+    if (next <= 10) {
       setSearchParams({ step: next.toString() });
     }
   };
 
   const prevStep = () => {
     let prev = currentStep - 1;
-    // Skip room details step (4) for apartments when going back
-    if (prev === 4 && draft.property_type === 'apartment') {
-      prev = 3;
+    // Skip room details step (5) for apartments when going back
+    if (prev === 5 && draft.property_type === 'apartment') {
+      prev = 4;
     }
     
-    if (prev >= 0) {
+    if (prev >= 1) {
       setSearchParams({ step: prev.toString() });
     }
   };
@@ -1007,14 +1007,14 @@ export default function Publish() {
           )}
 
           {/* Step Content with Transitions */}
-          <StepTransition isVisible={currentStep === 0 && shouldShowStepZero}>
-            {currentStep === 0 && shouldShowStepZero && (
+          <StepTransition isVisible={currentStep === 1 && shouldShowStepZero}>
+            {currentStep === 1 && shouldShowStepZero && (
               <PublishStepZero onRoleSelected={handleRoleSelected} />
             )}
           </StepTransition>
           
-          <StepTransition isVisible={currentStep === 1} direction="forward">
-            {currentStep === 1 && (
+          <StepTransition isVisible={currentStep === 2} direction="forward">
+            {currentStep === 2 && (
               <PublishStepOverview
                 onNext={nextStep}
                 hasDraft={!!draft.id}
@@ -1022,8 +1022,8 @@ export default function Publish() {
             )}
           </StepTransition>
           
-          <StepTransition isVisible={currentStep === 2} direction="forward">
-            {currentStep === 2 && (
+          <StepTransition isVisible={currentStep === 3} direction="forward">
+            {currentStep === 3 && (
               <PublishStepOne
                 draft={draft}
                 onUpdate={updateDraft}
@@ -1033,8 +1033,8 @@ export default function Publish() {
             )}
           </StepTransition>
           
-          <StepTransition isVisible={currentStep === 3} direction="forward">
-            {currentStep === 3 && (
+          <StepTransition isVisible={currentStep === 4} direction="forward">
+            {currentStep === 4 && (
               <PublishStepApartmentDetails
                 draft={draft}
                 onUpdate={updateDraft}
@@ -1044,20 +1044,9 @@ export default function Publish() {
             )}
           </StepTransition>
           
-          <StepTransition isVisible={currentStep === 4 && draft.property_type === 'room'} direction="forward">
-            {currentStep === 4 && draft.property_type === 'room' && (
+          <StepTransition isVisible={currentStep === 5 && draft.property_type === 'room'} direction="forward">
+            {currentStep === 5 && draft.property_type === 'room' && (
               <PublishStepRoomDetails
-                draft={draft}
-                onUpdate={updateDraft}
-                onNext={nextStep}
-                onPrev={prevStep}
-              />
-            )}
-          </StepTransition>
-          
-          <StepTransition isVisible={currentStep === 5} direction="forward">
-            {currentStep === 5 && (
-              <PublishStepPhotos
                 draft={draft}
                 onUpdate={updateDraft}
                 onNext={nextStep}
@@ -1068,7 +1057,7 @@ export default function Publish() {
           
           <StepTransition isVisible={currentStep === 6} direction="forward">
             {currentStep === 6 && (
-              <PublishStepTitleDescription
+              <PublishStepPhotos
                 draft={draft}
                 onUpdate={updateDraft}
                 onNext={nextStep}
@@ -1079,7 +1068,7 @@ export default function Publish() {
           
           <StepTransition isVisible={currentStep === 7} direction="forward">
             {currentStep === 7 && (
-              <PublishStepVerifications
+              <PublishStepTitleDescription
                 draft={draft}
                 onUpdate={updateDraft}
                 onNext={nextStep}
@@ -1090,7 +1079,7 @@ export default function Publish() {
           
           <StepTransition isVisible={currentStep === 8} direction="forward">
             {currentStep === 8 && (
-              <PublishStepThree
+              <PublishStepVerifications
                 draft={draft}
                 onUpdate={updateDraft}
                 onNext={nextStep}
@@ -1101,6 +1090,17 @@ export default function Publish() {
           
           <StepTransition isVisible={currentStep === 9} direction="forward">
             {currentStep === 9 && (
+              <PublishStepThree
+                draft={draft}
+                onUpdate={updateDraft}
+                onNext={nextStep}
+                onPrev={prevStep}
+              />
+            )}
+          </StepTransition>
+          
+          <StepTransition isVisible={currentStep === 10} direction="forward">
+            {currentStep === 10 && (
               <PublishStepReview
                 draft={draft}
                 onPublish={publishListing}
