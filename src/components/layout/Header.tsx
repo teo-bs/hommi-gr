@@ -3,7 +3,7 @@ import { Link, useNavigate, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { Home, User, MessageSquare, Plus, Globe, Menu, X, Settings, Search, Calendar, LogOut, UserCheck, MapPin, Heart, BarChart3, List } from "lucide-react";
+import { User, MessageSquare, Plus, Globe, Menu, X, Settings, Search, Calendar, LogOut, UserCheck, MapPin, Heart, BarChart3, List } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useListingFlow } from "@/hooks/useListingFlow";
 import { useListingsCount } from "@/hooks/useListingsCount";
@@ -11,6 +11,7 @@ import { useUnreadCount } from "@/hooks/useUnreadCount";
 import { AuthFlowManager } from "@/components/auth/AuthFlowManager";
 import { ListingWizard } from "@/components/listing/ListingWizard";
 import { useToast } from "@/hooks/use-toast";
+import hommiLogo from "@/assets/hommi-logo.png";
 
 export const Header = () => {
   const { user, profile, signOut, updateProfile } = useAuth();
@@ -213,9 +214,11 @@ export const Header = () => {
           <div className="flex h-16 items-center justify-between">
             {/* Logo */}
             <Link to="/" className="flex items-center space-x-2">
-              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-primary">
-                <Home className="h-5 w-5 text-primary-foreground" />
-              </div>
+              <img 
+                src={hommiLogo} 
+                alt="Hommi" 
+                className="h-8 w-8 sm:h-10 sm:w-10"
+              />
               <span className="text-xl font-bold text-foreground">
                 Hommi
               </span>
