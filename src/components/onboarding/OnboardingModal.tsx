@@ -5,6 +5,7 @@ import { Progress } from "@/components/ui/progress";
 import { OnboardingStepOne } from "./steps/OnboardingStepOne";
 import { OnboardingStepTwo } from "./steps/OnboardingStepTwo";
 import { OnboardingStepThree } from "./steps/OnboardingStepThree";
+import { ProfileCompletionModal } from "./ProfileCompletionModal";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -42,6 +43,7 @@ export const OnboardingModal = () => {
   });
 
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showProfileCompletion, setShowProfileCompletion] = useState(false);
 
   // Update onboarding progress
   const updateOnboardingProgress = async (step: number, completed: boolean = false) => {
@@ -165,8 +167,8 @@ export const OnboardingModal = () => {
         description: "Τα βασικά στοιχεία του προφίλ σας αποθηκεύτηκαν",
       });
       
-      // Navigate to profile with completion flag
-      navigate('/me?completed_onboarding=true');
+      // Show profile completion modal instead of navigating
+      setShowProfileCompletion(true);
       
     } catch (error) {
       toast({
@@ -177,6 +179,11 @@ export const OnboardingModal = () => {
     } finally {
       setIsSubmitting(false);
     }
+  };
+
+  const handleProfileCompletionClose = () => {
+    setShowProfileCompletion(false);
+    navigate('/me');
   };
 
   const getStepTitle = () => {
@@ -224,28 +231,36 @@ export const OnboardingModal = () => {
     }
   };
 
-  if (!isOpen) return null;
+  if (!isOpen && !showProfileCompletion) return null;
 
   return (
-    <Dialog open={isOpen} onOpenChange={() => handleClose()}>
-      <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle className="text-xl font-semibold">
-            {getStepTitle()}
-          </DialogTitle>
-          
-          {/* Progress */}
-          <div className="space-y-2">
-            <div className="flex justify-between text-sm text-muted-foreground">
-              <span>Βήμα {currentStep} από 3</span>
-              <span>{Math.round((currentStep / 3) * 100)}%</span>
+    <>
+      <Dialog open={isOpen} onOpenChange={() => handleClose()}>
+        <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="text-xl font-semibold">
+              {getStepTitle()}
+            </DialogTitle>
+            
+            {/* Progress */}
+            <div className="space-y-2">
+              <div className="flex justify-between text-sm text-muted-foreground">
+                <span>Βήμα {currentStep} από 3</span>
+                <span>{Math.round((currentStep / 3) * 100)}%</span>
+              </div>
+              <Progress value={(currentStep / 3) * 100} className="w-full" />
             </div>
-            <Progress value={(currentStep / 3) * 100} className="w-full" />
-          </div>
-        </DialogHeader>
+          </DialogHeader>
 
-        {renderStep()}
-      </DialogContent>
-    </Dialog>
+          {renderStep()}
+        </DialogContent>
+      </Dialog>
+
+      {/* Profile Completion Modal - appears after step 3 */}
+      <ProfileCompletionModal 
+        isOpen={showProfileCompletion} 
+        onClose={handleProfileCompletionClose} 
+      />
+    </>
   );
 };

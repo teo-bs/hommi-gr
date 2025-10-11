@@ -46,7 +46,6 @@ export const ProfileCompletionModal = ({ isOpen, onClose }: ProfileCompletionMod
   const { toast } = useToast();
   
   const [formData, setFormData] = useState({
-    display_name: profile?.display_name || '',
     profession: profile?.profession || '',
     study_level: '',
     work_profession: '',
@@ -55,7 +54,6 @@ export const ProfileCompletionModal = ({ isOpen, onClose }: ProfileCompletionMod
     social_instagram: profile?.social_instagram || '',
     social_twitter_x: profile?.social_twitter_x || '',
     social_linkedin: profile?.social_linkedin || '',
-    social_tiktok: profile?.social_tiktok || '',
     personality: [] as string[],
     lifestyle: [] as string[],
     music: [] as string[],
@@ -72,10 +70,6 @@ export const ProfileCompletionModal = ({ isOpen, onClose }: ProfileCompletionMod
 
   const validateForm = () => {
     const newErrors: Record<string, string> = {};
-
-    if (!formData.display_name.trim()) {
-      newErrors.display_name = "Το όνομα είναι υποχρεωτικό";
-    }
 
     if (whatYouDo === 'study' || whatYouDo === 'study_work') {
       if (!formData.study_level) {
@@ -121,13 +115,15 @@ export const ProfileCompletionModal = ({ isOpen, onClose }: ProfileCompletionMod
         who_moving: formData.who_moving
       };
 
+      // Auto-generate display_name from first_name + last_name
+      const display_name = `${profile?.first_name || ''} ${profile?.last_name || ''}`.trim();
+
       const updateData: any = {
-        display_name: formData.display_name,
+        display_name,
         about_me: formData.about_me,
         social_instagram: formData.social_instagram || null,
         social_twitter_x: formData.social_twitter_x || null,
         social_linkedin: formData.social_linkedin || null,
-        social_tiktok: formData.social_tiktok || null,
         profile_extras
       };
 
@@ -252,28 +248,6 @@ export const ProfileCompletionModal = ({ isOpen, onClose }: ProfileCompletionMod
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-6">
-          {/* Edit Step 1 fields */}
-          <div className="space-y-4">
-            <h3 className="font-medium">Βασικές πληροφορίες</h3>
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <Label htmlFor="display_name">
-                  Όνομα και Επώνυμο <span className="text-red-500">*</span>
-                </Label>
-                <Input
-                  id="display_name"
-                  value={formData.display_name}
-                  onChange={(e) => setFormData({ ...formData, display_name: e.target.value })}
-                  className={errors.display_name ? 'border-red-500' : ''}
-                />
-                {errors.display_name && (
-                  <p className="text-sm text-red-500">{errors.display_name}</p>
-                )}
-              </div>
-            </div>
-          </div>
-
           {/* Branching questions */}
           <div className="space-y-4">
             <h3 className="font-medium">Λεπτομέρειες δραστηριοτήτων</h3>
@@ -400,15 +374,6 @@ export const ProfileCompletionModal = ({ isOpen, onClose }: ProfileCompletionMod
                   placeholder="username"
                 />
               </div>
-                <div>
-                  <Label>TikTok (Κρυφό προσωρινά)</Label>
-                  <Input
-                    value={formData.social_tiktok}
-                    onChange={(e) => setFormData({ ...formData, social_tiktok: e.target.value })}
-                    placeholder="username"
-                    style={{ display: 'none' }}
-                  />
-                </div>
             </div>
           </div>
 
