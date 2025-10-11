@@ -31,8 +31,6 @@ export interface MapState {
   hoveredPinId: string | null;
   isMoving: boolean;
   hasUserMoved: boolean;
-  userLocation: [number, number] | null;
-  isLocating: boolean;
 }
 
 export interface MapActions {
@@ -45,8 +43,6 @@ export interface MapActions {
   setHasUserMoved: (hasUserMoved: boolean) => void;
   updateResultsForBounds: () => void;
   resetUserMoved: () => void;
-  locateUser: () => void;
-  setUserLocation: (location: [number, number] | null) => void;
 }
 
 // Athens, Greece as default center
@@ -95,8 +91,6 @@ export const useMapState = () => {
       hoveredPinId: null,
       isMoving: false,
       hasUserMoved: false,
-      userLocation: null,
-      isLocating: false,
     };
   });
 
@@ -164,36 +158,6 @@ export const useMapState = () => {
 
     resetUserMoved: useCallback(() => {
       setMapState(prev => ({ ...prev, hasUserMoved: false }));
-    }, []),
-
-    locateUser: useCallback(() => {
-      setMapState(prev => ({ ...prev, isLocating: true }));
-      
-      if ('geolocation' in navigator) {
-        navigator.geolocation.getCurrentPosition(
-          (position) => {
-            const userLoc: [number, number] = [position.coords.longitude, position.coords.latitude];
-            setMapState(prev => ({ 
-              ...prev, 
-              userLocation: userLoc,
-              center: userLoc,
-              zoom: 14,
-              isLocating: false,
-              hasUserMoved: true
-            }));
-          },
-          (error) => {
-            console.error('Error getting location:', error);
-            setMapState(prev => ({ ...prev, isLocating: false }));
-          }
-        );
-      } else {
-        setMapState(prev => ({ ...prev, isLocating: false }));
-      }
-    }, []),
-
-    setUserLocation: useCallback((location: [number, number] | null) => {
-      setMapState(prev => ({ ...prev, userLocation: location }));
     }, []),
   };
 
