@@ -449,7 +449,7 @@ const Search = () => {
           </div>
 
           {/* Map Panel - Show on desktop always (sticky), on mobile only if map view (full screen) */}
-          <div className={`flex-1 ${mobileView === 'map' ? 'block fixed inset-0 top-[164px] z-20' : 'hidden'} lg:block lg:sticky lg:top-[120px] lg:h-[calc(100vh-140px)] lg:relative`}>
+          <div className={`flex-1 ${mobileView === 'map' ? 'block fixed inset-0 top-[124px] z-20 pb-safe' : 'hidden'} lg:block lg:sticky lg:top-[120px] lg:h-[calc(100vh-140px)] lg:relative`}>
             <div className="w-full h-full rounded-none lg:rounded-xl overflow-hidden">
               <MapContainer 
                 listings={mapListings}
