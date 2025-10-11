@@ -14,6 +14,7 @@ export interface Listing {
   city: string;
   neighborhood?: string;
   formatted_address?: string;
+  lister_first_name?: string;
 }
 
 interface MapContainerProps {
@@ -84,8 +85,12 @@ export const MapContainer = ({
     if (photos.length > 1) {
       const prevBtn = document.createElement('button');
       prevBtn.innerHTML = '‹';
-      prevBtn.className = 'absolute left-2 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-white/90 hover:bg-white shadow-md flex items-center justify-center text-xl font-bold z-10 cursor-pointer';
+      prevBtn.className = 'absolute left-2 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-white/90 hover:bg-white shadow-lg flex items-center justify-center text-2xl font-bold z-10 cursor-pointer transition-all hover:scale-110';
       prevBtn.style.border = 'none';
+      prevBtn.style.display = 'flex';
+      prevBtn.style.alignItems = 'center';
+      prevBtn.style.justifyContent = 'center';
+      prevBtn.style.color = '#000';
       prevBtn.onclick = (e) => {
         e.stopPropagation();
         cycleImages(imageContainer, -1);
@@ -93,8 +98,12 @@ export const MapContainer = ({
       
       const nextBtn = document.createElement('button');
       nextBtn.innerHTML = '›';
-      nextBtn.className = 'absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-white/90 hover:bg-white shadow-md flex items-center justify-center text-xl font-bold z-10 cursor-pointer';
+      nextBtn.className = 'absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-white/90 hover:bg-white shadow-lg flex items-center justify-center text-2xl font-bold z-10 cursor-pointer transition-all hover:scale-110';
       nextBtn.style.border = 'none';
+      nextBtn.style.display = 'flex';
+      nextBtn.style.alignItems = 'center';
+      nextBtn.style.justifyContent = 'center';
+      nextBtn.style.color = '#000';
       nextBtn.onclick = (e) => {
         e.stopPropagation();
         cycleImages(imageContainer, 1);
@@ -114,14 +123,15 @@ export const MapContainer = ({
     carouselWrapper.appendChild(imageContainer);
     container.appendChild(carouselWrapper);
     
-    // Add content section
-    const content = document.createElement('div');
-    content.style.padding = '12px';
-    content.innerHTML = `
-      <div style="font-weight: 600; font-size: 14px; margin-bottom: 4px; color: hsl(var(--foreground));">${props.title}</div>
-      <div style="font-size: 14px; color: hsl(var(--foreground));"><span style="font-weight: 600;">€${props.price}</span> <span style="color: hsl(var(--muted-foreground)); font-size: 13px;">/μήνα</span></div>
-    `;
-    container.appendChild(content);
+  // Add content section
+  const content = document.createElement('div');
+  content.style.padding = '12px';
+  content.innerHTML = `
+    <div style="font-weight: 600; font-size: 14px; margin-bottom: 2px; color: hsl(var(--foreground));">${props.title}</div>
+    <div style="font-size: 13px; margin-bottom: 4px; color: hsl(var(--muted-foreground));">${props.lister_name || 'Host'}</div>
+    <div style="font-size: 14px; color: hsl(var(--foreground));"><span style="font-weight: 600;">€${props.price}</span> <span style="color: hsl(var(--muted-foreground)); font-size: 13px;">/μήνα</span></div>
+  `;
+  container.appendChild(content);
     
     return container;
   };
@@ -154,6 +164,7 @@ export const MapContainer = ({
         id: listing.id,
         title: listing.title,
         price: listing.price_month,
+        lister_name: listing.lister_first_name || 'Host',
         city: listing.city,
         neighborhood: listing.neighborhood,
         photo: listing.photos?.[0] || null,

@@ -36,6 +36,15 @@
     display: block;
   }
 
+  /* Map popup and listing card arrow buttons */
+  .map-popup-container button,
+  .group button[aria-label*="photo"] {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    line-height: 1 !important;
+  }
+
   .mapboxgl-popup-tip {
     display: none;
   }

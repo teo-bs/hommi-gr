@@ -151,6 +151,34 @@ export const ListingCard = ({
             </div>
           )}
           
+          {/* Navigation arrows for multiple photos - visible on hover */}
+          {hasMultiplePhotos && isHovered && (
+            <>
+              <button
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  setCurrentPhotoIndex((prev) => (prev - 1 + photos.length) % photos.length);
+                }}
+                className="absolute left-2 top-1/2 -translate-y-1/2 w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-white/90 hover:bg-white shadow-lg flex items-center justify-center text-xl sm:text-2xl font-bold z-20 cursor-pointer transition-all hover:scale-110"
+                aria-label="Previous photo"
+              >
+                ‹
+              </button>
+              <button
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  setCurrentPhotoIndex((prev) => (prev + 1) % photos.length);
+                }}
+                className="absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-white/90 hover:bg-white shadow-lg flex items-center justify-center text-xl sm:text-2xl font-bold z-20 cursor-pointer transition-all hover:scale-110"
+                aria-label="Next photo"
+              >
+                ›
+              </button>
+            </>
+          )}
+          
           {/* Photo counter for multiple photos */}
           {hasMultiplePhotos && (
             <div className="absolute bottom-2 right-2 bg-black/70 text-white text-xs px-2 py-1 rounded-full z-10">
