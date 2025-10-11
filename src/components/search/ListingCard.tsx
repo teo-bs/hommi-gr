@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
 import { OptimizedListing } from "@/hooks/useOptimizedSearch";
@@ -45,15 +45,44 @@ export const ListingCard = ({
   const [isHovered, setIsHovered] = useState(false);
   const [imageLoaded, setImageLoaded] = useState(false);
   const [imageError, setImageError] = useState(false);
+  const [currentPhotoIndex, setCurrentPhotoIndex] = useState(0);
+  const carouselIntervalRef = useRef<NodeJS.Timeout | null>(null);
   
-  // Use cover photo or fallback
+  // Use cover photo or fallback, and get all photos
   const imageUrl = coverPhoto || listing.cover_photo_url || '/placeholder.svg';
+  const photos = listing.photos && listing.photos.length > 0 
+    ? listing.photos 
+    : [imageUrl];
+  const hasMultiplePhotos = photos.length > 1;
   
   // Reset image state when cover photo changes
   useEffect(() => {
     setImageLoaded(false);
     setImageError(false);
   }, [imageUrl]);
+
+  // Auto-advance photos on hover
+  useEffect(() => {
+    if (isHovered && hasMultiplePhotos) {
+      // Start auto-advance every 1 second
+      carouselIntervalRef.current = setInterval(() => {
+        setCurrentPhotoIndex((prev) => (prev + 1) % photos.length);
+      }, 1000);
+    } else {
+      // Stop auto-advance and reset
+      if (carouselIntervalRef.current) {
+        clearInterval(carouselIntervalRef.current);
+        carouselIntervalRef.current = null;
+      }
+      setCurrentPhotoIndex(0);
+    }
+    
+    return () => {
+      if (carouselIntervalRef.current) {
+        clearInterval(carouselIntervalRef.current);
+      }
+    };
+  }, [isHovered, hasMultiplePhotos, photos.length]);
 
   // Calculate match score
   const { isGoodFit, matchPercentage } = calculateMatchScore(
@@ -96,23 +125,52 @@ export const ListingCard = ({
       }}
     >
       <div className={`transition-all duration-200 active:scale-[0.98] ${isHighlighted ? 'scale-[1.02]' : ''}`}>
-        {/* Cover Image */}
+        {/* Cover Image with Carousel */}
         <div className="relative aspect-[4/3] mb-3 rounded-xl sm:rounded-2xl overflow-hidden bg-muted">
-          <img
-            src={imageError ? '/placeholder.svg' : getOptimizedImageUrl(imageUrl, 720)}
-            srcSet={!imageError ? getImageSrcSet(imageUrl) : undefined}
-            sizes="(min-width: 1024px) 320px, (min-width: 768px) 50vw, 100vw"
-            alt={listing.title}
-            loading="lazy"
-            decoding="async"
-            className={`w-full h-full object-cover transition-all duration-300 ${imageLoaded ? 'opacity-100' : 'opacity-0'} ${isHovered ? 'scale-105' : 'scale-100'}`}
-            onLoad={() => setImageLoaded(true)}
-            onError={() => setImageError(true)}
-          />
+          {/* Show all images stacked with transitions */}
+          {photos.map((photo, index) => (
+            <img
+              key={index}
+              src={imageError ? '/placeholder.svg' : getOptimizedImageUrl(photo, 720)}
+              srcSet={!imageError ? getImageSrcSet(photo) : undefined}
+              sizes="(min-width: 1024px) 320px, (min-width: 768px) 50vw, 100vw"
+              alt={`${listing.title} - Photo ${index + 1}`}
+              loading="lazy"
+              decoding="async"
+              className={`absolute inset-0 w-full h-full object-cover transition-all duration-500 ${
+                index === currentPhotoIndex ? 'opacity-100' : 'opacity-0'
+              } ${isHovered && index === currentPhotoIndex ? 'scale-105' : 'scale-100'}`}
+              onLoad={() => index === 0 && setImageLoaded(true)}
+              onError={() => index === 0 && setImageError(true)}
+            />
+          ))}
           
           {!imageLoaded && !imageError && (
             <div className="absolute inset-0 flex items-center justify-center bg-muted">
               <div className="animate-pulse text-muted-foreground text-sm">Φόρτωση...</div>
+            </div>
+          )}
+          
+          {/* Photo counter for multiple photos */}
+          {hasMultiplePhotos && (
+            <div className="absolute bottom-2 right-2 bg-black/70 text-white text-xs px-2 py-1 rounded-full z-10">
+              {currentPhotoIndex + 1}/{photos.length}
+            </div>
+          )}
+          
+          {/* Navigation dots */}
+          {hasMultiplePhotos && (
+            <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1.5 z-10">
+              {photos.map((_, index) => (
+                <div
+                  key={index}
+                  className={`h-1.5 rounded-full transition-all ${
+                    index === currentPhotoIndex 
+                      ? 'bg-white w-4' 
+                      : 'bg-white/60 w-1.5'
+                  }`}
+                />
+              ))}
             </div>
           )}
           

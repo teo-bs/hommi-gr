@@ -57,21 +57,109 @@ export const MapContainer = ({
   // Store HTML markers
   const markersRef = useRef<Map<string, mapboxgl.Marker>>(new Map());
 
+  // Create popup content with carousel
+  const createPopupContent = (props: any, photos: string[]) => {
+    const container = document.createElement('div');
+    container.className = 'map-popup-container';
+    
+    // Create carousel wrapper
+    const carouselWrapper = document.createElement('div');
+    carouselWrapper.className = 'relative';
+    
+    // Create image container
+    const imageContainer = document.createElement('div');
+    imageContainer.className = 'relative w-full h-[180px] bg-muted';
+    
+    // Add images
+    photos.forEach((photo, index) => {
+      const img = document.createElement('img');
+      img.src = photo;
+      img.alt = props.title;
+      img.className = `absolute inset-0 w-full h-full object-cover transition-opacity duration-300 ${index === 0 ? 'opacity-100' : 'opacity-0'}`;
+      img.dataset.index = String(index);
+      imageContainer.appendChild(img);
+    });
+    
+    // Add navigation arrows if multiple photos
+    if (photos.length > 1) {
+      const prevBtn = document.createElement('button');
+      prevBtn.innerHTML = '‹';
+      prevBtn.className = 'absolute left-2 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-white/90 hover:bg-white shadow-md flex items-center justify-center text-xl font-bold z-10 cursor-pointer';
+      prevBtn.style.border = 'none';
+      prevBtn.onclick = (e) => {
+        e.stopPropagation();
+        cycleImages(imageContainer, -1);
+      };
+      
+      const nextBtn = document.createElement('button');
+      nextBtn.innerHTML = '›';
+      nextBtn.className = 'absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-white/90 hover:bg-white shadow-md flex items-center justify-center text-xl font-bold z-10 cursor-pointer';
+      nextBtn.style.border = 'none';
+      nextBtn.onclick = (e) => {
+        e.stopPropagation();
+        cycleImages(imageContainer, 1);
+      };
+      
+      imageContainer.appendChild(prevBtn);
+      imageContainer.appendChild(nextBtn);
+      
+      // Add photo counter
+      const counter = document.createElement('div');
+      counter.className = 'absolute bottom-2 right-2 bg-black/70 text-white text-xs px-2 py-1 rounded-full z-10';
+      counter.textContent = `1/${photos.length}`;
+      counter.dataset.counter = 'true';
+      imageContainer.appendChild(counter);
+    }
+    
+    carouselWrapper.appendChild(imageContainer);
+    container.appendChild(carouselWrapper);
+    
+    // Add content section
+    const content = document.createElement('div');
+    content.style.padding = '12px';
+    content.innerHTML = `
+      <div style="font-weight: 600; font-size: 14px; margin-bottom: 4px; color: hsl(var(--foreground));">${props.title}</div>
+      <div style="font-size: 14px; color: hsl(var(--foreground));"><span style="font-weight: 600;">€${props.price}</span> <span style="color: hsl(var(--muted-foreground)); font-size: 13px;">/μήνα</span></div>
+    `;
+    container.appendChild(content);
+    
+    return container;
+  };
+
+  // Image cycling function
+  const cycleImages = (container: HTMLElement, direction: number) => {
+    const images = Array.from(container.querySelectorAll('img[data-index]')) as HTMLImageElement[];
+    const counter = container.querySelector('[data-counter]');
+    
+    let currentIndex = images.findIndex(img => img.classList.contains('opacity-100'));
+    images[currentIndex].classList.remove('opacity-100');
+    images[currentIndex].classList.add('opacity-0');
+    
+    currentIndex = (currentIndex + direction + images.length) % images.length;
+    images[currentIndex].classList.remove('opacity-0');
+    images[currentIndex].classList.add('opacity-100');
+    
+    if (counter) {
+      counter.textContent = `${currentIndex + 1}/${images.length}`;
+    }
+  };
+
   // Convert listings to GeoJSON
   const createGeoJSONData = useCallback(() => {
     const features = listings
       .filter(listing => listing.lat && listing.lng)
       .map(listing => ({
         type: 'Feature' as const,
-        properties: {
-          id: listing.id,
-          title: listing.title,
-          price: listing.price_month,
-          city: listing.city,
-          neighborhood: listing.neighborhood,
-          photo: listing.photos?.[0] || null,
-          formatted_address: listing.formatted_address || `${listing.neighborhood || listing.city}, Greece`
-        },
+      properties: {
+        id: listing.id,
+        title: listing.title,
+        price: listing.price_month,
+        city: listing.city,
+        neighborhood: listing.neighborhood,
+        photo: listing.photos?.[0] || null,
+        photos: JSON.stringify(listing.photos || [listing.photos?.[0]].filter(Boolean)),
+        formatted_address: listing.formatted_address || `${listing.neighborhood || listing.city}, Greece`
+      },
         geometry: {
           type: 'Point' as const,
           coordinates: [listing.lng, listing.lat]
@@ -275,22 +363,18 @@ export const MapContainer = ({
                 hoverPopup.current.remove();
               }
               
+              const photos = JSON.parse(props.photos || '[]');
+              const photoUrls = photos.length > 0 ? photos : ['/placeholder.svg'];
+              
               hoverPopup.current = new mapboxgl.Popup({
                 closeButton: false,
                 closeOnClick: false,
                 offset: 15,
-                className: 'map-hover-popup'
+                className: 'map-hover-popup',
+                maxWidth: '300px'
               })
                 .setLngLat(coords)
-                .setHTML(`
-                  <div style="width: 280px; border-radius: 12px; overflow: hidden; animation: fadeIn 0.2s ease-out;">
-                    <img src="${props.photo || '/placeholder.svg'}" alt="${props.title}" style="width: 100%; height: 180px; object-fit: cover;" />
-                    <div style="padding: 12px;">
-                      <div style="font-weight: 600; font-size: 14px; margin-bottom: 4px; color: hsl(var(--foreground));">${props.title}</div>
-                      <div style="font-size: 14px; color: hsl(var(--foreground));"><span style="font-weight: 600;">€${props.price}</span> <span style="color: hsl(var(--muted-foreground)); font-size: 13px;">μήνα</span></div>
-                    </div>
-                  </div>
-                `)
+                .setDOMContent(createPopupContent(props, photoUrls))
                 .addTo(map.current!);
             });
             

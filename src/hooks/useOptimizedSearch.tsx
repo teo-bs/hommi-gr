@@ -22,6 +22,7 @@ export interface OptimizedListing {
   lat?: number;
   lng?: number;
   cover_photo_url?: string;
+  photos?: string[];
   kyc_status?: string;
   lister_type?: string;
   amenity_keys?: string[];
