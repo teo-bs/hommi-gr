@@ -6,6 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { useAmenitiesByCategory } from "@/hooks/useAmenitiesByCategory";
 
 interface ListingDraft {
   room_size_m2?: number;
@@ -23,13 +24,6 @@ interface PublishStepRoomDetailsProps {
   onPrev: () => void;
 }
 
-// Greek labels - these will be mapped to database keys by the handler
-const ROOM_AMENITIES = [
-  'Τηλεόραση', 'Ιδιωτικό μπάνιο', 'Κλιματισμός δωματίου', 
-  'Μπαλκόνι', 'Γραφείο', 'Καρέκλα', 'Ντουλάπα', 'Συρτάρια', 
-  'Καθρέφτης', 'Κουρτίνες', 'Φωτισμός γραφείου'
-];
-
 const BED_TYPES = [
   { value: 'single', label: 'Μονό' },
   { value: 'double', label: 'Διπλό' },
@@ -42,19 +36,23 @@ export default function PublishStepRoomDetails({
   onNext, 
   onPrev 
 }: PublishStepRoomDetailsProps) {
-  // Local state for batch updates
+  // Fetch room amenities from database
+  const { data: roomAmenities = [], isLoading: amenitiesLoading } = useAmenitiesByCategory('room');
+  
+  // Local state for batch updates - store amenity KEYS
   const [localAmenities, setLocalAmenities] = useState(draft.amenities_room || []);
   
-  const toggleAmenity = (amenity: string) => {
-    const updated = localAmenities.includes(amenity)
-      ? localAmenities.filter(a => a !== amenity)
-      : [...localAmenities, amenity];
+  const toggleAmenity = (amenityKey: string) => {
+    console.log('🔄 Toggling room amenity key:', amenityKey);
+    const updated = localAmenities.includes(amenityKey)
+      ? localAmenities.filter(a => a !== amenityKey)
+      : [...localAmenities, amenityKey];
     setLocalAmenities(updated);
   };
 
   const handleNext = async () => {
     // Commit local selections before proceeding (ensure they're saved to draft)
-    console.log('📝 Committing room amenities:', localAmenities);
+    console.log('📝 Committing room amenities (keys):', localAmenities);
     await onUpdate({ amenities_room: localAmenities });
     onNext();
   };
@@ -160,18 +158,22 @@ export default function PublishStepRoomDetails({
             </p>
           </CardHeader>
           <CardContent>
-            <div className="flex flex-wrap gap-2">
-              {ROOM_AMENITIES.map((amenity) => (
-                <Badge
-                  key={amenity}
-                  variant={localAmenities.includes(amenity) ? 'default' : 'outline'}
-                  className="cursor-pointer"
-                  onClick={() => toggleAmenity(amenity)}
-                >
-                  {amenity}
-                </Badge>
-              ))}
-            </div>
+            {amenitiesLoading ? (
+              <p className="text-sm text-muted-foreground">Φόρτωση παροχών...</p>
+            ) : (
+              <div className="flex flex-wrap gap-2">
+                {roomAmenities.map((amenity) => (
+                  <Badge
+                    key={amenity.id}
+                    variant={localAmenities.includes(amenity.key) ? 'default' : 'outline'}
+                    className="cursor-pointer"
+                    onClick={() => toggleAmenity(amenity.key)}
+                  >
+                    {amenity.name_el || amenity.name_en}
+                  </Badge>
+                ))}
+              </div>
+            )}
           </CardContent>
         </Card>
       </div>

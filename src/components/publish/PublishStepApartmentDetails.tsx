@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Info } from "lucide-react";
+import { useAmenitiesByCategory } from "@/hooks/useAmenitiesByCategory";
 
 interface ListingDraft {
   property_size_m2?: number;
@@ -28,18 +29,7 @@ interface PublishStepApartmentDetailsProps {
   onPrev: () => void;
 }
 
-// Greek labels - these will be mapped to database keys by the handler
-const PROPERTY_AMENITIES = [
-  'WiFi', 'Τηλεόραση', 'Κουζίνα', 'Πλυντήριο ρούχων', 'Πλυντήριο πιάτων',
-  'Ιδιωτικό πάρκινγκ', 'Πάρκινγκ στην ιδιοκτησία με πληρωμή', 
-  'Κλιματισμός', 'Ειδικός χώρος εργασίας', 'Μπαλκόνι', 'Θέρμανση'
-];
-
-const SPECIAL_AMENITIES = [
-  'Ψησταριά μπάρμπεκιου', 'Υπαίθρια τραπεζαρία', 'Τζάκι', 'Εξοπλισμός γυμναστικής'
-];
-
-// Greek labels - these will be mapped to database keys by the handler  
+// Hardcoded house rules (these don't come from amenities table)
 const HOUSE_RULES = [
   'Όχι κάπνισμα', 'Όχι κατοικίδια', 'Όχι επισκέπτες αργά', 
   'Όχι πάρτι', 'Ησυχία μετά τις 22:00', 
@@ -52,14 +42,18 @@ export default function PublishStepApartmentDetails({
   onNext, 
   onPrev 
 }: PublishStepApartmentDetailsProps) {
-  // Local state for batch updates
+  // Fetch amenities from database
+  const { data: propertyAmenities = [], isLoading: amenitiesLoading } = useAmenitiesByCategory('property');
+  
+  // Local state for batch updates - store amenity KEYS
   const [localAmenities, setLocalAmenities] = useState(draft.amenities_property || []);
   const [localHouseRules, setLocalHouseRules] = useState(draft.house_rules || []);
   
-  const toggleAmenity = (amenity: string) => {
-    const updated = localAmenities.includes(amenity)
-      ? localAmenities.filter(a => a !== amenity)
-      : [...localAmenities, amenity];
+  const toggleAmenity = (amenityKey: string) => {
+    console.log('🔄 Toggling amenity key:', amenityKey);
+    const updated = localAmenities.includes(amenityKey)
+      ? localAmenities.filter(a => a !== amenityKey)
+      : [...localAmenities, amenityKey];
     setLocalAmenities(updated);
   };
 
@@ -72,7 +66,7 @@ export default function PublishStepApartmentDetails({
 
   const handleNext = async () => {
     // Commit local selections before proceeding (ensure they're saved to draft)
-    console.log('📝 Committing apartment amenities:', localAmenities);
+    console.log('📝 Committing apartment amenities (keys):', localAmenities);
     console.log('📝 Committing house rules:', localHouseRules);
     await onUpdate({
       amenities_property: localAmenities,
@@ -83,6 +77,16 @@ export default function PublishStepApartmentDetails({
 
   const totalFlatmates = (draft.flatmates_count || 0) + (draft.i_live_here ? 1 : 0);
   const isValid = draft.property_size_m2 && draft.bathrooms;
+
+  // Separate basic and special amenities by key prefixes or manually
+  const basicAmenities = propertyAmenities.filter(a => 
+    ['wifi', 'tv', 'kitchen', 'washer', 'dishwasher', 'private_parking', 
+     'paid_parking', 'air_conditioning', 'dedicated_workspace', 'balcony', 'heating'].includes(a.key)
+  );
+  
+  const specialAmenities = propertyAmenities.filter(a => 
+    ['bbq_grill', 'outdoor_dining', 'indoor_fireplace', 'gym'].includes(a.key)
+  );
 
   return (
     <div className="space-y-6">
@@ -228,37 +232,45 @@ export default function PublishStepApartmentDetails({
           </p>
         </CardHeader>
         <CardContent className="space-y-4">
-            <div>
-              <h4 className="text-sm font-medium mb-3">Βασικές ανέσεις</h4>
-              <div className="flex flex-wrap gap-2">
-                {PROPERTY_AMENITIES.map((amenity) => (
-                  <Badge
-                    key={amenity}
-                    variant={localAmenities.includes(amenity) ? 'default' : 'outline'}
-                    className="cursor-pointer"
-                    onClick={() => toggleAmenity(amenity)}
-                  >
-                    {amenity}
-                  </Badge>
-                ))}
+          {amenitiesLoading ? (
+            <p className="text-sm text-muted-foreground">Φόρτωση παροχών...</p>
+          ) : (
+            <>
+              <div>
+                <h4 className="text-sm font-medium mb-3">Βασικές ανέσεις</h4>
+                <div className="flex flex-wrap gap-2">
+                  {basicAmenities.map((amenity) => (
+                    <Badge
+                      key={amenity.id}
+                      variant={localAmenities.includes(amenity.key) ? 'default' : 'outline'}
+                      className="cursor-pointer"
+                      onClick={() => toggleAmenity(amenity.key)}
+                    >
+                      {amenity.name_el || amenity.name_en}
+                    </Badge>
+                  ))}
+                </div>
               </div>
-            </div>
 
-            <div>
-              <h4 className="text-sm font-medium mb-3">Διαθέτετε ξεχωριστές παροχές;</h4>
-              <div className="flex flex-wrap gap-2">
-                {SPECIAL_AMENITIES.map((amenity) => (
-                  <Badge
-                    key={amenity}
-                    variant={localAmenities.includes(amenity) ? 'default' : 'outline'}
-                    className="cursor-pointer"
-                    onClick={() => toggleAmenity(amenity)}
-                  >
-                    {amenity}
-                  </Badge>
-                ))}
-              </div>
-            </div>
+              {specialAmenities.length > 0 && (
+                <div>
+                  <h4 className="text-sm font-medium mb-3">Διαθέτετε ξεχωριστές παροχές;</h4>
+                  <div className="flex flex-wrap gap-2">
+                    {specialAmenities.map((amenity) => (
+                      <Badge
+                        key={amenity.id}
+                        variant={localAmenities.includes(amenity.key) ? 'default' : 'outline'}
+                        className="cursor-pointer"
+                        onClick={() => toggleAmenity(amenity.key)}
+                      >
+                        {amenity.name_el || amenity.name_en}
+                      </Badge>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </>
+          )}
         </CardContent>
       </Card>
 

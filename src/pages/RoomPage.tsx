@@ -161,63 +161,43 @@ const RoomPage = () => {
 
         console.log('Lister fetch result:', { lister, listerError });
 
-        // Fetch room amenities (with type assertion to bypass TS issues)
-        const roomAmenitiesQuery = await (supabase as any)
-          .from('room_amenities')
-          .select('amenity_id')
-          .eq('room_id', room.id);
-
-        console.log('Room amenities raw:', roomAmenitiesQuery);
-
-        // Fetch amenities data for room amenities
-        let roomAmenitiesData: any[] = [];
-        if (roomAmenitiesQuery.data && roomAmenitiesQuery.data.length > 0) {
-          const roomAmenityIds = roomAmenitiesQuery.data.map((ra: any) => ra.amenity_id);
-          const amenitiesQuery = await (supabase as any)
-            .from('amenities')
-            .select('*')
-            .in('id', roomAmenityIds)
-            .eq('is_active', true);
-          console.log('Room amenities data fetch:', amenitiesQuery);
-          roomAmenitiesData = amenitiesQuery.data || [];
-        }
-
-        // Fetch listing amenities from listing_amenities table
-        const listingAmenitiesQuery = await (supabase as any)
+        // Fetch amenities using proper joins for better performance and clarity
+        // Junction table determines category: listing_amenities = property, room_amenities = room
+        const { data: listingAmenitiesJoined } = await supabase
           .from('listing_amenities')
-          .select('amenity_id')
+          .select('amenities(id, name_el, name_en, icon, key)')
           .eq('listing_id', listing.id);
 
-        console.log('Listing amenities raw:', listingAmenitiesQuery);
-
-        let listingAmenitiesData: any[] = [];
-        if (listingAmenitiesQuery.data && listingAmenitiesQuery.data.length > 0) {
-          const listingAmenityIds = listingAmenitiesQuery.data.map((la: any) => la.amenity_id);
-          const amenitiesQuery = await (supabase as any)
-            .from('amenities')
-            .select('*')
-            .in('id', listingAmenityIds)
-            .eq('is_active', true);
-          console.log('Listing amenities data fetch:', amenitiesQuery);
-          listingAmenitiesData = amenitiesQuery.data || [];
-        }
-
-        console.log('Amenities data:', { 
-          roomAmenitiesData,
-          listingAmenitiesData
-        });
+        const { data: roomAmenitiesJoined } = await supabase
+          .from('room_amenities')
+          .select('amenities(id, name_el, name_en, icon, key)')
+          .eq('room_id', room.id);
+        
+        console.log('🏠 Property amenities (from listing_amenities):', listingAmenitiesJoined?.length || 0);
+        console.log('🛏️ Room amenities (from room_amenities):', roomAmenitiesJoined?.length || 0);
 
         // Process room amenities - prefer Greek names
-        const processedRoomAmenities = roomAmenitiesData.map(amenity => ({
-          name: amenity.name_el || amenity.name_en || 'Δεν έχει καθοριστεί',
-          icon: amenity.key || amenity.icon || 'home'
-        }));
+        const processedRoomAmenities = (roomAmenitiesJoined || [])
+          .map((ra: any) => ra.amenities)
+          .filter(Boolean)
+          .map((amenity: any) => ({
+            name: amenity.name_el || amenity.name_en || 'Δεν έχει καθοριστεί',
+            icon: amenity.key || amenity.icon || 'home',
+            key: amenity.key
+          }));
 
         // Process listing/property amenities - prefer Greek names
-        const processedPropertyAmenities = listingAmenitiesData.map(amenity => ({
-          name: amenity.name_el || amenity.name_en || 'Δεν έχει καθοριστεί',
-          icon: amenity.key || amenity.icon || 'home'
-        }));
+        const processedPropertyAmenities = (listingAmenitiesJoined || [])
+          .map((la: any) => la.amenities)
+          .filter(Boolean)
+          .map((amenity: any) => ({
+            name: amenity.name_el || amenity.name_en || 'Δεν έχει καθοριστεί',
+            icon: amenity.key || amenity.icon || 'home',
+            key: amenity.key
+          }));
+        
+        console.log('✅ Processed property amenities:', processedPropertyAmenities);
+        console.log('✅ Processed room amenities:', processedRoomAmenities);
 
         const roomData = {
           room,

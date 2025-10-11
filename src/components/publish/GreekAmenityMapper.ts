@@ -3,25 +3,26 @@
 export const GREEK_TO_KEY_MAP: Record<string, string> = {
   // Property amenities
   'WiFi': 'wifi',
+  'Wi-Fi': 'wifi',  // Handle both with and without hyphen
   'Τηλεόραση': 'tv',
   'Κουζίνα': 'kitchen',
-  'Πλυντήριο ρούχων': 'washer',  // Fixed: was 'washing_machine', DB uses 'washer'
+  'Πλυντήριο ρούχων': 'washer',
   'Πλυντήριο πιάτων': 'dishwasher',
   'Ιδιωτικό πάρκινγκ': 'private_parking',
   'Πάρκινγκ στην ιδιοκτησία με πληρωμή': 'paid_parking',
   'Κλιματισμός': 'air_conditioning',
-  'Ειδικός χώρος εργασίας': 'dedicated_workspace',  // Fixed: was 'workspace', DB uses 'dedicated_workspace'
+  'Ειδικός χώρος εργασίας': 'dedicated_workspace',
   'Μπαλκόνι': 'balcony',
   'Θέρμανση': 'heating',
   'Ψησταριά μπάρμπεκιου': 'bbq_grill',
   'Υπαίθρια τραπεζαρία': 'outdoor_dining',
-  'Τζάκι': 'indoor_fireplace',  // Fixed: was 'fireplace', DB uses 'indoor_fireplace'
-  'Εξοπλισμός γυμναστικής': 'gym',  // Fixed: was 'gym_equipment', DB uses 'gym'
+  'Τζάκι': 'indoor_fireplace',
+  'Εξοπλισμός γυμναστικής': 'gym',
   'Καθαρισμός': 'cleaning',
   
   // Room amenities
   'Ιδιωτικό μπάνιο': 'private_bathroom',
-  'Κλιματισμός δωματίου': 'air_conditioning',  // Fixed: was 'room_ac', same as property AC
+  'Κλιματισμός δωματίου': 'air_conditioning',  // Same as property AC
   'Γραφείο': 'desk',
   'Καρέκλα': 'chair',
   'Ντουλάπα': 'wardrobe',
@@ -44,13 +45,33 @@ export const GREEK_HOUSE_RULE_MAP: Record<string, string> = {
 
 /**
  * Convert Greek amenity label to database key
+ * Now with case-insensitive and whitespace-trimming for robustness
  */
 export function mapGreekAmenityToKey(greekLabel: string): string | null {
-  // Check if it's already a key
-  if (greekLabel && greekLabel.length < 50 && !greekLabel.includes(' ')) {
-    return greekLabel;
+  if (!greekLabel) return null;
+  
+  const trimmed = greekLabel.trim();
+  
+  // Check if it's already a key (lowercase, no spaces, short)
+  if (trimmed.length < 50 && !trimmed.includes(' ') && trimmed === trimmed.toLowerCase()) {
+    return trimmed;
   }
-  return GREEK_TO_KEY_MAP[greekLabel] || null;
+  
+  // Try exact match first
+  if (GREEK_TO_KEY_MAP[trimmed]) {
+    return GREEK_TO_KEY_MAP[trimmed];
+  }
+  
+  // Try case-insensitive match
+  const lowerTrimmed = trimmed.toLowerCase();
+  for (const [key, value] of Object.entries(GREEK_TO_KEY_MAP)) {
+    if (key.toLowerCase() === lowerTrimmed) {
+      return value;
+    }
+  }
+  
+  console.warn(`⚠️ No mapping found for amenity: "${greekLabel}"`);
+  return null;
 }
 
 /**
