@@ -23,6 +23,7 @@ import { LocationMiniMap } from "@/components/room/LocationMiniMap";
 import { ListerCard } from "@/components/room/ListerCard";
 import { SaveRoomButton } from "@/components/room/SaveRoomButton";
 import { ShareButton } from "@/components/room/ShareButton";
+import { HouseRules } from "@/components/room/HouseRules";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
@@ -39,6 +40,7 @@ interface RoomData {
     room: any[];
   };
   stats: any;
+  houseRules: string[];
 }
 
 const RoomPage = () => {
@@ -173,8 +175,15 @@ const RoomPage = () => {
           .select('amenities(id, name_el, name_en, icon, key)')
           .eq('room_id', room.id);
         
+        // Fetch house rules
+        const { data: houseRulesData } = await supabase
+          .from('listing_house_rules')
+          .select('house_rule_types(name_el)')
+          .eq('listing_id', listing.id);
+        
         console.log('🏠 Property amenities (from listing_amenities):', listingAmenitiesJoined?.length || 0);
         console.log('🛏️ Room amenities (from room_amenities):', roomAmenitiesJoined?.length || 0);
+        console.log('📋 House rules:', houseRulesData?.length || 0);
 
         // Process room amenities - prefer Greek names
         const processedRoomAmenities = (roomAmenitiesJoined || [])
@@ -199,6 +208,11 @@ const RoomPage = () => {
         console.log('✅ Processed property amenities:', processedPropertyAmenities);
         console.log('✅ Processed room amenities:', processedRoomAmenities);
 
+        // Process house rules - extract Greek labels
+        const houseRules = (houseRulesData || [])
+          .map((hr: any) => hr.house_rule_types?.name_el)
+          .filter(Boolean);
+
         const roomData = {
           room,
           listing,
@@ -209,7 +223,8 @@ const RoomPage = () => {
             property: processedPropertyAmenities,
             room: processedRoomAmenities
           },
-          stats
+          stats,
+          houseRules
         };
 
         console.log('🔍 Final room data:', {
@@ -368,6 +383,8 @@ const RoomPage = () => {
                 listing={listing}
               />
               
+              <HouseRules houseRules={roomData.houseRules} />
+              
               <AmenitiesGrid 
                 propertyAmenities={amenities.property}
                 roomAmenities={amenities.room}
@@ -403,7 +420,9 @@ const RoomPage = () => {
               <PriceBox 
                 price={listing.price_month}
                 deposit={listing.deposit}
+                depositRequired={listing.deposit_required}
                 billsIncluded={listing.bills_included}
+                billsNote={listing.bills_note}
               />
               
               <div className="space-y-2">

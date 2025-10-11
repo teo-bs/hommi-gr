@@ -1,8 +1,12 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { MapPin, Home, Calendar, Euro, Image, FileText, CheckCircle, AlertCircle, Edit } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { 
+  MapPin, Home, Calendar, Euro, Image, FileText, CheckCircle2, 
+  AlertCircle, Edit, Bed, Shield 
+} from "lucide-react";
 import { format } from "date-fns";
 import { el } from "date-fns/locale";
 
@@ -51,6 +55,44 @@ export default function PublishStepReview({
   onPrev,
   isPublishing = false
 }: PublishStepReviewProps) {
+  const [amenityLabels, setAmenityLabels] = useState<{ property: Map<string, string>, room: Map<string, string> }>({
+    property: new Map(),
+    room: new Map()
+  });
+  const [houseRuleLabels, setHouseRuleLabels] = useState<Map<string, string>>(new Map());
+
+  useEffect(() => {
+    const fetchLabels = async () => {
+      // Fetch amenity labels
+      const { data: amenitiesData } = await supabase
+        .from('amenities')
+        .select('key, name_el')
+        .eq('is_active', true);
+      
+      if (amenitiesData) {
+        const propertyMap = new Map<string, string>();
+        const roomMap = new Map<string, string>();
+        amenitiesData.forEach(a => {
+          propertyMap.set(a.key, a.name_el || a.key);
+          roomMap.set(a.key, a.name_el || a.key);
+        });
+        setAmenityLabels({ property: propertyMap, room: roomMap });
+      }
+
+      // Fetch house rule labels
+      const { data: houseRulesData } = await supabase
+        .from('house_rule_types')
+        .select('key, name_el')
+        .eq('is_active', true);
+      
+      if (houseRulesData) {
+        const rulesMap = new Map(houseRulesData.map(r => [r.key, r.name_el || r.key]));
+        setHouseRuleLabels(rulesMap);
+      }
+    };
+
+    fetchLabels();
+  }, []);
 
   const totalFlatmates = (draft.flatmates_count || 0) + (draft.i_live_here ? 1 : 0);
   const hasDraftId = !!draft.id;
@@ -139,7 +181,7 @@ export default function PublishStepReview({
             <div className="flex items-center justify-between">
               <CardTitle className="flex items-center gap-2">
                 <Home className="w-5 h-5" />
-                Ακίνητο & Δωμάτιο
+                Στοιχεία Ακινήτου
               </CardTitle>
               <Button variant="ghost" size="sm" onClick={() => onJumpToStep(3)}>
                 <Edit className="w-4 h-4" />
@@ -147,22 +189,138 @@ export default function PublishStepReview({
             </div>
           </CardHeader>
           <CardContent className="space-y-2">
-            <p className="text-sm">
-              <strong>Μέγεθος ακινήτου:</strong> {draft.property_size_m2 || '-'} m²
-            </p>
-            <p className="text-sm">
-              <strong>Μέγεθος δωματίου:</strong> {draft.room_size_m2 || '-'} m²
-            </p>
-            {draft.floor !== undefined && (
-              <p className="text-sm">
-                <strong>Όροφος:</strong> {draft.floor}
-              </p>
+            {draft.property_type && (
+              <div>
+                <span className="font-medium">Τύπος: </span>
+                {draft.property_type === 'room' ? 'Δωμάτιο' : 'Ολόκληρο Ακίνητο'}
+              </div>
+            )}
+            {draft.property_size_m2 && (
+              <div>
+                <span className="font-medium">Μέγεθος Ακινήτου: </span>
+                {draft.property_size_m2} m²
+              </div>
+            )}
+            {draft.room_size_m2 && (
+              <div>
+                <span className="font-medium">Μέγεθος Δωματίου: </span>
+                {draft.room_size_m2} m²
+              </div>
+            )}
+            {draft.floor !== undefined && draft.floor !== null && (
+              <div>
+                <span className="font-medium">Όροφος: </span>
+                {draft.floor}
+              </div>
+            )}
+            <div>
+              <span className="font-medium">Ανασέρ: </span>
+              {draft.has_lift ? 'Ναι' : 'Όχι'}
+            </div>
+            {draft.bathrooms && (
+              <div>
+                <span className="font-medium">Μπάνια: </span>
+                {draft.bathrooms}
+              </div>
+            )}
+            {draft.wc_count && (
+              <div>
+                <span className="font-medium">WC: </span>
+                {draft.wc_count}
+              </div>
             )}
             {totalFlatmates > 0 && (
-              <p className="text-sm">
-                <strong>Συγκάτοικοι:</strong> {totalFlatmates}
-              </p>
+              <div>
+                <span className="font-medium">Συγκάτοικοι: </span>
+                {totalFlatmates}
+              </div>
             )}
+          </CardContent>
+        </Card>
+
+        {/* Room Details */}
+        {draft.property_type === 'room' && (
+          <Card>
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <CardTitle className="flex items-center gap-2">
+                  <Bed className="w-5 h-5" />
+                  Λεπτομέρειες Δωματίου
+                </CardTitle>
+                <Button variant="ghost" size="sm" onClick={() => onJumpToStep(3)}>
+                  <Edit className="w-4 h-4" />
+                </Button>
+              </div>
+            </CardHeader>
+            <CardContent className="space-y-2">
+              {draft.bed_type && (
+                <div>
+                  <span className="font-medium">Κρεβάτι: </span>
+                  {draft.bed_type === 'single' ? 'Μονό' : draft.bed_type === 'double' ? 'Διπλό' : draft.bed_type}
+                </div>
+              )}
+              {draft.orientation && (
+                <div>
+                  <span className="font-medium">Προσανατολισμός: </span>
+                  {draft.orientation === 'exterior' ? 'Εξωτερικό' : 'Εσωτερικό'}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        )}
+
+        {/* House Rules */}
+        {draft.house_rules && draft.house_rules.length > 0 && (
+          <Card>
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <CardTitle className="flex items-center gap-2">
+                  <Shield className="w-5 h-5" />
+                  Κανόνες Σπιτιού
+                </CardTitle>
+                <Button variant="ghost" size="sm" onClick={() => onJumpToStep(4)}>
+                  <Edit className="w-4 h-4" />
+                </Button>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div className="flex flex-wrap gap-2">
+                {draft.house_rules.map((ruleKey) => (
+                  <Badge key={ruleKey} variant="outline">
+                    {houseRuleLabels.get(ruleKey) || ruleKey}
+                  </Badge>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Special Conditions */}
+        <Card>
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <CardTitle className="flex items-center gap-2">
+                <CheckCircle2 className="w-5 h-5" />
+                Ειδικές Συνθήκες
+              </CardTitle>
+              <Button variant="ghost" size="sm" onClick={() => onJumpToStep(4)}>
+                <Edit className="w-4 h-4" />
+              </Button>
+            </div>
+          </CardHeader>
+          <CardContent className="space-y-2">
+            <div>
+              <span className="font-medium">Ζευγάρια: </span>
+              {draft.couples_accepted ? '✅ Επιτρέπονται' : '❌ Όχι'}
+            </div>
+            <div>
+              <span className="font-medium">Κατοικίδια: </span>
+              {draft.pets_allowed ? '✅ Επιτρέπονται' : '❌ Όχι'}
+            </div>
+            <div>
+              <span className="font-medium">Κάπνισμα: </span>
+              {draft.smoking_allowed ? '⚠️ Επιτρέπεται' : '✅ Όχι'}
+            </div>
           </CardContent>
         </Card>
 
@@ -228,7 +386,7 @@ export default function PublishStepReview({
           <CardHeader>
             <div className="flex items-center justify-between">
               <CardTitle className="flex items-center gap-2">
-                <CheckCircle className="w-5 h-5" />
+                <CheckCircle2 className="w-5 h-5" />
                 Απαιτούμενες Επαληθεύσεις
               </CardTitle>
               <Button variant="ghost" size="sm" onClick={() => onJumpToStep(7)}>
@@ -289,32 +447,38 @@ export default function PublishStepReview({
         (draft.amenities_room && draft.amenities_room.length > 0)) && (
         <Card>
           <CardHeader>
-            <CardTitle>Ανέσεις</CardTitle>
+            <div className="flex items-center justify-between">
+              <CardTitle className="flex items-center gap-2">
+                <CheckCircle2 className="w-5 h-5" />
+                Παροχές
+              </CardTitle>
+              <Button variant="ghost" size="sm" onClick={() => onJumpToStep(4)}>
+                <Edit className="w-4 h-4" />
+              </Button>
+            </div>
           </CardHeader>
-          <CardContent className="space-y-3">
+          <CardContent className="space-y-4">
             {draft.amenities_property && draft.amenities_property.length > 0 && (
               <div>
-                <p className="text-sm font-medium mb-2">Ακίνητο:</p>
+                <h4 className="font-medium mb-2">Παροχές Ακινήτου:</h4>
                 <div className="flex flex-wrap gap-2">
-                  {draft.amenities_property.slice(0, 10).map((amenity) => (
-                    <Badge key={amenity} variant="secondary">{amenity}</Badge>
+                  {draft.amenities_property.map((amenityKey) => (
+                    <Badge key={amenityKey} variant="secondary">
+                      {amenityLabels.property.get(amenityKey) || amenityKey}
+                    </Badge>
                   ))}
-                  {draft.amenities_property.length > 10 && (
-                    <Badge variant="outline">+{draft.amenities_property.length - 10}</Badge>
-                  )}
                 </div>
               </div>
             )}
             {draft.amenities_room && draft.amenities_room.length > 0 && (
               <div>
-                <p className="text-sm font-medium mb-2">Δωμάτιο:</p>
+                <h4 className="font-medium mb-2">Παροχές Δωματίου:</h4>
                 <div className="flex flex-wrap gap-2">
-                  {draft.amenities_room.slice(0, 10).map((amenity) => (
-                    <Badge key={amenity} variant="secondary">{amenity}</Badge>
+                  {draft.amenities_room.map((amenityKey) => (
+                    <Badge key={amenityKey} variant="secondary">
+                      {amenityLabels.room.get(amenityKey) || amenityKey}
+                    </Badge>
                   ))}
-                  {draft.amenities_room.length > 10 && (
-                    <Badge variant="outline">+{draft.amenities_room.length - 10}</Badge>
-                  )}
                 </div>
               </div>
             )}

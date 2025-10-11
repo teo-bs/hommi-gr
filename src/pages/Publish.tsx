@@ -359,13 +359,15 @@ export default function Publish() {
         smoking_allowed: updatedDraft.smoking_allowed,
         required_verifications: updatedDraft.required_verifications,
         status: 'draft' as const
-        // NOTE: house_rules and services are saved via junction tables, not as arrays
+        // NOTE: house_rules are saved via junction table, services field removed (deprecated)
       };
       if (updatedDraft.id) {
         await supabase
           .from('listings')
           .update(draftData)
           .eq('id', updatedDraft.id);
+        
+        newId = updatedDraft.id;
           
         // Always handle amenities and house rules if present
         if (updatedDraft.amenities_room?.length || updatedDraft.amenities_property?.length) {
@@ -374,6 +376,18 @@ export default function Publish() {
         
         if (updatedDraft.house_rules?.length || updatedDraft.house_rules?.length === 0) {
           await handleHouseRulesUpdate(updatedDraft.id, updatedDraft);
+        }
+        
+        // Save photos to listing_photos table during draft save
+        if (updatedDraft.photos && updatedDraft.photos.length > 0) {
+          await supabase.from('listing_photos').delete().eq('listing_id', updatedDraft.id);
+          const listingPhotos = updatedDraft.photos.map((photo, idx) => ({
+            listing_id: updatedDraft.id,
+            url: photo,
+            sort_order: idx,
+            is_cover: idx === 0
+          }));
+          await supabase.from('listing_photos').insert(listingPhotos);
         }
       } else {
         const insertPayload = { ...draftData, owner_id: profile.id } as any;
@@ -406,10 +420,21 @@ export default function Publish() {
           setDraft(prev => ({ ...prev, id: data.id }));
           newId = data.id;
           
-          // Create room entry and handle amenities and house rules for this listing
+          // Create room entry and handle amenities, house rules, and photos for this listing
           await createRoomForListing(data.id, updatedDraft);
           await handleAmenitiesUpdate(data.id, updatedDraft);
           await handleHouseRulesUpdate(data.id, updatedDraft);
+          
+          // Save photos to listing_photos table for new draft
+          if (updatedDraft.photos && updatedDraft.photos.length > 0) {
+            const listingPhotos = updatedDraft.photos.map((photo, idx) => ({
+              listing_id: data.id,
+              url: photo,
+              sort_order: idx,
+              is_cover: idx === 0
+            }));
+            await supabase.from('listing_photos').insert(listingPhotos);
+          }
           
           // Create lister profile if it doesn't exist
           await ensureListerProfile();

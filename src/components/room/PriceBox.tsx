@@ -4,12 +4,14 @@ import { Euro } from "lucide-react";
 interface PriceBoxProps {
   price?: number | null;
   deposit?: number | null;
+  depositRequired?: boolean | null;
   billsIncluded?: boolean | null;
+  billsNote?: string | null;
 }
 
-export const PriceBox = ({ price, deposit, billsIncluded }: PriceBoxProps) => {
+export const PriceBox = ({ price, deposit, depositRequired, billsIncluded, billsNote }: PriceBoxProps) => {
   const hasPrice = price != null;
-  const hasDeposit = deposit != null;
+  const hasDeposit = deposit != null && depositRequired !== false;
   const totalMoveIn = hasPrice && hasDeposit ? price + deposit : null;
   
   return (
@@ -35,15 +37,20 @@ export const PriceBox = ({ price, deposit, billsIncluded }: PriceBoxProps) => {
           <div className="flex justify-between">
             <span className="text-muted-foreground">Εγγύηση</span>
             <span className="font-medium">
-              {hasDeposit ? `€${deposit}` : 'Δεν έχει καθοριστεί'}
+              {depositRequired === false ? 'Δεν απαιτείται' : hasDeposit ? `€${deposit}` : 'Δεν έχει καθοριστεί'}
             </span>
           </div>
           
-          <div className="flex justify-between">
+          <div className="flex justify-between items-start">
             <span className="text-muted-foreground">Λογαριασμοί</span>
-            <span className={`font-medium ${billsIncluded === true ? 'text-success' : billsIncluded === false ? 'text-warning' : ''}`}>
-              {billsIncluded === true ? 'Συμπεριλαμβάνονται' : billsIncluded === false ? 'Δεν συμπεριλαμβάνονται' : 'Δεν έχει καθοριστεί'}
-            </span>
+            <div className="text-right">
+              <span className={`font-medium ${billsIncluded === true ? 'text-success' : billsIncluded === false ? 'text-warning' : ''}`}>
+                {billsIncluded === true ? 'Συμπεριλαμβάνονται' : billsIncluded === false ? 'Δεν συμπεριλαμβάνονται' : 'Δεν έχει καθοριστεί'}
+              </span>
+              {billsNote && (
+                <p className="text-xs text-muted-foreground mt-1">{billsNote}</p>
+              )}
+            </div>
           </div>
         </div>
         
