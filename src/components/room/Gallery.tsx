@@ -86,9 +86,9 @@ export const Gallery = ({
   };
 
   return (
-    <div className="space-y-4">
-      {/* Action buttons */}
-      <div className="flex items-center justify-between">
+    <div className="space-y-3 sm:space-y-4">
+      {/* Action buttons - hidden on mobile, shown on desktop */}
+      <div className="hidden lg:flex items-center justify-between">
         <div className="flex items-center space-x-2">
           <span className="text-sm text-muted-foreground uppercase tracking-wide">
             {roomType && getRoomTypeLabel(roomType)}
@@ -111,11 +111,11 @@ export const Gallery = ({
         </div>
       </div>
 
-      {/* Gallery grid */}
-      <div className="grid grid-cols-4 grid-rows-2 gap-2 h-96">
-        {/* Main image */}
+      {/* Gallery grid - responsive: swipeable carousel on mobile, grid on desktop */}
+      <div className="lg:grid lg:grid-cols-4 lg:grid-rows-2 lg:gap-2 lg:h-96">
+        {/* Main image - full width carousel on mobile */}
         <div 
-          className="col-span-2 row-span-2 cursor-pointer relative group overflow-hidden rounded-2xl"
+          className="lg:col-span-2 lg:row-span-2 cursor-pointer relative group overflow-hidden rounded-xl lg:rounded-2xl aspect-[4/3] lg:aspect-auto lg:h-full"
           onClick={() => setCurrentImage(0)}
         >
           <img
@@ -126,11 +126,11 @@ export const Gallery = ({
           />
         </div>
 
-        {/* Thumbnail grid */}
+        {/* Thumbnail grid - hidden on mobile, shown on desktop */}
         {displayPhotos.slice(1, 5).map((photo, index) => (
           <div
             key={photo.id || index}
-            className="cursor-pointer relative group overflow-hidden rounded-xl"
+            className="hidden lg:block cursor-pointer relative group overflow-hidden rounded-xl"
             onClick={(e) => {
               if ((e.target as HTMLElement).closest('button')) return;
               setCurrentImage(index + 1);
@@ -165,8 +165,17 @@ export const Gallery = ({
         ))}
       </div>
 
-      {/* Title and location */}
-      <div>
+      {/* Room type badge and title - mobile */}
+      <div className="lg:hidden space-y-2">
+        <span className="text-xs text-muted-foreground uppercase tracking-wide">
+          {roomType && getRoomTypeLabel(roomType)}
+          {flatmatesCount && flatmatesCount > 0 && ` • ${flatmatesCount} Συγκάτοικοι`}
+        </span>
+        <h1 className="text-2xl sm:text-3xl font-bold">{title}</h1>
+      </div>
+
+      {/* Title - desktop */}
+      <div className="hidden lg:block">
         <h1 className="text-3xl font-bold mb-2">{title}</h1>
       </div>
     </div>

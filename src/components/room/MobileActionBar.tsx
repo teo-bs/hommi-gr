@@ -19,9 +19,9 @@ export const MobileActionBar = ({
   onRequestChat
 }: MobileActionBarProps) => {
   return (
-    <div className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-background border-t border-border shadow-elevated animate-slide-in-bottom">
-      <div className="container mx-auto px-4 py-3">
-        <div className="flex items-center justify-between gap-3">
+    <div className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-background border-t border-border shadow-elevated animate-slide-in-bottom pb-safe">
+      <div className="container mx-auto px-4 py-3 sm:py-4">
+        <div className="flex items-center justify-between gap-3 sm:gap-4">
           {/* Price Display */}
           <div className="flex flex-col">
             <span className="text-xs text-muted-foreground">Τιμή</span>

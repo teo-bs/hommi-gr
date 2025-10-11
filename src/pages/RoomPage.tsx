@@ -316,10 +316,10 @@ const RoomPage = () => {
         />
       </Helmet>
 
-      <div className="container mx-auto px-4 py-4 sm:py-8 pb-24 lg:pb-8">
+      <div className="container mx-auto px-4 py-3 sm:py-6 pb-20 sm:pb-24 lg:pb-8">
         {/* Back to Search Button */}
         {location.state?.fromSearch && (
-          <div className="mb-3 sm:mb-4 animate-fade-in">
+          <div className="mb-2 sm:mb-4 animate-fade-in">
             <Button 
               variant="ghost" 
               onClick={() => navigate('/search', { state: { fromListing: true } })}
@@ -332,9 +332,9 @@ const RoomPage = () => {
           </div>
         )}
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 sm:gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8">
           {/* Main Content */}
-          <div className="lg:col-span-2 space-y-6 sm:space-y-8 animate-fade-in">
+          <div className="lg:col-span-2 space-y-4 sm:space-y-6 lg:space-y-8 animate-fade-in">
             <Gallery 
               photos={photos} 
               title={listing.title}

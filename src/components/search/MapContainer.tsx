@@ -277,10 +277,20 @@ export const MapContainer = ({
     });
 
     // Add navigation controls
-    map.current.addControl(new mapboxgl.NavigationControl(), 'top-right');
+    map.current.addControl(new mapboxgl.NavigationControl({
+      showCompass: false, // Hide compass on mobile for cleaner UI
+      showZoom: true
+    }), 'top-right');
     map.current.addControl(new mapboxgl.AttributionControl({ compact: true }), 'bottom-right');
+    
+    // Disable scroll zoom on mobile by default (require two-finger pinch)
+    if (window.innerWidth < 768) {
+      map.current.scrollZoom.disable();
+      map.current.touchZoomRotate.enable(); // Enable pinch to zoom
+      map.current.touchPitch.disable(); // Disable pitch on touch for simpler UX
+    }
 
-    // Map event handlers
+    // Map event handlers with debouncing for better mobile performance
     map.current.on('movestart', () => {
       setIsMoving(true);
     });
@@ -303,15 +313,19 @@ export const MapContainer = ({
       setIsMoving(false);
       
       // Trigger search automatically if enabled, otherwise just mark as moved
+      // On mobile, use longer debounce for better performance
+      const searchDelay = window.innerWidth < 768 ? 500 : 300;
       if (autoSearch) {
-        window.dispatchEvent(new CustomEvent('mapBoundsChanged', { 
-          detail: { bounds: {
-            north: bounds.getNorth(),
-            south: bounds.getSouth(),
-            east: bounds.getEast(),
-            west: bounds.getWest()
-          } } 
-        }));
+        setTimeout(() => {
+          window.dispatchEvent(new CustomEvent('mapBoundsChanged', { 
+            detail: { bounds: {
+              north: bounds.getNorth(),
+              south: bounds.getSouth(),
+              east: bounds.getEast(),
+              west: bounds.getWest()
+            } } 
+          }));
+        }, searchDelay);
       } else {
         setHasUserMoved(true);
       }
@@ -327,7 +341,7 @@ export const MapContainer = ({
         data: createGeoJSONData(),
         cluster: true,
         clusterMaxZoom: 14,
-        clusterRadius: 50,
+        clusterRadius: window.innerWidth < 768 ? 30 : 50, // Smaller radius on mobile
         clusterProperties: {
           avg_price: ['/', ['+', ['get', 'price']], ['get', 'point_count']],
           min_price: ['min', ['get', 'price']]

@@ -2,6 +2,7 @@ import { useState, useEffect, useMemo } from "react";
 import { useSearchParams, useLocation } from "react-router-dom";
 import { MapContainer } from "@/components/search/MapContainer";
 import { FilterBar, FilterBarState } from "@/components/search/FilterBar";
+import { ViewSwitcher } from "@/components/search/ViewSwitcher";
 import { useSearchStateCache } from "@/hooks/useSearchStateCache";
 import { useDebouncedCallback } from 'use-debounce';
 import { useOptimizedSearch } from '@/hooks/useOptimizedSearch';
@@ -35,6 +36,7 @@ const Search = () => {
   const [hoveredListingId, setHoveredListingId] = useState<string | null>(null);
   const [selectedListingId, setSelectedListingId] = useState<string | null>(null);
   const [autoSearch, setAutoSearch] = useState<boolean>(true);
+  const [mobileView, setMobileView] = useState<'list' | 'map'>('list');
   
   // Pagination state - initialize from URL
   const initialPage = Math.max(1, parseInt(searchParams.get('page') || '1', 10) || 1);
@@ -332,19 +334,27 @@ const Search = () => {
         onFilterChange={handleFilterChange}
       />
 
-      {/* Results Counter */}
+      {/* View Switcher - Mobile Only */}
+      <ViewSwitcher 
+        view={mobileView}
+        onViewChange={setMobileView}
+      />
+
+      {/* Results Counter - Hide when map view on mobile */}
+      {(mobileView === 'list' || window.innerWidth >= 1024) && (
         <ResultsCounter 
           count={totalCount} 
           isLoading={isLoading}
           currentPage={currentPage}
           itemsPerPage={itemsPerPage}
         />
+      )}
 
-      {/* Main Content - Always Split View on Desktop */}
-      <div className="container mx-auto px-6 pb-6">
+      {/* Main Content - Conditional rendering based on view */}
+      <div className="container mx-auto px-4 sm:px-6 pb-6">
         <div className="flex gap-6">
-          {/* Listings Panel */}
-          <div className="flex-1 max-w-2xl">
+          {/* Listings Panel - Show on desktop always, on mobile only if list view */}
+          <div className={`flex-1 max-w-2xl ${mobileView === 'map' ? 'hidden lg:block' : ''}`}>
             {isLoading ? (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
                 {Array.from({ length: 6 }).map((_, i) => (
@@ -438,9 +448,9 @@ const Search = () => {
             )}
           </div>
 
-          {/* Map Panel - Sticky */}
-          <div className="hidden lg:block flex-1 sticky top-[120px] h-[calc(100vh-140px)]">
-            <div className="w-full h-full rounded-xl overflow-hidden">
+          {/* Map Panel - Show on desktop always (sticky), on mobile only if map view (full screen) */}
+          <div className={`flex-1 ${mobileView === 'map' ? 'block fixed inset-0 top-[164px] z-20' : 'hidden'} lg:block lg:sticky lg:top-[120px] lg:h-[calc(100vh-140px)] lg:relative`}>
+            <div className="w-full h-full rounded-none lg:rounded-xl overflow-hidden">
               <MapContainer 
                 listings={mapListings}
                 onListingHover={setHoveredListingId}
