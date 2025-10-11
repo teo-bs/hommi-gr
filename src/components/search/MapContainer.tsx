@@ -8,10 +8,8 @@ export interface Listing {
   id: string;
   title: string;
   price_month: number;
-  geo?: {
-    lat: number;
-    lng: number;
-  };
+  lat: number;
+  lng: number;
   photos?: string[];
   city: string;
   neighborhood?: string;
@@ -56,10 +54,13 @@ export const MapContainer = ({
     resetUserMoved 
   } = useMapState();
 
+  // Store HTML markers
+  const markersRef = useRef<Map<string, mapboxgl.Marker>>(new Map());
+
   // Convert listings to GeoJSON
   const createGeoJSONData = useCallback(() => {
     const features = listings
-      .filter(listing => listing.geo?.lat && listing.geo?.lng)
+      .filter(listing => listing.lat && listing.lng)
       .map(listing => ({
         type: 'Feature' as const,
         properties: {
@@ -73,7 +74,7 @@ export const MapContainer = ({
         },
         geometry: {
           type: 'Point' as const,
-          coordinates: [listing.geo!.lng, listing.geo!.lat]
+          coordinates: [listing.lng, listing.lat]
         }
       }));
 
@@ -207,59 +208,123 @@ export const MapContainer = ({
         }
       });
 
-      // Individual pin markers with price background
-      map.current.addLayer({
-        id: 'unclustered-point-bg',
-        type: 'circle',
-        source: 'listings',
-        filter: ['!', ['has', 'point_count']],
-        paint: {
-          'circle-color': [
-            'case',
-            ['==', ['get', 'id'], selectedListingId || ''],
-            'hsl(var(--foreground))',
-            ['==', ['get', 'id'], hoveredListingId || ''],
-            'hsl(var(--foreground))',
-            'hsl(var(--background))'
-          ],
-          'circle-radius': 18,
-          'circle-stroke-width': 1,
-          'circle-stroke-color': [
-            'case',
-            ['==', ['get', 'id'], selectedListingId || ''],
-            'hsl(var(--foreground))',
-            ['==', ['get', 'id'], hoveredListingId || ''],
-            'hsl(var(--foreground))',
-            'hsl(var(--border))'
-          ],
-          'circle-opacity': 1
+      // Create HTML markers for individual listings
+      const updateMarkers = () => {
+        if (!map.current) return;
+        
+        const features = map.current.querySourceFeatures('listings', {
+          sourceLayer: undefined
+        }).filter((feature: any) => !feature.properties.cluster);
+
+        // Remove markers for listings no longer visible
+        const currentIds = new Set(features.map((f: any) => f.properties.id));
+        markersRef.current.forEach((marker, id) => {
+          if (!currentIds.has(id)) {
+            marker.remove();
+            markersRef.current.delete(id);
+          }
+        });
+
+        // Add/update markers for visible listings
+        features.forEach((feature: any) => {
+          const coords = (feature.geometry as any).coordinates;
+          const props = feature.properties;
+          const id = props.id;
+          
+          let marker = markersRef.current.get(id);
+          
+          if (!marker) {
+            // Create new HTML marker
+            const el = document.createElement('div');
+            el.className = 'map-price-marker';
+            el.innerHTML = `
+              <div class="price-bubble" data-listing-id="${id}">
+                €${props.price.toLocaleString()}
+              </div>
+            `;
+            
+            marker = new mapboxgl.Marker({ element: el, anchor: 'center' })
+              .setLngLat(coords)
+              .addTo(map.current!);
+            
+            // Add click handler
+            el.addEventListener('click', () => {
+              setSelectedPinId(id);
+              onListingClick?.(id);
+              
+              // Show popup
+              new mapboxgl.Popup({ closeButton: true, closeOnClick: true })
+                .setLngLat(coords)
+                .setHTML(`
+                  <div style="padding: 8px; max-width: 200px;">
+                    <strong style="display: block; margin-bottom: 4px; font-size: 14px;">${props.title}</strong>
+                    <span style="font-size: 12px; color: #666;">${props.formatted_address}</span>
+                  </div>
+                `)
+                .addTo(map.current!);
+            });
+            
+            // Add hover handlers
+            el.addEventListener('mouseenter', () => {
+              if (!map.current) return;
+              setHoveredPinId(id);
+              onListingHover?.(id);
+              
+              // Show hover preview popup
+              if (hoverPopup.current) {
+                hoverPopup.current.remove();
+              }
+              
+              hoverPopup.current = new mapboxgl.Popup({
+                closeButton: false,
+                closeOnClick: false,
+                offset: 15,
+                className: 'map-hover-popup'
+              })
+                .setLngLat(coords)
+                .setHTML(`
+                  <div style="width: 280px; border-radius: 12px; overflow: hidden; animation: fadeIn 0.2s ease-out;">
+                    <img src="${props.photo || '/placeholder.svg'}" alt="${props.title}" style="width: 100%; height: 180px; object-fit: cover;" />
+                    <div style="padding: 12px;">
+                      <div style="font-weight: 600; font-size: 14px; margin-bottom: 4px; color: hsl(var(--foreground));">${props.title}</div>
+                      <div style="font-size: 14px; color: hsl(var(--foreground));"><span style="font-weight: 600;">€${props.price}</span> <span style="color: hsl(var(--muted-foreground)); font-size: 13px;">μήνα</span></div>
+                    </div>
+                  </div>
+                `)
+                .addTo(map.current!);
+            });
+            
+            el.addEventListener('mouseleave', () => {
+              setHoveredPinId(null);
+              onListingHover?.(null);
+              
+              if (hoverPopup.current) {
+                hoverPopup.current.remove();
+                hoverPopup.current = null;
+              }
+            });
+            
+            markersRef.current.set(id, marker);
+          }
+          
+          // Update marker state based on hover/selected
+          const bubble = marker.getElement().querySelector('.price-bubble') as HTMLElement;
+          if (bubble) {
+            bubble.classList.toggle('hovered', id === hoveredListingId);
+            bubble.classList.toggle('selected', id === selectedListingId);
+          }
+        });
+      };
+
+      // Initial marker creation
+      map.current.on('sourcedata', (e) => {
+        if (e.sourceId === 'listings' && e.isSourceLoaded) {
+          updateMarkers();
         }
       });
 
-      // Price labels for individual pins
-      map.current.addLayer({
-        id: 'unclustered-point-label',
-        type: 'symbol',
-        source: 'listings',
-        filter: ['!', ['has', 'point_count']],
-        layout: {
-          'text-field': '€{price}',
-          'text-font': ['Open Sans Semibold', 'Arial Unicode MS Bold'],
-          'text-size': 13,
-          'text-offset': [0, 0],
-          'text-anchor': 'center'
-        },
-        paint: {
-          'text-color': [
-            'case',
-            ['==', ['get', 'id'], selectedListingId || ''],
-            'hsl(var(--background))',
-            ['==', ['get', 'id'], hoveredListingId || ''],
-            'hsl(var(--background))',
-            'hsl(var(--foreground))'
-          ]
-        }
-      });
+      map.current.on('moveend', updateMarkers);
+      map.current.on('zoom', updateMarkers);
 
       // Click handlers
       map.current.on('click', 'clusters', (e) => {
@@ -282,87 +347,6 @@ export const MapContainer = ({
         }
       });
 
-      map.current.on('click', 'unclustered-point-bg', (e) => {
-        const features = e.features;
-        if (features && features[0]) {
-          const listingId = features[0].properties?.id;
-          const title = features[0].properties?.title;
-          const formattedAddress = features[0].properties?.formatted_address;
-          
-          if (listingId) {
-            setSelectedPinId(listingId);
-            onListingClick?.(listingId);
-          }
-          
-          // Show popup with address on click
-          if (title && formattedAddress && map.current) {
-            new mapboxgl.Popup({ closeButton: true, closeOnClick: true })
-              .setLngLat((features[0].geometry as any).coordinates)
-              .setHTML(`
-                <div style="padding: 8px; max-width: 200px;">
-                  <strong style="display: block; margin-bottom: 4px; font-size: 14px;">${title}</strong>
-                  <span style="font-size: 12px; color: #666;">${formattedAddress}</span>
-                </div>
-              `)
-              .addTo(map.current);
-          }
-        }
-      });
-
-      // Hover handlers with preview popup
-      map.current.on('mouseenter', 'unclustered-point-bg', (e) => {
-        if (!map.current) return;
-        map.current.getCanvas().style.cursor = 'pointer';
-        const features = e.features;
-        if (features && features[0]) {
-          const listingId = features[0].properties?.id;
-          const title = features[0].properties?.title;
-          const price = features[0].properties?.price;
-          const photo = features[0].properties?.photo;
-          const coords = (features[0].geometry as any).coordinates;
-          
-          if (listingId) {
-            setHoveredPinId(listingId);
-            onListingHover?.(listingId);
-            
-            // Show hover preview popup
-            if (hoverPopup.current) {
-              hoverPopup.current.remove();
-            }
-            
-            hoverPopup.current = new mapboxgl.Popup({
-              closeButton: false,
-              closeOnClick: false,
-              offset: 15,
-              className: 'map-hover-popup'
-            })
-              .setLngLat(coords)
-              .setHTML(`
-                <div style="width: 280px; border-radius: 12px; overflow: hidden; animation: fadeIn 0.2s ease-out;">
-                  <img src="${photo || '/placeholder.svg'}" alt="${title}" style="width: 100%; height: 180px; object-fit: cover;" />
-                  <div style="padding: 12px;">
-                    <div style="font-weight: 600; font-size: 14px; margin-bottom: 4px; color: hsl(var(--foreground));">${title}</div>
-                    <div style="font-size: 14px; color: hsl(var(--foreground));"><span style="font-weight: 600;">€${price}</span> <span style="color: hsl(var(--muted-foreground)); font-size: 13px;">μήνα</span></div>
-                  </div>
-                </div>
-              `)
-              .addTo(map.current);
-          }
-        }
-      });
-
-      map.current.on('mouseleave', 'unclustered-point-bg', () => {
-        if (!map.current) return;
-        map.current.getCanvas().style.cursor = '';
-        setHoveredPinId(null);
-        onListingHover?.(null);
-        
-        // Remove hover popup
-        if (hoverPopup.current) {
-          hoverPopup.current.remove();
-          hoverPopup.current = null;
-        }
-      });
 
       map.current.on('mouseenter', 'clusters', () => {
         if (!map.current) return;
@@ -376,6 +360,9 @@ export const MapContainer = ({
     });
 
     return () => {
+      // Clean up markers
+      markersRef.current.forEach(marker => marker.remove());
+      markersRef.current.clear();
       map.current?.remove();
     };
   }, []);
@@ -389,39 +376,14 @@ export const MapContainer = ({
 
   // Handle external hover/selection changes
   useEffect(() => {
-    if (!map.current) return;
-    
-    // Update pin styles when external hover/selection changes
-    if (map.current.getLayer('unclustered-point-bg')) {
-      map.current.setPaintProperty('unclustered-point-bg', 'circle-color', [
-        'case',
-        ['==', ['get', 'id'], selectedListingId || ''],
-        'hsl(var(--foreground))',
-        ['==', ['get', 'id'], hoveredListingId || ''],
-        'hsl(var(--foreground))',
-        'hsl(var(--background))'
-      ]);
-      
-      map.current.setPaintProperty('unclustered-point-bg', 'circle-stroke-color', [
-        'case',
-        ['==', ['get', 'id'], selectedListingId || ''],
-        'hsl(var(--foreground))',
-        ['==', ['get', 'id'], hoveredListingId || ''],
-        'hsl(var(--foreground))',
-        'hsl(var(--border))'
-      ]);
-    }
-    
-    if (map.current.getLayer('unclustered-point-label')) {
-      map.current.setPaintProperty('unclustered-point-label', 'text-color', [
-        'case',
-        ['==', ['get', 'id'], selectedListingId || ''],
-        'hsl(var(--background))',
-        ['==', ['get', 'id'], hoveredListingId || ''],
-        'hsl(var(--background))',
-        'hsl(var(--foreground))'
-      ]);
-    }
+    // Update all marker states
+    markersRef.current.forEach((marker, id) => {
+      const bubble = marker.getElement().querySelector('.price-bubble') as HTMLElement;
+      if (bubble) {
+        bubble.classList.toggle('hovered', id === hoveredListingId);
+        bubble.classList.toggle('selected', id === selectedListingId);
+      }
+    });
   }, [hoveredListingId, selectedListingId]);
 
   const handleUpdateResults = () => {

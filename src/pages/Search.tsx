@@ -127,20 +127,23 @@ const Search = () => {
 
   // Convert ALL listings to map format (not paginated)
   const mapListings = useMemo(() => {
-    return allListingsForMap.map(listing => ({
-      id: listing.room_id,
-      room_id: listing.room_id,
-      title: listing.title,
-      price_month: listing.price_month,
-      neighborhood: listing.neighborhood,
-      city: listing.city,
-      flatmates_count: listing.flatmates_count,
-      couples_accepted: listing.couples_accepted,
-      photos: listing.cover_photo_url ? [listing.cover_photo_url] : ['/placeholder.svg'],
-      room_slug: listing.slug,
-      geo: listing.lat && listing.lng ? { lat: listing.lat, lng: listing.lng } : undefined,
-      formatted_address: (listing as any).formatted_address
-    }));
+    return allListingsForMap
+      .filter(listing => listing.lat && listing.lng) // Only include listings with valid coordinates
+      .map(listing => ({
+        id: listing.room_id,
+        room_id: listing.room_id,
+        title: listing.title,
+        price_month: listing.price_month,
+        neighborhood: listing.neighborhood,
+        city: listing.city,
+        flatmates_count: listing.flatmates_count,
+        couples_accepted: listing.couples_accepted,
+        photos: listing.cover_photo_url ? [listing.cover_photo_url] : ['/placeholder.svg'],
+        room_slug: listing.slug,
+        lat: listing.lat,
+        lng: listing.lng,
+        formatted_address: (listing as any).formatted_address
+      }));
   }, [allListingsForMap]);
 
   // Restore state when coming back from listing

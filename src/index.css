@@ -180,6 +180,36 @@
     font-kerning: normal;
   }
 
+  /* Map price marker styles */
+  .map-price-marker {
+    cursor: pointer;
+  }
+
+  .price-bubble {
+    background: #FF6B35;
+    color: white;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-weight: 600;
+    font-size: 13px;
+    white-space: nowrap;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+    transition: all 0.2s ease;
+  }
+
+  .price-bubble:hover,
+  .price-bubble.hovered {
+    background: #E85A25;
+    transform: scale(1.1);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+  }
+
+  .price-bubble.selected {
+    background: hsl(var(--foreground));
+    transform: scale(1.15);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  }
+
   h1 {
     font: 700 var(--h1)/1.15 "Inter", system-ui;
     letter-spacing: -0.005em;
