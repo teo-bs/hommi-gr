@@ -181,7 +181,7 @@ export const ListingCard = ({
           
           {/* Photo counter for multiple photos */}
           {hasMultiplePhotos && (
-            <div className="absolute bottom-2 right-2 bg-black/70 text-white text-xs px-2 py-1 rounded-full z-10">
+            <div className="absolute bottom-2 left-2 bg-black/70 text-white text-xs px-2 py-1 rounded-full z-10">
               {currentPhotoIndex + 1}/{photos.length}
             </div>
           )}

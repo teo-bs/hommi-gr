@@ -43,6 +43,7 @@ export const MapContainer = ({
   const map = useRef<mapboxgl.Map | null>(null);
   const clustersSource = useRef<mapboxgl.GeoJSONSource | null>(null);
   const hoverPopup = useRef<mapboxgl.Popup | null>(null);
+  const popupCloseTimer = useRef<NodeJS.Timeout | null>(null);
   
   const { 
     mapState, 
@@ -120,6 +121,80 @@ export const MapContainer = ({
       counter.dataset.counter = 'true';
       imageContainer.appendChild(counter);
     }
+    
+    // Add Save button (heart icon)
+    const saveButton = document.createElement('button');
+    saveButton.className = 'absolute top-2 right-2 w-9 h-9 rounded-full bg-background/90 hover:bg-background shadow-sm flex items-center justify-center z-20 cursor-pointer transition-all hover:scale-110';
+    saveButton.setAttribute('data-room-id', props.id);
+    saveButton.innerHTML = `
+      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/>
+      </svg>
+    `;
+
+    // Check if room is already saved and update icon
+    (async () => {
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session) {
+          const { data } = await supabase
+            .from('saved_rooms')
+            .select('id')
+            .eq('room_id', props.id)
+            .eq('user_id', session.user.id)
+            .maybeSingle();
+          
+          if (data) {
+            const svg = saveButton.querySelector('svg');
+            if (svg) svg.setAttribute('fill', 'currentColor');
+          }
+        }
+      } catch (err) {
+        console.error('Error checking saved status:', err);
+      }
+    })();
+
+    saveButton.onclick = async (e) => {
+      e.stopPropagation();
+      
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session) {
+          console.log('Please login to save listings');
+          return;
+        }
+
+        const { data: existingSave } = await supabase
+          .from('saved_rooms')
+          .select('id')
+          .eq('room_id', props.id)
+          .eq('user_id', session.user.id)
+          .maybeSingle();
+
+        const svg = saveButton.querySelector('svg');
+        
+        if (existingSave) {
+          // Unsave
+          await supabase
+            .from('saved_rooms')
+            .delete()
+            .eq('id', existingSave.id);
+          
+          if (svg) svg.setAttribute('fill', 'none');
+        } else {
+          // Save
+          await supabase
+            .from('saved_rooms')
+            .insert({ room_id: props.id, user_id: session.user.id });
+          
+          if (svg) svg.setAttribute('fill', 'currentColor');
+        }
+      } catch (err) {
+        console.error('Error toggling save:', err);
+      }
+    };
+
+    imageContainer.appendChild(saveButton);
     
     carouselWrapper.appendChild(imageContainer);
     container.appendChild(carouselWrapper);
@@ -367,6 +442,13 @@ export const MapContainer = ({
             // Add hover handlers
             el.addEventListener('mouseenter', async () => {
               if (!map.current) return;
+              
+              // Cancel any pending close timer
+              if (popupCloseTimer.current) {
+                clearTimeout(popupCloseTimer.current);
+                popupCloseTimer.current = null;
+              }
+              
               setHoveredPinId(id);
               onListingHover?.(id);
               
@@ -409,16 +491,41 @@ export const MapContainer = ({
                 .setLngLat(coords)
                 .setDOMContent(createPopupContent(props, photoUrls))
                 .addTo(map.current!);
+              
+              // Keep popup open when hovering over it
+              const popupElement = hoverPopup.current.getElement();
+              
+              popupElement.addEventListener('mouseenter', () => {
+                // Cancel any pending close
+                if (popupCloseTimer.current) {
+                  clearTimeout(popupCloseTimer.current);
+                  popupCloseTimer.current = null;
+                }
+              });
+
+              popupElement.addEventListener('mouseleave', () => {
+                // Close popup when leaving it
+                setHoveredPinId(null);
+                onListingHover?.(null);
+                
+                if (hoverPopup.current) {
+                  hoverPopup.current.remove();
+                  hoverPopup.current = null;
+                }
+              });
             });
             
             el.addEventListener('mouseleave', () => {
-              setHoveredPinId(null);
-              onListingHover?.(null);
-              
-              if (hoverPopup.current) {
-                hoverPopup.current.remove();
-                hoverPopup.current = null;
-              }
+              // Delay closing to allow mouse to move to popup
+              popupCloseTimer.current = setTimeout(() => {
+                setHoveredPinId(null);
+                onListingHover?.(null);
+                
+                if (hoverPopup.current) {
+                  hoverPopup.current.remove();
+                  hoverPopup.current = null;
+                }
+              }, 150); // 150ms delay
             });
             
             markersRef.current.set(id, marker);
