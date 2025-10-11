@@ -1,26 +1,27 @@
 // Maps Greek amenity labels from UI to database keys
+// IMPORTANT: All keys must match the 'key' column in the amenities table
 export const GREEK_TO_KEY_MAP: Record<string, string> = {
   // Property amenities
   'WiFi': 'wifi',
   'Τηλεόραση': 'tv',
   'Κουζίνα': 'kitchen',
-  'Πλυντήριο ρούχων': 'washing_machine',
+  'Πλυντήριο ρούχων': 'washer',  // Fixed: was 'washing_machine', DB uses 'washer'
   'Πλυντήριο πιάτων': 'dishwasher',
   'Ιδιωτικό πάρκινγκ': 'private_parking',
   'Πάρκινγκ στην ιδιοκτησία με πληρωμή': 'paid_parking',
   'Κλιματισμός': 'air_conditioning',
-  'Ειδικός χώρος εργασίας': 'workspace',
+  'Ειδικός χώρος εργασίας': 'dedicated_workspace',  // Fixed: was 'workspace', DB uses 'dedicated_workspace'
   'Μπαλκόνι': 'balcony',
   'Θέρμανση': 'heating',
   'Ψησταριά μπάρμπεκιου': 'bbq_grill',
   'Υπαίθρια τραπεζαρία': 'outdoor_dining',
-  'Τζάκι': 'fireplace',
-  'Εξοπλισμός γυμναστικής': 'gym_equipment',
+  'Τζάκι': 'indoor_fireplace',  // Fixed: was 'fireplace', DB uses 'indoor_fireplace'
+  'Εξοπλισμός γυμναστικής': 'gym',  // Fixed: was 'gym_equipment', DB uses 'gym'
   'Καθαρισμός': 'cleaning',
   
   // Room amenities
   'Ιδιωτικό μπάνιο': 'private_bathroom',
-  'Κλιματισμός δωματίου': 'room_ac',
+  'Κλιματισμός δωματίου': 'air_conditioning',  // Fixed: was 'room_ac', same as property AC
   'Γραφείο': 'desk',
   'Καρέκλα': 'chair',
   'Ντουλάπα': 'wardrobe',

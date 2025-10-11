@@ -37,11 +37,11 @@ export const QuickFacts = ({ room, listing }: QuickFactsProps) => {
       label: room.room_type === 'private' ? 'Private room' : 'Shared room',
       variant: 'default'
     },
-    {
+    ...(room.room_size_m2 ? [{
       icon: Maximize2,
-      label: room.room_size_m2 ? `${room.room_size_m2}m²` : '15m²',
-      variant: 'secondary'
-    },
+      label: `${room.room_size_m2}m²`,
+      variant: 'secondary' as const
+    }] : []),
     {
       icon: room.is_interior ? Home : Home,
       label: room.is_interior ? 'Interior' : 'Exterior',

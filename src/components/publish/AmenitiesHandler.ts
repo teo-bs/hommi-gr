@@ -26,15 +26,22 @@ const mapAmenityKeysToIds = async (keys: string[]): Promise<string[]> => {
     .eq('is_active', true);
   
   if (error) {
-    console.error('Error fetching amenity IDs:', error);
+    console.error('❌ Error fetching amenity IDs:', error);
     return [];
   }
   
-  console.log(`Mapped ${keys.length} amenity labels to ${data?.length || 0} IDs:`, { 
-    input: keys, 
-    dbKeys, 
-    foundIds: data?.map(a => a.key) 
+  // Enhanced logging for debugging
+  console.log('🔍 Amenity Mapping Debug:', { 
+    originalLabels: keys,
+    mappedDbKeys: dbKeys,
+    foundInDB: data?.map(a => a.key) || [],
+    notFoundInDB: dbKeys.filter(k => !data?.some(a => a.key === k)),
+    finalIds: data?.map(a => ({ key: a.key, id: a.id })) || []
   });
+  
+  if (dbKeys.length > 0 && (!data || data.length === 0)) {
+    console.warn('⚠️ No amenities found in DB for keys:', dbKeys);
+  }
   
   return data?.map(a => a.id) || [];
 };
