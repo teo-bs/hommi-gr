@@ -52,9 +52,10 @@ export default function PublishStepRoomDetails({
     setLocalAmenities(updated);
   };
 
-  const handleNext = () => {
-    // Commit local selections before proceeding
-    onUpdate({ amenities_room: localAmenities });
+  const handleNext = async () => {
+    // Commit local selections before proceeding (ensure they're saved to draft)
+    console.log('📝 Committing room amenities:', localAmenities);
+    await onUpdate({ amenities_room: localAmenities });
     onNext();
   };
 

@@ -70,9 +70,11 @@ export default function PublishStepApartmentDetails({
     setLocalHouseRules(updated);
   };
 
-  const handleNext = () => {
-    // Commit local selections before proceeding
-    onUpdate({
+  const handleNext = async () => {
+    // Commit local selections before proceeding (ensure they're saved to draft)
+    console.log('📝 Committing apartment amenities:', localAmenities);
+    console.log('📝 Committing house rules:', localHouseRules);
+    await onUpdate({
       amenities_property: localAmenities,
       house_rules: localHouseRules
     });

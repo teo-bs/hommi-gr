@@ -47,29 +47,47 @@ const mapAmenityKeysToIds = async (keys: string[]): Promise<string[]> => {
 };
 
 export const handleAmenitiesUpdate = async (listingId: string, draft: ListingDraft) => {
+  console.log('🔧 Starting amenities update for listing:', listingId);
+  console.log('📦 Draft amenities:', { 
+    property: draft.amenities_property, 
+    room: draft.amenities_room 
+  });
+
   try {
     // Handle property amenities
     if (draft.amenities_property?.length > 0) {
       // Map amenity keys to IDs
       const propertyAmenityIds = await mapAmenityKeysToIds(draft.amenities_property);
+      console.log('✅ Mapped property amenity IDs:', propertyAmenityIds);
 
       if (propertyAmenityIds.length > 0) {
         // Clear existing property amenities
-        await supabase
+        const { error: deleteError } = await supabase
           .from('listing_amenities')
           .delete()
           .eq('listing_id', listingId);
 
-        // Insert new property amenities
+        if (deleteError) {
+          console.error('❌ Error deleting old property amenities:', deleteError);
+          throw deleteError;
+        }
+
+        // Insert new property amenities (without scope - it's nullable)
         const amenityInserts = propertyAmenityIds.map(amenityId => ({
           listing_id: listingId,
-          amenity_id: amenityId,
-          scope: 'property'
+          amenity_id: amenityId
         }));
 
-        await supabase
+        const { error: insertError } = await supabase
           .from('listing_amenities')
           .insert(amenityInserts);
+
+        if (insertError) {
+          console.error('❌ Error inserting property amenities:', insertError);
+          throw insertError;
+        }
+
+        console.log('✅ Property amenities saved successfully');
       }
     }
 
@@ -85,13 +103,19 @@ export const handleAmenitiesUpdate = async (listingId: string, draft: ListingDra
       if (room) {
         // Map amenity keys to IDs
         const roomAmenityIds = await mapAmenityKeysToIds(draft.amenities_room);
+        console.log('✅ Mapped room amenity IDs:', roomAmenityIds);
 
         if (roomAmenityIds.length > 0) {
           // Clear existing room amenities
-          await supabase
+          const { error: deleteError } = await supabase
             .from('room_amenities')
             .delete()
             .eq('room_id', room.id);
+
+          if (deleteError) {
+            console.error('❌ Error deleting old room amenities:', deleteError);
+            throw deleteError;
+          }
 
           // Insert new room amenities
           const roomAmenityInserts = roomAmenityIds.map(amenityId => ({
@@ -99,14 +123,25 @@ export const handleAmenitiesUpdate = async (listingId: string, draft: ListingDra
             amenity_id: amenityId
           }));
 
-          await supabase
+          const { error: insertError } = await supabase
             .from('room_amenities')
             .insert(roomAmenityInserts);
+
+          if (insertError) {
+            console.error('❌ Error inserting room amenities:', insertError);
+            throw insertError;
+          }
+
+          console.log('✅ Room amenities saved successfully');
         }
+      } else {
+        console.warn('⚠️ No room found for listing, skipping room amenities');
       }
     }
+
+    console.log('✅ Amenities update completed successfully');
   } catch (error) {
-    console.error('Error handling amenities update:', error);
-    // Don't throw - amenities are not critical for listing creation
+    console.error('❌ Critical error in handleAmenitiesUpdate:', error);
+    throw error; // Re-throw so publish flow knows it failed
   }
 };

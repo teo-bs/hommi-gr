@@ -742,6 +742,27 @@ export default function Publish() {
       }
       console.log('✅ Validation passed');
 
+      // CRITICAL: Save amenities BEFORE publishing
+      setPublishingStage("Αποθήκευση παροχών...");
+      setPublishProgress(50);
+      console.log('🔧 Saving amenities and house rules before publishing...');
+      
+      if (!draft.amenities_property || draft.amenities_property.length === 0) {
+        console.warn('⚠️ No property amenities selected');
+      }
+      if (!draft.amenities_room || draft.amenities_room.length === 0) {
+        console.warn('⚠️ No room amenities selected');
+      }
+      
+      try {
+        await handleAmenitiesUpdate(draft.id!, draft);
+        await handleHouseRulesUpdate(draft.id!, draft);
+        console.log('✅ Amenities and house rules saved successfully');
+      } catch (amenityError) {
+        console.error('❌ Failed to save amenities:', amenityError);
+        throw new Error('Αποτυχία αποθήκευσης παροχών. Παρακαλώ δοκιμάστε ξανά.');
+      }
+
       setPublishingStage("Δημοσίευση αγγελίας...");
       setPublishProgress(60);
       console.log('📝 Using atomic publish function with transaction safety...');
