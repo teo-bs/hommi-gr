@@ -2290,7 +2290,9 @@ export type Database = {
         Returns: boolean
       }
       publish_listing_atomic: {
-        Args: { p_listing_id: string; p_room_slug?: string }
+        Args:
+          | { p_listing_id: string }
+          | { p_listing_id: string; p_room_slug?: string }
         Returns: Json
       }
       refresh_listing_amenity_facets: {

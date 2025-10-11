@@ -217,11 +217,11 @@ const Search = () => {
 
   const city = searchParams.get('city');
   
-  // Calculate pagination values
-  const totalPages = Math.ceil(listings.length / itemsPerPage);
-  const startIndex = (currentPage - 1) * itemsPerPage;
-  const endIndex = startIndex + itemsPerPage;
-  const paginatedListings = listings.slice(startIndex, endIndex);
+  // Calculate pagination values using totalCount from hook (not listings.length)
+  const totalPages = Math.ceil(totalCount / itemsPerPage);
+  const paginatedListings = listings; // Hook already returns correct page
+  
+  console.debug('Search pagination', { totalCount, itemsPerPage, currentPage, totalPages });
   
   // Sync currentPage to URL
   useEffect(() => {
