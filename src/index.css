@@ -49,30 +49,6 @@
     display: none;
   }
 
-  /* 
-    ========================================
-    TOKEN HIERARCHY
-    ========================================
-    
-    1. PRIMITIVE TOKENS (--neutral-*, --accent-*, --emphasis-*)
-       → Raw color values in HSL format
-       → Only reference these from semantic tokens
-    
-    2. SEMANTIC TOKENS (--primary, --background, --muted, etc.)
-       → Purpose-based tokens that reference primitives
-       → Use these in components via Tailwind utilities
-    
-    3. COMPONENT TOKENS (implicit via Tailwind)
-       → bg-primary, text-muted-foreground, border-border, etc.
-       → Generated automatically from semantic tokens
-    
-    USAGE RULES:
-    - ✅ DO: Use semantic tokens (bg-primary, text-foreground)
-    - ❌ DON'T: Use primitives directly in components
-    - ✅ DO: Reference primitives only when defining semantics
-    - 🔍 CONTRAST: Always verify WCAG AA compliance (4.5:1 text, 3:1 UI)
-  */
-
   :root {
     /* Typography Scale - Responsive clamp() values */
     --h1: clamp(2.125rem, 1.4rem + 2vw, 2.75rem);      /* 34-44px */
@@ -89,97 +65,68 @@
     /* OpenType Features */
     --num: "tnum" 1, "cv11" 1, "ss01" 0;
     
-    /* ========================================
-       PRIMITIVE COLOR TOKENS (Base Palette)
-       ======================================== */
-    
-    /* Neutrals & greys */
-    --neutral-0: 248 248 245;      /* #F8F8F5 - almost white */
-    --neutral-10: 234 234 232;     /* #EAEAE8 - light surface */
-    --neutral-50: 204 204 202;     /* #CCCCCA - mid light gray */
-    --neutral-100: 153 153 151;    /* #999997 - medium gray */
-    --neutral-200: 102 102 100;    /* #666664 - darker gray */
-    --neutral-900: 51 51 51;       /* #333333 - charcoal */
-    
-    --dark-slate: 31 32 35;        /* #1F2023 - deep dark bg */
-    
-    /* Primary accents */
-    --accent-warm: 11 65% 59%;     /* #E0644B - coral/terracotta */
-    --accent-warm-light: 11 65% 70%;
-    --accent-warm-dark: 11 65% 48%;
-    
-    --accent-cool: 172 47% 43%;    /* #3A9C8E - teal */
-    --accent-cool-light: 172 47% 65%;
-    --accent-cool-dark: 172 47% 33%;
-    
-    /* Emphasis / special */
-    --emphasis-gold: 43 64% 53%;   /* #D9A23A - mustard/gold */
-    --emphasis-gold-light: 43 64% 75%;
-    --emphasis-gold-dark: 43 64% 43%;
-    
-    /* ========================================
-       SEMANTIC TOKENS - Light Mode
-       ======================================== */
-    
-    /* Background & Surfaces */
-    --background: var(--neutral-0);           /* F8F8F5 base */
-    --foreground: var(--neutral-900);         /* #333333 text */
-    
-    --card: var(--neutral-10);                /* EAEAE8 cards */
-    --card-foreground: var(--neutral-900);
-    --surface-elevated: var(--neutral-10);
-    
-    --popover: var(--neutral-0);
-    --popover-foreground: var(--neutral-900);
-    
-    /* Brand/Interactive Colors */
-    --primary: var(--accent-warm);            /* Coral CTA */
-    --primary-foreground: 0 0% 100%;          /* white text */
-    --primary-hover: var(--accent-warm-dark);
-    --primary-light: var(--accent-warm-light);
-    --primary-lighter: 11 65% 88%;
-    
-    --secondary: var(--accent-cool);          /* Teal secondary */
-    --secondary-foreground: 0 0% 100%;
-    --secondary-hover: var(--accent-cool-dark);
-    
-    --accent: var(--emphasis-gold);           /* Gold emphasis */
-    --accent-foreground: var(--neutral-900);
-    --accent-light: var(--emphasis-gold-light);
-    
-    /* Neutral UI elements */
-    --muted: var(--neutral-50);               /* CCCCCA muted bg */
-    --muted-foreground: var(--neutral-100);   /* 999997 secondary text */
-    --muted-darker: var(--neutral-200);       /* 666664 darker text */
-    
-    /* Trust/Status indicators */
-    --success: 142 76% 36%;                   /* Keep green */
+    /* Core Mediterranean palette */
+    --background: 0 0% 100%;
+    --foreground: 220 25% 8%;
+
+    /* Surface colors */
+    --card: 0 0% 100%;
+    --card-foreground: 220 25% 8%;
+    --surface-elevated: 210 40% 98%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 220 25% 8%;
+
+    /* Brand colors - Mediterranean blue */
+    --primary: 208 88% 55%;
+    --primary-foreground: 0 0% 100%;
+    --primary-hover: 208 88% 45%;
+    --primary-light: 208 88% 65%;
+    --primary-lighter: 208 88% 88%;
+
+    /* Secondary - Warm sand */
+    --secondary: 35 25% 92%;
+    --secondary-foreground: 220 25% 8%;
+    --secondary-hover: 35 25% 88%;
+
+    /* Accent - Mediterranean green */
+    --accent: 145 65% 45%;
+    --accent-foreground: 0 0% 100%;
+    --accent-light: 145 65% 85%;
+
+    /* Neutral tones */
+    --muted: 210 40% 96%;
+    --muted-foreground: 220 15% 55%;
+    --muted-darker: 220 15% 45%;
+
+    /* Trust indicators */
+    --success: 142 76% 36%;
     --success-foreground: 0 0% 100%;
     --success-light: 145 65% 95%;
-    
-    --warning: var(--emphasis-gold);          /* Use gold for warnings */
-    --warning-foreground: var(--neutral-900);
-    --warning-light: var(--emphasis-gold-light);
-    
-    --destructive: 0 84% 60%;                 /* Keep red */
+
+    --warning: 45 95% 55%;
+    --warning-foreground: 220 25% 8%;
+    --warning-light: 45 95% 95%;
+
+    --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
-    
-    /* Borders & Inputs */
-    --border: var(--neutral-50);              /* Light borders */
-    --border-light: var(--neutral-10);
-    --input: var(--neutral-10);
-    --ring: var(--accent-warm);               /* Coral focus ring */
-    
+
+    /* UI elements */
+    --border: 210 40% 92%;
+    --border-light: 210 40% 95%;
+    --input: 210 40% 92%;
+    --ring: 208 88% 55%;
+
     /* Shadows and effects */
     --shadow-subtle: 0px 1px 3px rgba(0, 0, 0, 0.08);
     --shadow-moderate: 0px 4px 12px rgba(0, 0, 0, 0.1);
     --shadow-elevated: 0px 8px 24px rgba(0, 0, 0, 0.12);
-    --shadow-primary: 0px 4px 24px rgba(224, 100, 75, 0.15);
-    
+    --shadow-primary: 0px 4px 24px rgba(59, 130, 246, 0.15);
+
     /* Gradients */
-    --gradient-primary: linear-gradient(135deg, hsl(var(--accent-warm)) 0%, hsl(var(--accent-warm-dark)) 100%);
-    --gradient-hero: linear-gradient(135deg, hsl(var(--accent-warm)) 0%, hsl(var(--accent-cool)) 100%);
-    --gradient-card: linear-gradient(180deg, hsl(var(--neutral-0)) 0%, hsl(var(--neutral-10)) 100%);
+    --gradient-primary: linear-gradient(135deg, hsl(208, 88%, 55%) 0%, hsl(208, 88%, 45%) 100%);
+    --gradient-hero: linear-gradient(135deg, hsl(208, 88%, 55%) 0%, hsl(145, 65%, 45%) 100%);
+    --gradient-card: linear-gradient(180deg, hsl(0, 0%, 100%) 0%, hsl(210, 40%, 99%) 100%);
 
     /* Spacing and layout */
     --radius: 12px;
@@ -203,47 +150,44 @@
     --transition-slow: 350ms cubic-bezier(0.4, 0, 0.2, 1);
   }
 
-  /* ========================================
-     SEMANTIC TOKENS - Dark Mode
-     ======================================== */
   .dark {
-    --background: var(--dark-slate);          /* 1F2023 deep bg */
-    --foreground: var(--neutral-0);           /* F8F8F5 text */
-    
-    --card: var(--neutral-900);               /* 333333 cards */
-    --card-foreground: var(--neutral-0);
-    --surface-elevated: var(--neutral-200);   /* Elevated surfaces */
-    
-    --popover: var(--neutral-900);
-    --popover-foreground: var(--neutral-0);
-    
-    --primary: var(--accent-warm-light);      /* Lighter coral for dark */
-    --primary-foreground: var(--dark-slate);
-    --primary-hover: var(--accent-warm);
-    --primary-light: var(--accent-warm-light);
-    --primary-lighter: 11 65% 20%;
-    
-    --secondary: var(--accent-cool-light);    /* Lighter teal */
-    --secondary-foreground: var(--dark-slate);
-    --secondary-hover: var(--accent-cool);
-    
-    --accent: var(--emphasis-gold-light);     /* Lighter gold */
-    --accent-foreground: var(--dark-slate);
-    --accent-light: var(--emphasis-gold-light);
-    
-    --muted: var(--neutral-200);              /* Muted dark surfaces */
-    --muted-foreground: var(--neutral-100);
-    --muted-darker: var(--neutral-50);
-    
-    --border: var(--neutral-200);
-    --border-light: var(--neutral-100);
-    --input: var(--neutral-200);
-    --ring: var(--accent-warm-light);
-    
+    --background: 220 25% 6%;
+    --foreground: 210 40% 95%;
+
+    --card: 220 25% 8%;
+    --card-foreground: 210 40% 95%;
+    --surface-elevated: 220 25% 10%;
+
+    --popover: 220 25% 8%;
+    --popover-foreground: 210 40% 95%;
+
+    --primary: 208 88% 60%;
+    --primary-foreground: 220 25% 6%;
+    --primary-hover: 208 88% 70%;
+    --primary-light: 208 88% 75%;
+    --primary-lighter: 208 88% 20%;
+
+    --secondary: 220 25% 12%;
+    --secondary-foreground: 210 40% 95%;
+    --secondary-hover: 220 25% 16%;
+
+    --accent: 145 65% 55%;
+    --accent-foreground: 220 25% 6%;
+    --accent-light: 145 65% 15%;
+
+    --muted: 220 25% 12%;
+    --muted-foreground: 220 15% 65%;
+    --muted-darker: 220 15% 55%;
+
+    --border: 220 25% 16%;
+    --border-light: 220 25% 20%;
+    --input: 220 25% 16%;
+    --ring: 208 88% 60%;
+
     --shadow-subtle: 0px 1px 3px rgba(0, 0, 0, 0.3);
     --shadow-moderate: 0px 4px 12px rgba(0, 0, 0, 0.4);
     --shadow-elevated: 0px 8px 24px rgba(0, 0, 0, 0.5);
-    --shadow-primary: 0px 4px 24px rgba(224, 100, 75, 0.25);
+    --shadow-primary: 0px 4px 24px rgba(59, 130, 246, 0.25);
   }
 }
 
@@ -264,7 +208,7 @@
   }
 
   .price-bubble {
-    background: hsl(var(--accent-warm));     /* Coral */
+    background: #FF6B35;
     color: white;
     padding: 6px 12px;
     border-radius: 20px;
@@ -277,7 +221,7 @@
 
   .price-bubble:hover,
   .price-bubble.hovered {
-    background: hsl(var(--accent-warm-dark)); /* Darker coral */
+    background: #E85A25;
     transform: scale(1.1);
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
   }
