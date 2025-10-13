@@ -11,6 +11,7 @@ import { useUnreadCount } from "@/hooks/useUnreadCount";
 import { AuthFlowManager } from "@/components/auth/AuthFlowManager";
 import { ListingWizard } from "@/components/listing/ListingWizard";
 import { useToast } from "@/hooks/use-toast";
+import { useAdminCheck } from "@/hooks/useAdminCheck";
 import hommiLogo from "@/assets/hommi-logo.png";
 
 export const Header = () => {
@@ -18,6 +19,7 @@ export const Header = () => {
   const listingFlow = useListingFlow();
   const { count: listingsCount } = useListingsCount();
   const { unreadCount } = useUnreadCount();
+  const { isAdmin } = useAdminCheck();
   const navigate = useNavigate();
   const location = useLocation();
   const { toast } = useToast();
@@ -317,6 +319,14 @@ export const Header = () => {
                       <Settings className="h-4 w-4 mr-2" />
                       {language === 'el' ? 'Ρυθμίσεις' : 'Settings'}
                     </DropdownMenuItem>
+                    
+                    {/* Admin Link */}
+                    {isAdmin && (
+                      <DropdownMenuItem onClick={() => navigate('/admin')}>
+                        <BarChart3 className="h-4 w-4 mr-2" />
+                        {language === 'el' ? 'Admin' : 'Admin'}
+                      </DropdownMenuItem>
+                    )}
                     
                     {/* Role-specific menu items */}
                     {currentRole === 'tenant' ? (

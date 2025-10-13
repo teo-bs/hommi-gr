@@ -24,6 +24,10 @@ import Agencies from "./pages/Agencies";
 import Inbox from "./pages/Inbox";
 import Settings from "./pages/Settings";
 import PhotoHealth from "./pages/admin/PhotoHealth";
+import AdminDashboard from "./pages/admin/Dashboard";
+import ListingsManagement from "./pages/admin/ListingsManagement";
+import VerificationsManagement from "./pages/admin/VerificationsManagement";
+import { AdminGuard } from "./components/admin/AdminGuard";
 
 const queryClient = new QueryClient();
 
@@ -55,7 +59,10 @@ const AppContent = () => {
             <Route path="/agencies" element={<Agencies />} />
             <Route path="/inbox" element={<Inbox />} />
             <Route path="/settings" element={<Settings />} />
-            <Route path="/admin/photo-health" element={<PhotoHealth />} />
+            <Route path="/admin" element={<AdminGuard><AdminDashboard /></AdminGuard>} />
+            <Route path="/admin/listings" element={<AdminGuard><ListingsManagement /></AdminGuard>} />
+            <Route path="/admin/verifications" element={<AdminGuard><VerificationsManagement /></AdminGuard>} />
+            <Route path="/admin/photo-health" element={<AdminGuard><PhotoHealth /></AdminGuard>} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </main>
