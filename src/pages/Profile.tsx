@@ -18,6 +18,8 @@ import { ProfileCompletionModal } from "@/components/onboarding/ProfileCompletio
 import { ProfileEditModal } from "@/components/onboarding/ProfileEditModal";
 import { ProfileField } from "@/components/profile/ProfileField";
 import { VerificationPanel } from '@/components/verification/VerificationPanel';
+import { VerificationBadges, calculateTrustScore } from '@/components/verification/VerificationBadges';
+import { useVerifications } from '@/hooks/useVerifications';
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
 
@@ -722,9 +724,57 @@ export default function Profile() {
             </div>
           </div>
 
-          {/* Verification Panel */}
+          {/* Verification & Trust Section */}
           <div className="mt-6">
-            <VerificationPanel />
+            <Card>
+              <CardHeader>
+                <CardTitle>Επαληθεύσεις & Εμπιστοσύνη</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {(() => {
+                  const { verifications } = useVerifications();
+                  const trustScore = calculateTrustScore(verifications);
+                  
+                  return (
+                    <>
+                      {/* Trust Score */}
+                      <div className="flex items-center justify-between p-4 bg-muted/30 rounded-lg">
+                        <div>
+                          <p className="text-3xl font-bold text-primary">{trustScore}/50</p>
+                          <p className="text-sm text-muted-foreground">Πόντοι εμπιστοσύνης</p>
+                        </div>
+                        <Progress value={(trustScore/50)*100} className="w-32" />
+                      </div>
+                      
+                      {/* Verification Badges */}
+                      <div className="space-y-2">
+                        <p className="text-sm font-medium">Οι επαληθεύσεις σας:</p>
+                        <VerificationBadges 
+                          verifications={verifications} 
+                          className="justify-start"
+                        />
+                      </div>
+                      
+                      {/* Call to Action */}
+                      {trustScore < 50 && (
+                        <div className="pt-2">
+                          <p className="text-sm text-muted-foreground mb-2">
+                            Ολοκληρώστε περισσότερες επαληθεύσεις για να αυξήσετε την εμπιστοσύνη
+                          </p>
+                          <Button 
+                            variant="outline" 
+                            size="sm"
+                            onClick={() => window.location.href = '/publish?step=8'}
+                          >
+                            Ολοκλήρωση επαληθεύσεων
+                          </Button>
+                        </div>
+                      )}
+                    </>
+                  );
+                })()}
+              </CardContent>
+            </Card>
           </div>
         </div>
       </div>

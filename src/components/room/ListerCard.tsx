@@ -76,7 +76,7 @@ export const ListerCard = ({
           <AvatarWithBadge
             src={lister.avatar_url}
             fallback={lister.display_name?.charAt(0)?.toUpperCase() || 'U'}
-            showBadge={isVerified}
+            verificationsJson={lister.verifications_json}
             className="h-16 w-16"
           />
           

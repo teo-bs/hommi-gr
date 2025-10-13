@@ -23,11 +23,6 @@ export const ListerBadge = ({
   const verifiedItems = Object.entries(verifications).filter(
     ([_, status]) => status === 'verified' || status === 'approved'
   );
-
-  const { isVerified } = useProfileVerification({
-    profileCompletionPct: verifications?.profile_completion_pct,
-    verificationsJson: verifications,
-  });
   
   return (
     <HoverCard>
@@ -38,7 +33,7 @@ export const ListerBadge = ({
               src={avatarUrl}
               alt={firstName}
               fallback={initials}
-              showBadge={isVerified}
+              verificationsJson={verifications}
               className="h-12 w-12 border-2 border-background shadow-lg"
             />
             

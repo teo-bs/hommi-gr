@@ -19,19 +19,24 @@ const PublishStepEight = ({ onNext, onBack }: PublishStepEightProps) => {
   const { user, profile } = useAuth();
   const { verifications, loading: verificationsLoading, verifyEmail, refetch } = useVerifications();
   const [phoneNumber, setPhoneNumber] = useState("");
-  const [isUploadingID, setIsUploadingID] = useState(false);
+  const [isUploadingIDFront, setIsUploadingIDFront] = useState(false);
+  const [isUploadingIDBack, setIsUploadingIDBack] = useState(false);
   const [isVerifyingPhone, setIsVerifyingPhone] = useState(false);
+  const [uploadedIDFront, setUploadedIDFront] = useState<string | null>(null);
+  const [uploadedIDBack, setUploadedIDBack] = useState<string | null>(null);
 
   // Calculate trust score
   const calculateTrustScore = () => {
     let score = 0;
     const emailVerified = verifications.find(v => v.kind === 'email' && v.status === 'verified');
     const phoneVerified = verifications.find(v => v.kind === 'phone' && v.status === 'verified');
-    const idVerified = verifications.find(v => v.kind === 'govgr' && v.status === 'verified');
+    const idFrontVerified = verifications.find(v => v.kind === 'govgr' && (v.metadata as any)?.side === 'front' && v.status === 'verified');
+    const idBackVerified = verifications.find(v => v.kind === 'govgr' && (v.metadata as any)?.side === 'back' && v.status === 'verified');
 
     if (emailVerified) score += 10;
     if (phoneVerified) score += 15;
-    if (idVerified) score += 25;
+    // Full ID verification bonus only if both sides verified
+    if (idFrontVerified && idBackVerified) score += 25;
 
     return score;
   };
@@ -40,7 +45,12 @@ const PublishStepEight = ({ onNext, onBack }: PublishStepEightProps) => {
 
   const emailVerification = verifications.find(v => v.kind === 'email');
   const phoneVerification = verifications.find(v => v.kind === 'phone');
-  const idVerification = verifications.find(v => v.kind === 'govgr');
+  const idVerificationFront = verifications.find(v => v.kind === 'govgr' && (v.metadata as any)?.side === 'front');
+  const idVerificationBack = verifications.find(v => v.kind === 'govgr' && (v.metadata as any)?.side === 'back');
+  
+  // Check if both sides are verified or pending
+  const bothIDSidesUploaded = idVerificationFront && idVerificationBack;
+  const idFullyVerified = idVerificationFront?.status === 'verified' && idVerificationBack?.status === 'verified';
 
   const normalizeGreekPhone = (phone: string): string => {
     // Remove all non-numeric characters
@@ -126,7 +136,7 @@ const PublishStepEight = ({ onNext, onBack }: PublishStepEightProps) => {
     }
   };
 
-  const handleIDUpload = async (file: File) => {
+  const handleIDUpload = async (file: File, side: 'front' | 'back') => {
     // Validate file
     const maxSize = 5 * 1024 * 1024; // 5MB
     const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'application/pdf'];
@@ -149,11 +159,14 @@ const PublishStepEight = ({ onNext, onBack }: PublishStepEightProps) => {
       return;
     }
 
-    setIsUploadingID(true);
+    const setUploading = side === 'front' ? setIsUploadingIDFront : setIsUploadingIDBack;
+    const setUploaded = side === 'front' ? setUploadedIDFront : setUploadedIDBack;
+    
+    setUploading(true);
     try {
       // Upload to storage
       const timestamp = Date.now();
-      const fileName = `id-${timestamp}.${file.name.split('.').pop()}`;
+      const fileName = `id-${side}-${timestamp}.${file.name.split('.').pop()}`;
       const filePath = `${user!.id}/${fileName}`;
 
       const { error: uploadError } = await supabase.storage
@@ -174,6 +187,7 @@ const PublishStepEight = ({ onNext, onBack }: PublishStepEightProps) => {
         value: publicUrl,
         status: 'pending',
         metadata: {
+          side: side,
           file_url: publicUrl,
           file_name: file.name,
           file_size: file.size,
@@ -183,10 +197,11 @@ const PublishStepEight = ({ onNext, onBack }: PublishStepEightProps) => {
 
       if (verificationError) throw verificationError;
 
+      setUploaded(publicUrl);
       await refetch();
       toast({
         title: "Επιτυχία",
-        description: "Το έγγραφο ταυτότητας ανέβηκε επιτυχώς και θα ελεγχθεί σύντομα.",
+        description: `Η ${side === 'front' ? 'μπροστινή' : 'πίσω'} όψη της ταυτότητας ανέβηκε επιτυχώς.`,
       });
     } catch (error: any) {
       toast({
@@ -195,7 +210,7 @@ const PublishStepEight = ({ onNext, onBack }: PublishStepEightProps) => {
         variant: "destructive",
       });
     } finally {
-      setIsUploadingID(false);
+      setUploading(false);
     }
   };
 
@@ -306,46 +321,140 @@ const PublishStepEight = ({ onNext, onBack }: PublishStepEightProps) => {
           ) : null
         )}
 
-        {/* ID Upload */}
-        {renderVerificationCard(
-          <Shield className="h-5 w-5 text-primary" />,
-          'Ταυτότητα',
-          idVerification?.status === 'pending' 
-            ? 'Το έγγραφο σας ελέγχεται' 
-            : 'Μεταφόρτωση επίσημου εγγράφου ταυτοποίησης',
-          25,
-          idVerification?.status === 'verified' ? 'verified' : idVerification?.status === 'pending' ? 'pending' : 'unverified',
-          !idVerification || idVerification.status === 'unverified' ? (
-            <div className="space-y-2">
-              <div className="text-xs text-muted-foreground">
-                Αποδεκτά: Δελτίο Ταυτότητας, Διαβατήριο, Άδεια Οδήγησης (μέγιστο 5MB)
-              </div>
-              <label htmlFor="id-upload">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  asChild
-                  disabled={isUploadingID}
-                >
-                  <div className="cursor-pointer">
-                    <Upload className="h-4 w-4 mr-2" />
-                    {isUploadingID ? 'Μεταφόρτωση...' : 'Επιλογή αρχείου'}
-                  </div>
-                </Button>
-              </label>
-              <input
-                id="id-upload"
-                type="file"
-                accept="image/jpeg,image/jpg,image/png,application/pdf"
-                className="hidden"
-                onChange={(e) => {
-                  const file = e.target.files?.[0];
-                  if (file) handleIDUpload(file);
-                }}
-              />
+        {/* ID Upload - Two Sides */}
+        <Card className="p-6 hover:shadow-md transition-shadow">
+          <div className="flex items-start gap-4">
+            <div className="p-3 rounded-lg bg-primary/10">
+              <Shield className="h-5 w-5 text-primary" />
             </div>
-          ) : null
-        )}
+            <div className="flex-1 space-y-3">
+              <div className="flex items-center justify-between">
+                <h3 className="font-semibold">Ταυτότητα (Δύο όψεις)</h3>
+                {idFullyVerified ? (
+                  <Badge variant="default" className="gap-1">
+                    <CheckCircle2 className="h-3 w-3" />
+                    Επαληθευμένο
+                  </Badge>
+                ) : bothIDSidesUploaded ? (
+                  <Badge variant="secondary" className="gap-1">
+                    Εκκρεμεί
+                  </Badge>
+                ) : (
+                  <Badge variant="outline" className="gap-1">
+                    Μη επαληθευμένο
+                  </Badge>
+                )}
+              </div>
+              <p className="text-sm text-muted-foreground">
+                Ανεβάστε και τις δύο όψεις της ταυτότητάς σας για πλήρη επαλήθευση
+              </p>
+              <p className="text-sm font-medium text-primary">
+                Κερδίστε +25 πόντους εμπιστοσύνης
+              </p>
+              
+              {/* Two-sided upload UI */}
+              <div className="grid grid-cols-2 gap-4 pt-2">
+                {/* Front Side */}
+                <div className="space-y-2">
+                  <div className="aspect-[3/2] border-2 border-dashed rounded-lg flex flex-col items-center justify-center bg-muted/30 relative overflow-hidden">
+                    {idVerificationFront || uploadedIDFront ? (
+                      <>
+                        <CheckCircle2 className="h-8 w-8 text-green-500 mb-2" />
+                        <p className="text-xs font-medium">Μπροστινή όψη ✓</p>
+                      </>
+                    ) : (
+                      <>
+                        <Upload className="h-6 w-6 text-muted-foreground mb-2" />
+                        <p className="text-xs font-medium">Μπροστινή όψη</p>
+                      </>
+                    )}
+                  </div>
+                  {!idVerificationFront && !uploadedIDFront && (
+                    <>
+                      <label htmlFor="id-upload-front">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="w-full"
+                          asChild
+                          disabled={isUploadingIDFront}
+                        >
+                          <div className="cursor-pointer">
+                            {isUploadingIDFront ? 'Μεταφόρτωση...' : 'Επιλογή αρχείου'}
+                          </div>
+                        </Button>
+                      </label>
+                      <input
+                        id="id-upload-front"
+                        type="file"
+                        accept="image/jpeg,image/jpg,image/png,application/pdf"
+                        className="hidden"
+                        onChange={(e) => {
+                          const file = e.target.files?.[0];
+                          if (file) handleIDUpload(file, 'front');
+                        }}
+                      />
+                    </>
+                  )}
+                </div>
+
+                {/* Back Side */}
+                <div className="space-y-2">
+                  <div className="aspect-[3/2] border-2 border-dashed rounded-lg flex flex-col items-center justify-center bg-muted/30 relative overflow-hidden">
+                    {idVerificationBack || uploadedIDBack ? (
+                      <>
+                        <CheckCircle2 className="h-8 w-8 text-green-500 mb-2" />
+                        <p className="text-xs font-medium">Πίσω όψη ✓</p>
+                      </>
+                    ) : (
+                      <>
+                        <Upload className="h-6 w-6 text-muted-foreground mb-2" />
+                        <p className="text-xs font-medium">Πίσω όψη</p>
+                      </>
+                    )}
+                  </div>
+                  {!idVerificationBack && !uploadedIDBack && (
+                    <>
+                      <label htmlFor="id-upload-back">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="w-full"
+                          asChild
+                          disabled={isUploadingIDBack}
+                        >
+                          <div className="cursor-pointer">
+                            {isUploadingIDBack ? 'Μεταφόρτωση...' : 'Επιλογή αρχείου'}
+                          </div>
+                        </Button>
+                      </label>
+                      <input
+                        id="id-upload-back"
+                        type="file"
+                        accept="image/jpeg,image/jpg,image/png,application/pdf"
+                        className="hidden"
+                        onChange={(e) => {
+                          const file = e.target.files?.[0];
+                          if (file) handleIDUpload(file, 'back');
+                        }}
+                      />
+                    </>
+                  )}
+                </div>
+              </div>
+              
+              <div className="text-xs text-muted-foreground pt-1">
+                {bothIDSidesUploaded ? (
+                  <span className="text-green-600 font-medium">✓ Και οι δύο όψεις ανέβηκαν</span>
+                ) : idVerificationFront || uploadedIDFront ? (
+                  <span>1/2 όψεις ανέβηκαν - Ανεβάστε την πίσω όψη</span>
+                ) : (
+                  <span>Αποδεκτά: Δελτίο Ταυτότητας, Διαβατήριο, Άδεια Οδήγησης (μέγιστο 5MB ανά όψη)</span>
+                )}
+              </div>
+            </div>
+          </div>
+        </Card>
       </div>
 
       {/* Trust Score Preview */}

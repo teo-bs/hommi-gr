@@ -12,6 +12,7 @@ import { AuthFlowManager } from "@/components/auth/AuthFlowManager";
 import { ListingWizard } from "@/components/listing/ListingWizard";
 import { useToast } from "@/hooks/use-toast";
 import { useAdminCheck } from "@/hooks/useAdminCheck";
+import { AvatarWithBadge } from "@/components/ui/avatar-with-badge";
 import hommiLogo from "@/assets/hommi-logo.png";
 
 export const Header = () => {
@@ -303,8 +304,14 @@ export const Header = () => {
               {user ? (
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" size="sm" className="rounded-full w-10 h-10 p-0">
-                      <User className="h-5 w-5" />
+                    <Button variant="ghost" size="sm" className="rounded-full w-10 h-10 p-0 overflow-visible">
+                      <AvatarWithBadge
+                        src={profile?.avatar_url}
+                        alt={profile?.display_name || 'User'}
+                        fallback={profile?.display_name?.[0]?.toUpperCase() || user?.email?.[0]?.toUpperCase() || 'U'}
+                        verificationsJson={profile?.verifications_json as any}
+                        className="h-10 w-10"
+                      />
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent 

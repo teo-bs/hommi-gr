@@ -237,10 +237,13 @@ export function VerificationViewer({ verification, open, onClose, onRefetch }: V
     if (verification.kind === 'govgr') {
       // Show document viewer for ID
       const imageUrl = verification.metadata?.file_url || verification.value;
+      const side = verification.metadata?.side || 'unknown';
       return (
         <div>
           <div className="flex items-center justify-between mb-2">
-            <h4 className="font-semibold">Έγγραφο Ταυτότητας</h4>
+            <h4 className="font-semibold">
+              Έγγραφο Ταυτότητας ({side === 'front' ? 'Μπροστινή όψη' : side === 'back' ? 'Πίσω όψη' : 'Άγνωστη όψη'})
+            </h4>
             <Button
               size="sm"
               variant="outline"
