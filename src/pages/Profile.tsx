@@ -43,6 +43,10 @@ export default function Profile() {
   const [searchParams, setSearchParams] = useSearchParams();
   const fileInputRef = useRef<HTMLInputElement>(null);
   
+  // Move useVerifications to top level
+  const { verifications } = useVerifications();
+  const trustScore = calculateTrustScore(verifications);
+  
   const [isEditing, setIsEditing] = useState(false);
   const [showCompletionModal, setShowCompletionModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
@@ -731,34 +735,28 @@ export default function Profile() {
                 <CardTitle>Επαληθεύσεις & Εμπιστοσύνη</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                {(() => {
-                  const { verifications } = useVerifications();
-                  const trustScore = calculateTrustScore(verifications);
-                  
-                  return (
-                    <>
-                      {/* Trust Score */}
-                      <div className="flex items-center justify-between p-4 bg-muted/30 rounded-lg">
-                        <div>
-                          <p className="text-3xl font-bold text-primary">{trustScore}/50</p>
-                          <p className="text-sm text-muted-foreground">Πόντοι εμπιστοσύνης</p>
-                        </div>
-                        <Progress value={(trustScore/50)*100} className="w-32" />
-                      </div>
-                      
-                      {/* Verification Badges */}
-                      <div className="space-y-2">
-                        <p className="text-sm font-medium">Οι επαληθεύσεις σας:</p>
-                        <VerificationBadges 
-                          verifications={verifications} 
-                          className="justify-start"
-                        />
-                      </div>
-                      
-                      {/* Call to Action */}
-                      {trustScore < 50 && (
-                        <div className="pt-2">
-                          <p className="text-sm text-muted-foreground mb-2">
+                {/* Trust Score */}
+                <div className="flex items-center justify-between p-4 bg-muted/30 rounded-lg">
+                  <div>
+                    <p className="text-3xl font-bold text-primary">{trustScore}/50</p>
+                    <p className="text-sm text-muted-foreground">Πόντοι εμπιστοσύνης</p>
+                  </div>
+                  <Progress value={(trustScore/50)*100} className="w-32" />
+                </div>
+                
+                {/* Verification Badges */}
+                <div className="space-y-2">
+                  <p className="text-sm font-medium">Οι επαληθεύσεις σας:</p>
+                  <VerificationBadges 
+                    verifications={verifications} 
+                    className="justify-start"
+                  />
+                </div>
+                
+                {/* Call to Action */}
+                {trustScore < 50 && (
+                  <div className="pt-2">
+                    <p className="text-sm text-muted-foreground mb-2">
                             Ολοκληρώστε περισσότερες επαληθεύσεις για να αυξήσετε την εμπιστοσύνη
                           </p>
                           <Button 
@@ -770,9 +768,6 @@ export default function Profile() {
                           </Button>
                         </div>
                       )}
-                    </>
-                  );
-                })()}
               </CardContent>
             </Card>
           </div>
