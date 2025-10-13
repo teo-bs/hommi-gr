@@ -314,6 +314,21 @@ const RoomPage = () => {
           name="description" 
           content={`${listing?.title || 'Room'} in ${listing?.neighborhood || 'Athens'}, ${listing?.city || 'Greece'}. €${listing?.price_month || '0'}/month. Find your perfect co-living space on Hommi.`} 
         />
+        
+        {/* Open Graph for rich social sharing */}
+        <meta property="og:title" content={listing?.title || 'Room on Hommi'} />
+        <meta property="og:description" content={`${listing?.title || 'Room'} in ${listing?.neighborhood || 'Athens'}. €${listing?.price_month || '0'}/month. Trusted coliving in Greece.`} />
+        <meta property="og:image" content={photos?.[0]?.photo_url || 'https://hommi.gr/og-image.png'} />
+        <meta property="og:url" content={`https://hommi.gr/listing/${slug || id}`} />
+        <meta property="og:type" content="product" />
+        <meta property="product:price:amount" content={String(listing?.price_month || '0')} />
+        <meta property="product:price:currency" content="EUR" />
+        
+        {/* Twitter Card */}
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content={listing?.title || 'Room on Hommi'} />
+        <meta name="twitter:description" content={`${listing?.title || 'Room'} in ${listing?.neighborhood || 'Athens'}. €${listing?.price_month || '0'}/month.`} />
+        <meta name="twitter:image" content={photos?.[0]?.photo_url || 'https://hommi.gr/og-image.png'} />
       </Helmet>
 
       <div className="container mx-auto px-4 py-3 sm:py-6 pb-20 sm:pb-24 lg:pb-8">
