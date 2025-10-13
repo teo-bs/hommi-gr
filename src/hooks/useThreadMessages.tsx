@@ -50,7 +50,7 @@ export function useThreadMessages(params: MessagesParams) {
           body,
           sender_id,
           created_at,
-          sender:profiles!messages_sender_id_fkey(display_name, avatar_url)
+          sender:profiles!messages_sender_id_fkey(display_name, avatar_url, verifications_json)
         `)
         .eq('thread_id', threadId)
         .is('deleted_at', null)

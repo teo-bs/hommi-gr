@@ -38,8 +38,8 @@ export function useThreads(params: ThreadsParams = {}) {
         .select(`
           *,
           listing:listings!inner(id, title),
-          host_profile:profiles!threads_host_id_fkey(id, display_name, avatar_url),
-          seeker_profile:profiles!threads_seeker_id_fkey(id, display_name, avatar_url)
+          host_profile:profiles!threads_host_id_fkey(id, display_name, avatar_url, verifications_json),
+          seeker_profile:profiles!threads_seeker_id_fkey(id, display_name, avatar_url, verifications_json)
         `, { count: 'exact' })
         .is('deleted_at', null)
         .order('last_message_at', { ascending: false, nullsFirst: false });

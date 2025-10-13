@@ -11,6 +11,7 @@ export function formatThreadForDisplay(thread: any, currentUserId: string) {
     otherUserId: otherUser?.id,
     otherUserName: otherUser?.display_name || 'User',
     otherUserAvatar: otherUser?.avatar_url,
+    otherUserVerifications: otherUser?.verifications_json,
     lastMessageAt: thread.last_message_at,
     unreadCount: unreadCount || 0,
     status: thread.status,

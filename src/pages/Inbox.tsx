@@ -8,6 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
+import { AvatarWithBadge } from "@/components/ui/avatar-with-badge";
 import { MessageCircle, Users, Filter, ChevronLeft, ChevronRight } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -61,6 +62,7 @@ const Inbox = () => {
           listingTitle={selectedThread.listingTitle}
           listerName={selectedThread.otherUserName}
           listerAvatar={selectedThread.otherUserAvatar}
+          listerVerifications={selectedThread.otherUserVerifications}
           onClose={() => {
             setSelectedThread(null);
             refetch();
@@ -126,19 +128,13 @@ const Inbox = () => {
                     <CardContent className="p-4">
                       <div className="flex items-center justify-between">
                         <div className="flex items-center space-x-4">
-                          <div className="relative">
-                            <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center">
-                              {thread.otherUserAvatar ? (
-                                <img 
-                                  src={thread.otherUserAvatar} 
-                                  alt={thread.otherUserName}
-                                  className="w-12 h-12 rounded-full object-cover" 
-                                />
-                              ) : (
-                                <Users className="h-6 w-6 text-primary" />
-                              )}
-                            </div>
-                          </div>
+                          <AvatarWithBadge
+                            src={thread.otherUserAvatar}
+                            alt={thread.otherUserName}
+                            fallback={thread.otherUserName?.[0]?.toUpperCase() || 'U'}
+                            verificationsJson={thread.otherUserVerifications}
+                            className="h-12 w-12"
+                          />
                           <div className="flex-1">
                             <h3 className="font-semibold">{thread.otherUserName}</h3>
                             <p className="text-sm text-muted-foreground">{thread.listingTitle}</p>
@@ -209,19 +205,13 @@ const Inbox = () => {
                 <CardContent className="p-4">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center space-x-4">
-                      <div className="relative">
-                        <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center">
-                          {thread.otherUserAvatar ? (
-                            <img 
-                              src={thread.otherUserAvatar} 
-                              alt={thread.otherUserName}
-                              className="w-12 h-12 rounded-full object-cover" 
-                            />
-                          ) : (
-                            <Users className="h-6 w-6 text-primary" />
-                          )}
-                        </div>
-                      </div>
+                      <AvatarWithBadge
+                        src={thread.otherUserAvatar}
+                        alt={thread.otherUserName}
+                        fallback={thread.otherUserName?.[0]?.toUpperCase() || 'U'}
+                        verificationsJson={thread.otherUserVerifications}
+                        className="h-12 w-12"
+                      />
                       <div className="flex-1">
                         <h3 className="font-semibold">{thread.otherUserName}</h3>
                         <p className="text-sm text-muted-foreground">{thread.listingTitle}</p>

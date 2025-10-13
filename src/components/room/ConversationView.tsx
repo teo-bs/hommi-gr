@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import { AvatarWithBadge } from "@/components/ui/avatar-with-badge";
 import { Badge } from "@/components/ui/badge";
 import { ArrowLeft, Send, Clock } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
@@ -23,6 +23,7 @@ interface ConversationViewProps {
   listingTitle: string;
   listerName: string;
   listerAvatar?: string;
+  listerVerifications?: any;
   initialMessage?: string;
   onClose: () => void;
 }
@@ -32,6 +33,7 @@ export const ConversationView = ({
   listingTitle,
   listerName,
   listerAvatar,
+  listerVerifications,
   initialMessage,
   onClose
 }: ConversationViewProps) => {
@@ -116,10 +118,13 @@ export const ConversationView = ({
           <ArrowLeft className="h-4 w-4" />
         </Button>
         
-        <Avatar className="h-8 w-8">
-          <AvatarImage src={listerAvatar} alt={listerName} />
-          <AvatarFallback>{listerName?.[0]?.toUpperCase()}</AvatarFallback>
-        </Avatar>
+        <AvatarWithBadge
+          src={listerAvatar}
+          alt={listerName}
+          fallback={listerName?.[0]?.toUpperCase() || 'L'}
+          verificationsJson={listerVerifications}
+          className="h-8 w-8"
+        />
         
         <div className="flex-1 min-w-0">
           <div className="font-semibold text-sm truncate">{listerName}</div>
@@ -150,12 +155,13 @@ export const ConversationView = ({
               className={`flex gap-2 ${message.is_own ? 'justify-end' : 'justify-start'}`}
             >
               {!message.is_own && (
-                <Avatar className="h-6 w-6">
-                  <AvatarImage src={listerAvatar} alt={message.sender_name} />
-                  <AvatarFallback className="text-xs">
-                    {message.sender_name?.[0]?.toUpperCase()}
-                  </AvatarFallback>
-                </Avatar>
+                <AvatarWithBadge
+                  src={listerAvatar}
+                  alt={message.sender_name}
+                  fallback={message.sender_name?.[0]?.toUpperCase() || 'U'}
+                  verificationsJson={listerVerifications}
+                  className="h-6 w-6"
+                />
               )}
               
               <div className={`max-w-[70%] ${message.is_own ? 'order-last' : ''}`}>

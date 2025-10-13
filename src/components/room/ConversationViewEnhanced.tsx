@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { AvatarWithBadge } from "@/components/ui/avatar-with-badge";
 import { X, Send, ArrowDown } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -15,6 +15,7 @@ interface ConversationViewEnhancedProps {
   listingTitle: string;
   listerName: string;
   listerAvatar?: string;
+  listerVerifications?: any;
   onClose: () => void;
 }
 
@@ -23,6 +24,7 @@ export const ConversationViewEnhanced = ({
   listingTitle,
   listerName,
   listerAvatar,
+  listerVerifications,
   onClose
 }: ConversationViewEnhancedProps) => {
   const { profile } = useAuth();
@@ -88,10 +90,13 @@ export const ConversationViewEnhanced = ({
       {/* Header */}
       <div className="flex items-center justify-between p-4 border-b">
         <div className="flex items-center gap-3">
-          <Avatar className="h-10 w-10">
-            <AvatarImage src={listerAvatar} />
-            <AvatarFallback>{listerName[0]}</AvatarFallback>
-          </Avatar>
+          <AvatarWithBadge
+            src={listerAvatar}
+            alt={listerName}
+            fallback={listerName[0]}
+            verificationsJson={listerVerifications}
+            className="h-10 w-10"
+          />
           <div>
             <p className="font-semibold">{listerName}</p>
             <p className="text-sm text-muted-foreground">{listingTitle}</p>
@@ -130,10 +135,13 @@ export const ConversationViewEnhanced = ({
                 className={`flex gap-2 ${isOwn ? 'justify-end' : 'justify-start'}`}
               >
                 {!isOwn && (
-                  <Avatar className="h-8 w-8 mt-1">
-                    <AvatarImage src={message.sender?.avatar_url} />
-                    <AvatarFallback>{message.sender?.display_name?.[0] || 'U'}</AvatarFallback>
-                  </Avatar>
+                  <AvatarWithBadge
+                    src={message.sender?.avatar_url}
+                    alt={message.sender?.display_name || 'User'}
+                    fallback={message.sender?.display_name?.[0] || 'U'}
+                    verificationsJson={message.sender?.verifications_json}
+                    className="h-8 w-8 mt-1"
+                  />
                 )}
                 <div className={`flex flex-col max-w-[70%] ${isOwn ? 'items-end' : 'items-start'}`}>
                   {!isOwn && (
