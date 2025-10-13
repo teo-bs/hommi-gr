@@ -28,6 +28,8 @@ import AdminDashboard from "./pages/admin/Dashboard";
 import ListingsManagement from "./pages/admin/ListingsManagement";
 import VerificationsManagement from "./pages/admin/VerificationsManagement";
 import { AdminGuard } from "./components/admin/AdminGuard";
+import { ImpersonationBanner } from "./components/layout/ImpersonationBanner";
+import ActivityLog from "./pages/admin/ActivityLog";
 
 const queryClient = new QueryClient();
 
@@ -41,6 +43,7 @@ const AppContent = () => {
   return (
     <BrowserRouter>
       <div className="min-h-screen bg-background font-sans antialiased">
+        <ImpersonationBanner />
         <Header />
         <GlobalTermsHandler />
         <main>
@@ -63,6 +66,7 @@ const AppContent = () => {
             <Route path="/admin/listings" element={<AdminGuard><ListingsManagement /></AdminGuard>} />
             <Route path="/admin/verifications" element={<AdminGuard><VerificationsManagement /></AdminGuard>} />
             <Route path="/admin/photo-health" element={<AdminGuard><PhotoHealth /></AdminGuard>} />
+            <Route path="/admin/activity-log" element={<AdminGuard><ActivityLog /></AdminGuard>} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </main>

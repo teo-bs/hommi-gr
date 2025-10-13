@@ -14,6 +14,42 @@ export type Database = {
   }
   public: {
     Tables: {
+      admin_impersonations: {
+        Row: {
+          admin_user_id: string
+          created_at: string
+          ended_at: string | null
+          id: string
+          ip_address: unknown | null
+          reason: string
+          started_at: string
+          target_user_id: string
+          user_agent: string | null
+        }
+        Insert: {
+          admin_user_id: string
+          created_at?: string
+          ended_at?: string | null
+          id?: string
+          ip_address?: unknown | null
+          reason: string
+          started_at?: string
+          target_user_id: string
+          user_agent?: string | null
+        }
+        Update: {
+          admin_user_id?: string
+          created_at?: string
+          ended_at?: string | null
+          id?: string
+          ip_address?: unknown | null
+          reason?: string
+          started_at?: string
+          target_user_id?: string
+          user_agent?: string | null
+        }
+        Relationships: []
+      }
       agency_leads: {
         Row: {
           company_name: string
@@ -738,6 +774,9 @@ export type Database = {
           deposit_required: boolean | null
           description: string | null
           door: string | null
+          flagged_at: string | null
+          flagged_by: string | null
+          flagged_reason: string | null
           flatmates_count: number | null
           floor: number | null
           formatted_address: string | null
@@ -806,6 +845,9 @@ export type Database = {
           deposit_required?: boolean | null
           description?: string | null
           door?: string | null
+          flagged_at?: string | null
+          flagged_by?: string | null
+          flagged_reason?: string | null
           flatmates_count?: number | null
           floor?: number | null
           formatted_address?: string | null
@@ -874,6 +916,9 @@ export type Database = {
           deposit_required?: boolean | null
           description?: string | null
           door?: string | null
+          flagged_at?: string | null
+          flagged_by?: string | null
+          flagged_reason?: string | null
           flatmates_count?: number | null
           floor?: number | null
           formatted_address?: string | null

@@ -1,31 +1,17 @@
 import { useState } from 'react';
 import { useMutation } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Eye, CheckCircle, XCircle } from 'lucide-react';
+import { Eye, CheckCircle, XCircle, Flag, Edit, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { ListingQuickView } from './ListingQuickView';
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from '@/components/ui/alert-dialog';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { Textarea } from '@/components/ui/textarea';
+import { FlagDialog } from './FlagDialog';
+import { UserImpersonateButton } from './UserImpersonateButton';
 
 interface ListingsTableProps {
   listings: any[];
@@ -38,6 +24,9 @@ export function ListingsTable({ listings, isLoading, onRefetch }: ListingsTableP
   const [rejectDialogOpen, setRejectDialogOpen] = useState(false);
   const [rejectReason, setRejectReason] = useState('');
   const [listingToReject, setListingToReject] = useState<any>(null);
+  const [showFlagDialog, setShowFlagDialog] = useState(false);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [editMode, setEditMode] = useState(false);
 
   const approveMutation = useMutation({
     mutationFn: async (listingId: string) => {
@@ -78,6 +67,51 @@ export function ListingsTable({ listings, isLoading, onRefetch }: ListingsTableP
     },
     onError: (error) => {
       toast.error('Σφάλμα κατά την απόρριψη: ' + error.message);
+    },
+  });
+
+  const flagMutation = useMutation({
+    mutationFn: async ({ id, reason }: { id: string; reason: string }) => {
+      const { data: { user } } = await supabase.auth.getUser();
+      const { error } = await supabase
+        .from('listings')
+        .update({
+          flagged_at: new Date().toISOString(),
+          flagged_reason: reason,
+          flagged_by: user?.id,
+        })
+        .eq('id', id);
+
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast.success('Η αγγελία επισημάνθηκε');
+      onRefetch();
+      setShowFlagDialog(false);
+    },
+    onError: (error) => {
+      toast.error('Αποτυχία επισήμανσης αγγελίας');
+      console.error('Flag error:', error);
+    },
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase
+        .from('listings')
+        .update({ deleted_at: new Date().toISOString() })
+        .eq('id', id);
+
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast.success('Η αγγελία διαγράφηκε');
+      onRefetch();
+      setShowDeleteDialog(false);
+    },
+    onError: (error) => {
+      toast.error('Αποτυχία διαγραφής αγγελίας');
+      console.error('Delete error:', error);
     },
   });
 
@@ -140,6 +174,7 @@ export function ListingsTable({ listings, isLoading, onRefetch }: ListingsTableP
               <TableHead>Ιδιοκτήτης</TableHead>
               <TableHead>Ημερομηνία</TableHead>
               <TableHead>Κατάσταση</TableHead>
+              <TableHead>Επισήμανση</TableHead>
               <TableHead className="text-right">Ενέργειες</TableHead>
             </TableRow>
           </TableHeader>
@@ -154,19 +189,74 @@ export function ListingsTable({ listings, isLoading, onRefetch }: ListingsTableP
                   />
                 </TableCell>
                 <TableCell className="font-medium">{listing.title}</TableCell>
-                <TableCell>{listing.owner?.display_name || 'Unknown'}</TableCell>
+                <TableCell>
+                  <div className="flex items-center gap-2">
+                    <div className="flex flex-col">
+                      <span className="font-medium">{listing.owner?.display_name || 'Unknown'}</span>
+                      <span className="text-xs text-muted-foreground">{listing.owner?.email}</span>
+                    </div>
+                    {listing.owner?.user_id && (
+                      <UserImpersonateButton
+                        userId={listing.owner.user_id}
+                        userName={listing.owner.display_name || 'User'}
+                        userEmail={listing.owner.email || ''}
+                      />
+                    )}
+                  </div>
+                </TableCell>
                 <TableCell className="text-muted-foreground text-sm">
                   {new Date(listing.created_at).toLocaleDateString('el-GR')}
                 </TableCell>
                 <TableCell>{getStatusBadge(listing.status)}</TableCell>
+                <TableCell>
+                  {listing.flagged_at && (
+                    <Badge variant="destructive" className="gap-1">
+                      <Flag className="h-3 w-3" />
+                      Επισημασμένη
+                    </Badge>
+                  )}
+                </TableCell>
                 <TableCell className="text-right">
                   <div className="flex gap-2 justify-end">
                     <Button
                       size="sm"
                       variant="ghost"
-                      onClick={() => setSelectedListing(listing)}
+                      onClick={() => {
+                        setSelectedListing(listing);
+                        setEditMode(false);
+                      }}
                     >
                       <Eye className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      onClick={() => {
+                        setSelectedListing(listing);
+                        setShowFlagDialog(true);
+                      }}
+                    >
+                      <Flag className="h-4 w-4 text-yellow-600" />
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      onClick={() => {
+                        setSelectedListing(listing);
+                        setEditMode(true);
+                      }}
+                    >
+                      <Edit className="h-4 w-4 text-blue-600" />
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      onClick={() => {
+                        setSelectedListing(listing);
+                        setShowDeleteDialog(true);
+                      }}
+                    >
+                      <Trash2 className="h-4 w-4 text-red-600" />
                     </Button>
                     {listing.status === 'draft' && (
                       <>
@@ -202,7 +292,10 @@ export function ListingsTable({ listings, isLoading, onRefetch }: ListingsTableP
         <ListingQuickView
           listing={selectedListing}
           open={!!selectedListing}
-          onClose={() => setSelectedListing(null)}
+          onClose={() => {
+            setSelectedListing(null);
+            setEditMode(false);
+          }}
           onApprove={() => {
             approveMutation.mutate(selectedListing.id);
             setSelectedListing(null);
@@ -211,8 +304,31 @@ export function ListingsTable({ listings, isLoading, onRefetch }: ListingsTableP
             handleReject(selectedListing);
             setSelectedListing(null);
           }}
+          editMode={editMode}
+          onSaveEdit={async (updates) => {
+            const { error } = await supabase
+              .from('listings')
+              .update(updates)
+              .eq('id', selectedListing.id);
+
+            if (error) {
+              toast.error('Αποτυχία ενημέρωσης αγγελίας');
+            } else {
+              toast.success('Η αγγελία ενημερώθηκε');
+              onRefetch();
+              setSelectedListing(null);
+              setEditMode(false);
+            }
+          }}
         />
       )}
+
+      <FlagDialog
+        open={showFlagDialog}
+        onClose={() => setShowFlagDialog(false)}
+        onConfirm={(reason) => flagMutation.mutate({ id: selectedListing?.id, reason })}
+        listingTitle={selectedListing?.title || ''}
+      />
 
       <AlertDialog open={rejectDialogOpen} onOpenChange={setRejectDialogOpen}>
         <AlertDialogContent>
@@ -231,6 +347,26 @@ export function ListingsTable({ listings, isLoading, onRefetch }: ListingsTableP
           <AlertDialogFooter>
             <AlertDialogCancel>Ακύρωση</AlertDialogCancel>
             <AlertDialogAction onClick={confirmReject}>Απόρριψη</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Διαγραφή Αγγελίας</AlertDialogTitle>
+            <AlertDialogDescription>
+              Είστε σίγουροι ότι θέλετε να διαγράψετε αυτή την αγγελία; Αυτή η ενέργεια μπορεί να αναιρεθεί.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Ακύρωση</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => deleteMutation.mutate(selectedListing?.id)}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Διαγραφή
+            </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
