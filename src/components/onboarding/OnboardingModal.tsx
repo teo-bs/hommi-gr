@@ -5,7 +5,7 @@ import { Progress } from "@/components/ui/progress";
 import { OnboardingStepOne } from "./steps/OnboardingStepOne";
 import { OnboardingStepTwo } from "./steps/OnboardingStepTwo";
 import { OnboardingStepThree } from "./steps/OnboardingStepThree";
-import { ProfileCompletionModal } from "./ProfileCompletionModal";
+import { OnboardingStepFour } from "./steps/OnboardingStepFour";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -20,6 +20,20 @@ export interface OnboardingData {
   languages: string[];
   avatar_url?: string;
   photos?: string[];
+  // Step 3 fields
+  profession?: string;
+  study_level?: string;
+  work_profession?: string;
+  who_moving?: string;
+  about_me?: string;
+  social_instagram?: string;
+  social_twitter_x?: string;
+  social_linkedin?: string;
+  personality?: string[];
+  lifestyle?: string[];
+  music?: string[];
+  sports?: string[];
+  movies?: string[];
 }
 
 export const OnboardingModal = () => {
@@ -30,7 +44,7 @@ export const OnboardingModal = () => {
   
   const role = searchParams.get('role');
   const currentStep = parseInt(searchParams.get('step') || '1');
-  const isOpen = role === 'tenant' && currentStep >= 1 && currentStep <= 3;
+  const isOpen = role === 'tenant' && currentStep >= 1 && currentStep <= 4;
   
   const [formData, setFormData] = useState<OnboardingData>({
     first_name: profile?.first_name || '',
@@ -43,7 +57,6 @@ export const OnboardingModal = () => {
   });
 
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [showProfileCompletion, setShowProfileCompletion] = useState(false);
 
   // Update onboarding progress
   const updateOnboardingProgress = async (step: number, completed: boolean = false) => {
@@ -64,7 +77,7 @@ export const OnboardingModal = () => {
   };
 
   const handleNext = () => {
-    if (currentStep < 3) {
+    if (currentStep < 4) {
       setSearchParams({ role: 'tenant', step: (currentStep + 1).toString() });
     }
   };
@@ -128,47 +141,74 @@ export const OnboardingModal = () => {
     handleNext();
   };
 
-  const handleStepThreeComplete = async () => {
+  const handleStepThreeComplete = async (data: Partial<OnboardingData>) => {
+    const updatedData = { ...formData, ...data };
+    setFormData(updatedData);
+    
+    // Save Step 3 data immediately
+    try {
+      // Collect all selected chips and form data
+      const profile_extras = {
+        ...(profile?.profile_extras as any || {}),
+        what_you_do: formData.what_you_do,
+        personality: data.personality,
+        lifestyle: data.lifestyle,
+        music: data.music,
+        sports: data.sports,
+        movies: data.movies,
+        study_level: data.study_level,
+        work_profession: data.work_profession,
+        who_moving: data.who_moving
+      };
+
+      // Auto-generate display_name from first_name + last_name
+      const display_name = `${formData.first_name || ''} ${formData.last_name || ''}`.trim();
+
+      const updateData: any = {
+        display_name,
+        about_me: data.about_me,
+        social_instagram: data.social_instagram || null,
+        social_twitter_x: data.social_twitter_x || null,
+        social_linkedin: data.social_linkedin || null,
+        profile_extras
+      };
+
+      // Set profession based on what they do
+      if (formData.what_you_do === 'study_work') {
+        updateData.profession = `${data.work_profession} | Student (${data.study_level})`;
+      } else if (formData.what_you_do === 'work') {
+        updateData.profession = data.work_profession;
+      } else if (formData.what_you_do === 'study') {
+        updateData.profession = `Student (${data.study_level})`;
+      }
+
+      await updateProfile(updateData);
+      
+      toast({
+        title: "Αποθηκεύτηκε",
+        description: "Τα στοιχεία σας αποθηκεύτηκαν",
+      });
+    } catch (error) {
+      console.error('Error saving step 3:', error);
+    }
+    
+    updateOnboardingProgress(3);
+    handleNext();
+  };
+
+  const handleStepFourComplete = async () => {
     setIsSubmitting(true);
     
     try {
-      // Store what_you_do in profile_extras for conditional modal later
-      const profile_extras = {
-        ...(profile?.profile_extras as any || {}),
-        what_you_do: formData.what_you_do
-      };
-
-      // Update profile with all collected data
-      const { error } = await updateProfile({
-        first_name: formData.first_name,
-        last_name: formData.last_name,
-        date_of_birth: formData.date_of_birth,
-        gender: formData.gender,
-        country: formData.country,
-        languages: formData.languages,
-        avatar_url: formData.avatar_url,
-        profile_extras
-      });
-
-      if (error) {
-        toast({
-          title: "Σφάλμα",
-          description: "Δεν ήταν δυνατή η αποθήκευση των στοιχείων",
-          variant: "destructive",
-        });
-        return;
-      }
-
-      // Mark onboarding as completed for steps 1-3
-      await updateOnboardingProgress(3, true);
+      // Mark onboarding as completed
+      await updateOnboardingProgress(4, true);
       
       toast({
         title: "Επιτυχία!",
-        description: "Τα βασικά στοιχεία του προφίλ σας αποθηκεύτηκαν",
+        description: "Το προφίλ σας ολοκληρώθηκε",
       });
       
-      // Show profile completion modal instead of navigating
-      setShowProfileCompletion(true);
+      navigate('/me');
       
     } catch (error) {
       toast({
@@ -181,11 +221,6 @@ export const OnboardingModal = () => {
     }
   };
 
-  const handleProfileCompletionClose = () => {
-    setShowProfileCompletion(false);
-    navigate('/me');
-  };
-
   const getStepTitle = () => {
     switch (currentStep) {
       case 1:
@@ -193,6 +228,8 @@ export const OnboardingModal = () => {
       case 2:
         return "Τοποθεσία και γλώσσες";
       case 3:
+        return "Λεπτομέρειες προφίλ";
+      case 4:
         return "Ολοκλήρωση";
       default:
         return "";
@@ -223,6 +260,14 @@ export const OnboardingModal = () => {
             data={formData}
             onComplete={handleStepThreeComplete}
             onBack={handleBack}
+          />
+        );
+      case 4:
+        return (
+          <OnboardingStepFour
+            data={formData}
+            onComplete={handleStepFourComplete}
+            onBack={handleBack}
             isSubmitting={isSubmitting}
           />
         );
@@ -231,36 +276,28 @@ export const OnboardingModal = () => {
     }
   };
 
-  if (!isOpen && !showProfileCompletion) return null;
+  if (!isOpen) return null;
 
   return (
-    <>
-      <Dialog open={isOpen} onOpenChange={() => handleClose()}>
-        <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle className="text-xl font-semibold">
-              {getStepTitle()}
-            </DialogTitle>
-            
-            {/* Progress */}
-            <div className="space-y-2">
-              <div className="flex justify-between text-sm text-muted-foreground">
-                <span>Βήμα {currentStep} από 3</span>
-                <span>{Math.round((currentStep / 3) * 100)}%</span>
-              </div>
-              <Progress value={(currentStep / 3) * 100} className="w-full" />
+    <Dialog open={isOpen} onOpenChange={() => handleClose()}>
+      <DialogContent className="sm:max-w-[700px] max-h-[90vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle className="text-xl font-semibold">
+            {getStepTitle()}
+          </DialogTitle>
+          
+          {/* Progress */}
+          <div className="space-y-2">
+            <div className="flex justify-between text-sm text-muted-foreground">
+              <span>Βήμα {currentStep} από 4</span>
+              <span>{Math.round((currentStep / 4) * 100)}%</span>
             </div>
-          </DialogHeader>
+            <Progress value={(currentStep / 4) * 100} className="w-full" />
+          </div>
+        </DialogHeader>
 
-          {renderStep()}
-        </DialogContent>
-      </Dialog>
-
-      {/* Profile Completion Modal - appears after step 3 */}
-      <ProfileCompletionModal 
-        isOpen={showProfileCompletion} 
-        onClose={handleProfileCompletionClose} 
-      />
-    </>
+        {renderStep()}
+      </DialogContent>
+    </Dialog>
   );
 };
