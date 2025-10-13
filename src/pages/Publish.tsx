@@ -23,7 +23,7 @@ import { toast } from "@/hooks/use-toast";
 import { useListingValidation } from "@/hooks/useListingValidation";
 import { useVerifications } from "@/hooks/useVerifications";
 import { PublishWarningsBanner } from "@/components/publish/PublishWarningsBanner";
-import { PublishProfileModal } from "@/components/publish/PublishProfileModal";
+import { ListerOnboardingModal } from "@/components/onboarding/ListerOnboardingModal";
 import { PublishVerificationModal } from "@/components/publish/PublishVerificationModal";
 import { handleAmenitiesUpdate } from "@/components/publish/AmenitiesHandler";
 import { handleHouseRulesUpdate } from "@/components/publish/HouseRulesHandler";
@@ -117,7 +117,7 @@ export default function Publish() {
   const shouldShowStepZero = !profile?.lister_type;
   
   const [showVerificationModal, setShowVerificationModal] = useState(false);
-  const [showProfileModal, setShowProfileModal] = useState(false);
+  const [showListerOnboarding, setShowListerOnboarding] = useState(false);
   const [publishWarnings, setPublishWarnings] = useState<any[]>([]);
   const [isPublishing, setIsPublishing] = useState(false);
   const [publishError, setPublishError] = useState<string | null>(null);
@@ -719,7 +719,7 @@ export default function Publish() {
           profile: !!profile,
           completion: profile?.profile_completion_pct
         });
-        setShowProfileModal(true);
+        setShowListerOnboarding(true);
         return;
       }
       console.log('✅ Profile completion check passed');
@@ -962,7 +962,7 @@ export default function Publish() {
   };
 
   const handleProfileCompleted = async () => {
-    setShowProfileModal(false);
+    setShowListerOnboarding(false);
     
     // Refetch verifications to check phone status
     await refetchVerifications();
@@ -1204,11 +1204,11 @@ export default function Publish() {
           progress={publishProgress}
         />
 
-        {/* Enhanced Profile Completion Modal */}
-        <PublishProfileModal 
-          isOpen={showProfileModal}
-          onClose={() => setShowProfileModal(false)}
-          onSuccess={handleProfileCompleted}
+        {/* Lister Onboarding Modal */}
+        <ListerOnboardingModal 
+          isOpen={showListerOnboarding}
+          onClose={() => setShowListerOnboarding(false)}
+          onComplete={handleProfileCompleted}
         />
 
         {/* Enhanced Verification Modal */}
