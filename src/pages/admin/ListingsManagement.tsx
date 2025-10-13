@@ -4,14 +4,18 @@ import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Input } from '@/components/ui/input';
-import { Search } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Search, RefreshCw } from 'lucide-react';
 import { ListingsTable } from '@/components/admin/ListingsTable';
+import { useSearchCacheRefresh } from '@/hooks/useSearchCacheRefresh';
+import { toast } from 'sonner';
 
 type ListingStatus = 'all' | 'draft' | 'published' | 'archived';
 
 export default function ListingsManagement() {
   const [status, setStatus] = useState<ListingStatus>('all');
   const [searchQuery, setSearchQuery] = useState('');
+  const { mutate: refreshCache, isPending: isRefreshing } = useSearchCacheRefresh();
 
   const { data: listings, isLoading, refetch } = useQuery({
     queryKey: ['admin-listings', status, searchQuery],
@@ -50,8 +54,26 @@ export default function ListingsManagement() {
 
       <Card>
         <CardHeader>
-          <CardTitle>Αγγελίες</CardTitle>
-          <CardDescription>Διαχειριστείτε όλες τις αγγελίες της πλατφόρμας</CardDescription>
+          <div className="flex items-center justify-between">
+            <div>
+              <CardTitle>Αγγελίες</CardTitle>
+              <CardDescription>Διαχειριστείτε όλες τις αγγελίες της πλατφόρμας</CardDescription>
+            </div>
+            <Button 
+              variant="outline" 
+              size="sm"
+              onClick={() => {
+                refreshCache(undefined, {
+                  onSuccess: () => toast.success('Η λίστα αναζήτησης ενημερώθηκε'),
+                  onError: () => toast.error('Σφάλμα ενημέρωσης λίστας')
+                });
+              }}
+              disabled={isRefreshing}
+            >
+              <RefreshCw className={`h-4 w-4 mr-2 ${isRefreshing ? 'animate-spin' : ''}`} />
+              Ανανέωση Cache
+            </Button>
+          </div>
         </CardHeader>
         <CardContent>
           <Tabs value={status} onValueChange={(v) => setStatus(v as ListingStatus)}>

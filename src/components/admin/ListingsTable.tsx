@@ -97,6 +97,7 @@ export function ListingsTable({ listings, isLoading, onRefetch }: ListingsTableP
 
   const deleteMutation = useMutation({
     mutationFn: async (id: string) => {
+      // Soft delete the listing - this will automatically trigger cache refresh via database trigger
       const { error } = await supabase
         .from('listings')
         .update({ deleted_at: new Date().toISOString() })
@@ -105,7 +106,7 @@ export function ListingsTable({ listings, isLoading, onRefetch }: ListingsTableP
       if (error) throw error;
     },
     onSuccess: () => {
-      toast.success('Η αγγελία διαγράφηκε');
+      toast.success('Η αγγελία διαγράφηκε - η λίστα αναζήτησης θα ενημερωθεί αυτόματα');
       onRefetch();
       setShowDeleteDialog(false);
     },
