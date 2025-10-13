@@ -1804,11 +1804,45 @@ export type Database = {
         }
         Relationships: []
       }
+      verification_otps: {
+        Row: {
+          attempts: number | null
+          code: string
+          created_at: string | null
+          expires_at: string
+          id: string
+          phone: string
+          used_at: string | null
+          user_id: string
+        }
+        Insert: {
+          attempts?: number | null
+          code: string
+          created_at?: string | null
+          expires_at: string
+          id?: string
+          phone: string
+          used_at?: string | null
+          user_id: string
+        }
+        Update: {
+          attempts?: number | null
+          code?: string
+          created_at?: string | null
+          expires_at?: string
+          id?: string
+          phone?: string
+          used_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       verifications: {
         Row: {
           created_at: string
           id: string
           kind: Database["public"]["Enums"]["verification_kind_enum"]
+          metadata: Json | null
           status: Database["public"]["Enums"]["verification_status_enum"]
           user_id: string
           value: string | null
@@ -1818,6 +1852,7 @@ export type Database = {
           created_at?: string
           id?: string
           kind: Database["public"]["Enums"]["verification_kind_enum"]
+          metadata?: Json | null
           status?: Database["public"]["Enums"]["verification_status_enum"]
           user_id: string
           value?: string | null
@@ -1827,6 +1862,7 @@ export type Database = {
           created_at?: string
           id?: string
           kind?: Database["public"]["Enums"]["verification_kind_enum"]
+          metadata?: Json | null
           status?: Database["public"]["Enums"]["verification_status_enum"]
           user_id?: string
           value?: string | null

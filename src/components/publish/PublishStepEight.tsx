@@ -1,0 +1,386 @@
+import { useState } from "react";
+import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
+import { useAuth } from "@/hooks/useAuth";
+import { useVerifications } from "@/hooks/useVerifications";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "@/hooks/use-toast";
+import { Mail, Phone, Shield, CheckCircle2, Upload, Info } from "lucide-react";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+
+interface PublishStepEightProps {
+  onNext: () => void;
+  onBack: () => void;
+}
+
+const PublishStepEight = ({ onNext, onBack }: PublishStepEightProps) => {
+  const { user, profile } = useAuth();
+  const { verifications, loading: verificationsLoading, verifyEmail, refetch } = useVerifications();
+  const [phoneNumber, setPhoneNumber] = useState("");
+  const [isUploadingID, setIsUploadingID] = useState(false);
+  const [isVerifyingPhone, setIsVerifyingPhone] = useState(false);
+
+  // Calculate trust score
+  const calculateTrustScore = () => {
+    let score = 0;
+    const emailVerified = verifications.find(v => v.kind === 'email' && v.status === 'verified');
+    const phoneVerified = verifications.find(v => v.kind === 'phone' && v.status === 'verified');
+    const idVerified = verifications.find(v => v.kind === 'govgr' && v.status === 'verified');
+
+    if (emailVerified) score += 10;
+    if (phoneVerified) score += 15;
+    if (idVerified) score += 25;
+
+    return score;
+  };
+
+  const trustScore = calculateTrustScore();
+
+  const emailVerification = verifications.find(v => v.kind === 'email');
+  const phoneVerification = verifications.find(v => v.kind === 'phone');
+  const idVerification = verifications.find(v => v.kind === 'govgr');
+
+  const normalizeGreekPhone = (phone: string): string => {
+    // Remove all non-numeric characters
+    let cleaned = phone.replace(/\D/g, '');
+    
+    // If starts with 30, it's already in international format
+    if (cleaned.startsWith('30')) {
+      return '+' + cleaned;
+    }
+    
+    // If starts with 69, add +30
+    if (cleaned.startsWith('69')) {
+      return '+30' + cleaned;
+    }
+    
+    // If starts with 0, replace with +30
+    if (cleaned.startsWith('0')) {
+      return '+30' + cleaned.substring(1);
+    }
+    
+    // Otherwise add +30
+    return '+30' + cleaned;
+  };
+
+  const handleEmailVerify = async () => {
+    const result = await verifyEmail();
+    if (!result.error) {
+      toast({
+        title: "Επιτυχία",
+        description: "Σας στείλαμε email επαλήθευσης. Ελέγξτε τα εισερχόμενά σας.",
+      });
+    } else {
+      toast({
+        title: "Σφάλμα",
+        description: "Δεν ήταν δυνατή η αποστολή email επαλήθευσης.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handlePhoneVerify = async () => {
+    if (!phoneNumber.trim()) {
+      toast({
+        title: "Σφάλμα",
+        description: "Παρακαλώ εισάγετε έγκυρο αριθμό τηλεφώνου",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsVerifyingPhone(true);
+    try {
+      const normalized = normalizeGreekPhone(phoneNumber);
+      
+      // Create pending verification
+      const { error } = await supabase.from('verifications').insert({
+        user_id: user!.id,
+        kind: 'phone',
+        value: normalized,
+        status: 'pending',
+        metadata: {
+          method: 'manual',
+          requested_at: new Date().toISOString()
+        }
+      });
+
+      if (error) throw error;
+
+      await refetch();
+      toast({
+        title: "Επιτυχία",
+        description: "Το αίτημα επαλήθευσης στάλθηκε. Θα σας ειδοποιήσουμε όταν επαληθευτεί.",
+      });
+      setPhoneNumber("");
+    } catch (error: any) {
+      toast({
+        title: "Σφάλμα",
+        description: error.message || "Δεν ήταν δυνατή η αποστολή αιτήματος επαλήθευσης",
+        variant: "destructive",
+      });
+    } finally {
+      setIsVerifyingPhone(false);
+    }
+  };
+
+  const handleIDUpload = async (file: File) => {
+    // Validate file
+    const maxSize = 5 * 1024 * 1024; // 5MB
+    const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'application/pdf'];
+
+    if (!allowedTypes.includes(file.type)) {
+      toast({
+        title: "Σφάλμα",
+        description: "Μόνο εικόνες (JPG, PNG) ή PDF επιτρέπονται",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (file.size > maxSize) {
+      toast({
+        title: "Σφάλμα",
+        description: "Το αρχείο πρέπει να είναι μικρότερο από 5MB",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsUploadingID(true);
+    try {
+      // Upload to storage
+      const timestamp = Date.now();
+      const fileName = `id-${timestamp}.${file.name.split('.').pop()}`;
+      const filePath = `${user!.id}/${fileName}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from('verification-documents')
+        .upload(filePath, file);
+
+      if (uploadError) throw uploadError;
+
+      // Get public URL
+      const { data: { publicUrl } } = supabase.storage
+        .from('verification-documents')
+        .getPublicUrl(filePath);
+
+      // Create verification record
+      const { error: verificationError } = await supabase.from('verifications').insert({
+        user_id: user!.id,
+        kind: 'govgr',
+        value: publicUrl,
+        status: 'pending',
+        metadata: {
+          file_url: publicUrl,
+          file_name: file.name,
+          file_size: file.size,
+          uploaded_at: new Date().toISOString()
+        }
+      });
+
+      if (verificationError) throw verificationError;
+
+      await refetch();
+      toast({
+        title: "Επιτυχία",
+        description: "Το έγγραφο ταυτότητας ανέβηκε επιτυχώς και θα ελεγχθεί σύντομα.",
+      });
+    } catch (error: any) {
+      toast({
+        title: "Σφάλμα",
+        description: error.message || "Δεν ήταν δυνατή η μεταφόρτωση του εγγράφου",
+        variant: "destructive",
+      });
+    } finally {
+      setIsUploadingID(false);
+    }
+  };
+
+  const renderVerificationCard = (
+    icon: React.ReactNode,
+    title: string,
+    description: string,
+    points: number,
+    status: 'verified' | 'pending' | 'unverified',
+    action?: React.ReactNode
+  ) => {
+    return (
+      <Card className="p-6 hover:shadow-md transition-shadow">
+        <div className="flex items-start gap-4">
+          <div className="p-3 rounded-lg bg-primary/10">
+            {icon}
+          </div>
+          <div className="flex-1 space-y-3">
+            <div className="flex items-center justify-between">
+              <h3 className="font-semibold">{title}</h3>
+              {status === 'verified' ? (
+                <Badge variant="default" className="gap-1">
+                  <CheckCircle2 className="h-3 w-3" />
+                  Επαληθευμένο
+                </Badge>
+              ) : status === 'pending' ? (
+                <Badge variant="secondary" className="gap-1">
+                  Εκκρεμεί
+                </Badge>
+              ) : (
+                <Badge variant="outline" className="gap-1">
+                  Μη επαληθευμένο
+                </Badge>
+              )}
+            </div>
+            <p className="text-sm text-muted-foreground">{description}</p>
+            <p className="text-sm font-medium text-primary">
+              Κερδίστε +{points} πόντους εμπιστοσύνης
+            </p>
+            {action && <div className="pt-2">{action}</div>}
+          </div>
+        </div>
+      </Card>
+    );
+  };
+
+  return (
+    <div className="space-y-8 max-w-3xl mx-auto">
+      <div className="space-y-2">
+        <h2 className="text-2xl font-bold">Επαληθεύσεις (Προαιρετικό)</h2>
+        <p className="text-muted-foreground">
+          Επαληθεύστε την ταυτότητά σας για να αυξήσετε την εμπιστοσύνη και να λαμβάνετε περισσότερες αιτήσεις
+        </p>
+      </div>
+
+      <Alert>
+        <Info className="h-4 w-4" />
+        <AlertDescription>
+          Οι επαληθεύσεις είναι προαιρετικές αλλά προτεινόμενες. Αυξάνουν την εμπιστοσύνη των ενοικιαστών και βελτιώνουν την ορατότητα της αγγελίας σας.
+        </AlertDescription>
+      </Alert>
+
+      <div className="space-y-4">
+        {/* Email Verification */}
+        {renderVerificationCard(
+          <Mail className="h-5 w-5 text-primary" />,
+          'Email',
+          profile?.email || 'Επαλήθευση email',
+          10,
+          emailVerification?.status === 'verified' ? 'verified' : emailVerification?.status === 'pending' ? 'pending' : 'unverified',
+          !emailVerification || emailVerification.status === 'unverified' ? (
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={handleEmailVerify}
+              disabled={verificationsLoading}
+            >
+              Αποστολή email επαλήθευσης
+            </Button>
+          ) : null
+        )}
+
+        {/* Phone Verification */}
+        {renderVerificationCard(
+          <Phone className="h-5 w-5 text-primary" />,
+          'Τηλέφωνο',
+          phoneVerification?.value || 'Επαλήθευση μέσω τηλεφώνου',
+          15,
+          phoneVerification?.status === 'verified' ? 'verified' : phoneVerification?.status === 'pending' ? 'pending' : 'unverified',
+          !phoneVerification || phoneVerification.status === 'unverified' ? (
+            <div className="flex gap-2">
+              <Input
+                type="tel"
+                placeholder="+30 69X XXX XXXX"
+                value={phoneNumber}
+                onChange={(e) => setPhoneNumber(e.target.value)}
+                className="flex-1"
+              />
+              <Button 
+                variant="outline" 
+                size="sm"
+                onClick={handlePhoneVerify}
+                disabled={isVerifyingPhone || !phoneNumber.trim()}
+              >
+                Επαλήθευση
+              </Button>
+            </div>
+          ) : null
+        )}
+
+        {/* ID Upload */}
+        {renderVerificationCard(
+          <Shield className="h-5 w-5 text-primary" />,
+          'Ταυτότητα',
+          idVerification?.status === 'pending' 
+            ? 'Το έγγραφο σας ελέγχεται' 
+            : 'Μεταφόρτωση επίσημου εγγράφου ταυτοποίησης',
+          25,
+          idVerification?.status === 'verified' ? 'verified' : idVerification?.status === 'pending' ? 'pending' : 'unverified',
+          !idVerification || idVerification.status === 'unverified' ? (
+            <div className="space-y-2">
+              <div className="text-xs text-muted-foreground">
+                Αποδεκτά: Δελτίο Ταυτότητας, Διαβατήριο, Άδεια Οδήγησης (μέγιστο 5MB)
+              </div>
+              <label htmlFor="id-upload">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  asChild
+                  disabled={isUploadingID}
+                >
+                  <div className="cursor-pointer">
+                    <Upload className="h-4 w-4 mr-2" />
+                    {isUploadingID ? 'Μεταφόρτωση...' : 'Επιλογή αρχείου'}
+                  </div>
+                </Button>
+              </label>
+              <input
+                id="id-upload"
+                type="file"
+                accept="image/jpeg,image/jpg,image/png,application/pdf"
+                className="hidden"
+                onChange={(e) => {
+                  const file = e.target.files?.[0];
+                  if (file) handleIDUpload(file);
+                }}
+              />
+            </div>
+          ) : null
+        )}
+      </div>
+
+      {/* Trust Score Preview */}
+      <Card className="p-6 bg-primary/5 border-primary/20">
+        <div className="flex items-center justify-between">
+          <div>
+            <h3 className="font-semibold text-lg">Πόντοι Εμπιστοσύνης</h3>
+            <p className="text-sm text-muted-foreground">
+              Όσο περισσότερες επαληθεύσεις, τόσο υψηλότερη η εμπιστοσύνη
+            </p>
+          </div>
+          <div className="text-center">
+            <div className="text-4xl font-bold text-primary">{trustScore}/50</div>
+            <div className="text-xs text-muted-foreground">πόντοι</div>
+          </div>
+        </div>
+      </Card>
+
+      {/* Navigation Buttons */}
+      <div className="flex justify-between pt-4">
+        <Button variant="outline" onClick={onBack}>
+          Πίσω
+        </Button>
+        <div className="flex gap-2">
+          <Button variant="ghost" onClick={onNext}>
+            Παράλειψη για τώρα
+          </Button>
+          <Button onClick={onNext}>
+            Συνέχεια
+          </Button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default PublishStepEight;
+

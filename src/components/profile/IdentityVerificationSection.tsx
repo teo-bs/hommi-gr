@@ -74,12 +74,12 @@ export const IdentityVerificationSection = ({
       </div>
 
       <div className="space-y-3">
-        {renderVerificationItem(
-          <Shield className="h-5 w-5 text-primary" />,
-          'Gov.gr ID',
-          getVerificationStatus('kyc'),
-          'Επαλήθευση ταυτότητας μέσω Gov.gr Wallet'
-        )}
+      {renderVerificationItem(
+        <Shield className="h-5 w-5 text-primary" />,
+        'Ταυτότητα',
+        getVerificationStatus('kyc'),
+        'Επαλήθευση ταυτότητας με επίσημο έγγραφο'
+      )}
 
         {renderVerificationItem(
           <Mail className="h-5 w-5 text-primary" />,

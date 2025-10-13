@@ -14,6 +14,7 @@ import PublishStepRoomDetails from "@/components/publish/PublishStepRoomDetails"
 import PublishStepPhotos from "@/components/publish/PublishStepPhotos";
 import PublishStepTitleDescription from "@/components/publish/PublishStepTitleDescription";
 import PublishStepVerifications from "@/components/publish/PublishStepVerifications";
+import PublishStepEight from "@/components/publish/PublishStepEight";
 import PublishStepThree from "@/components/publish/PublishStepThree";
 import PublishStepReview from "@/components/publish/PublishStepReview";
 import PublishProgressStepper from "@/components/publish/PublishProgressStepper";
@@ -85,7 +86,7 @@ const STEPS = [
   { id: 5, title: "Δωμάτιο", key: "room" },
   { id: 6, title: "Φωτογραφίες", key: "photos" },
   { id: 7, title: "Τίτλος & Περιγραφή", key: "title" },
-  { id: 8, title: "Επαληθεύσεις", key: "verifications" },
+  { id: 8, title: "Επαληθεύσεις", key: "user-verifications" },
   { id: 9, title: "Διαθεσιμότητα & Τιμή", key: "availability" },
   { id: 10, title: "Έλεγχος", key: "review" }
 ];
@@ -1164,11 +1165,9 @@ export default function Publish() {
           
           <StepTransition isVisible={currentStep === 8} direction="forward">
             {currentStep === 8 && (
-              <PublishStepVerifications
-                draft={draft}
-                onUpdate={updateDraft}
+              <PublishStepEight
                 onNext={nextStep}
-                onPrev={prevStep}
+                onBack={prevStep}
               />
             )}
           </StepTransition>
