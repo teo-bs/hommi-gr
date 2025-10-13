@@ -1844,6 +1844,7 @@ export type Database = {
           kind: Database["public"]["Enums"]["verification_kind_enum"]
           metadata: Json | null
           status: Database["public"]["Enums"]["verification_status_enum"]
+          updated_at: string | null
           user_id: string
           value: string | null
           verified_at: string | null
@@ -1854,6 +1855,7 @@ export type Database = {
           kind: Database["public"]["Enums"]["verification_kind_enum"]
           metadata?: Json | null
           status?: Database["public"]["Enums"]["verification_status_enum"]
+          updated_at?: string | null
           user_id: string
           value?: string | null
           verified_at?: string | null
@@ -1864,6 +1866,7 @@ export type Database = {
           kind?: Database["public"]["Enums"]["verification_kind_enum"]
           metadata?: Json | null
           status?: Database["public"]["Enums"]["verification_status_enum"]
+          updated_at?: string | null
           user_id?: string
           value?: string | null
           verified_at?: string | null
