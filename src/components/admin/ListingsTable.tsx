@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useMutation } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -166,7 +167,8 @@ export function ListingsTable({ listings, isLoading, onRefetch }: ListingsTableP
 
   return (
     <>
-      <div className="rounded-md border">
+      {/* Desktop Table View */}
+      <div className="hidden md:block rounded-md border overflow-x-auto">
         <Table>
           <TableHeader>
             <TableRow>
@@ -287,6 +289,86 @@ export function ListingsTable({ listings, isLoading, onRefetch }: ListingsTableP
             ))}
           </TableBody>
         </Table>
+      </div>
+
+      {/* Mobile Card View */}
+      <div className="md:hidden space-y-3">
+        {listings.map((listing) => (
+          <div key={listing.id} className="border rounded-lg p-3 space-y-3 touch-manipulation">
+            <div className="flex gap-3">
+              <img
+                src={getCoverPhoto(listing) || '/placeholder.svg'}
+                alt={listing.title}
+                className="w-20 h-20 object-cover rounded flex-shrink-0"
+              />
+              <div className="flex-1 min-w-0">
+                <h3 className="font-medium text-sm line-clamp-2 mb-1">{listing.title}</h3>
+                <p className="text-xs text-muted-foreground mb-1">
+                  {listing.owner?.display_name || 'Unknown'}
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  {new Date(listing.created_at).toLocaleDateString('el-GR')}
+                </p>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2 flex-wrap">
+              {getStatusBadge(listing.status)}
+              {listing.flagged_at && (
+                <Badge variant="destructive" className="gap-1 text-xs">
+                  <Flag className="h-3 w-3" />
+                  Επισημασμένη
+                </Badge>
+              )}
+            </div>
+
+            <div className="flex gap-2 flex-wrap">
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => {
+                  setSelectedListing(listing);
+                  setEditMode(false);
+                }}
+                className="flex-1"
+              >
+                <Eye className="h-4 w-4 mr-1" />
+                Προβολή
+              </Button>
+              
+              {listing.status === 'draft' && (
+                <>
+                  <Button
+                    size="sm"
+                    variant="default"
+                    onClick={() => approveMutation.mutate(listing.id)}
+                    disabled={approveMutation.isPending}
+                    className="flex-1"
+                  >
+                    <CheckCircle className="h-4 w-4 mr-1" />
+                    Έγκριση
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="destructive"
+                    onClick={() => handleReject(listing)}
+                    disabled={rejectMutation.isPending}
+                  >
+                    <XCircle className="h-4 w-4" />
+                  </Button>
+                </>
+              )}
+              
+              {listing.owner?.user_id && (
+                <UserImpersonateButton
+                  userId={listing.owner.user_id}
+                  userName={listing.owner.display_name || 'User'}
+                  userEmail={listing.owner.email || ''}
+                />
+              )}
+            </div>
+          </div>
+        ))}
       </div>
 
       {selectedListing && (

@@ -46,15 +46,15 @@ export default function ListingsManagement() {
   });
 
   return (
-    <div className="container mx-auto px-4 py-8 space-y-6">
+    <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 space-y-4 sm:space-y-6">
       <div>
-        <h1 className="text-3xl font-bold mb-2">Διαχείριση Αγγελιών</h1>
-        <p className="text-muted-foreground">Έγκριση και έλεγχος αγγελιών</p>
+        <h1 className="text-2xl sm:text-3xl font-bold mb-2">Διαχείριση Αγγελιών</h1>
+        <p className="text-sm sm:text-base text-muted-foreground">Έγκριση και έλεγχος αγγελιών</p>
       </div>
 
       <Card>
         <CardHeader>
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
               <CardTitle>Αγγελίες</CardTitle>
               <CardDescription>Διαχειριστείτε όλες τις αγγελίες της πλατφόρμας</CardDescription>
@@ -69,6 +69,7 @@ export default function ListingsManagement() {
                 });
               }}
               disabled={isRefreshing}
+              className="w-full sm:w-auto"
             >
               <RefreshCw className={`h-4 w-4 mr-2 ${isRefreshing ? 'animate-spin' : ''}`} />
               Ανανέωση Cache
@@ -77,21 +78,24 @@ export default function ListingsManagement() {
         </CardHeader>
         <CardContent>
           <Tabs value={status} onValueChange={(v) => setStatus(v as ListingStatus)}>
-            <div className="flex flex-col sm:flex-row gap-4 mb-6">
-              <TabsList className="grid w-full sm:w-auto grid-cols-4">
-                <TabsTrigger value="all">Όλες</TabsTrigger>
-                <TabsTrigger value="draft">Εκκρεμείς</TabsTrigger>
-                <TabsTrigger value="published">Δημοσιευμένες</TabsTrigger>
-                <TabsTrigger value="archived">Αρχειοθετημένες</TabsTrigger>
-              </TabsList>
+            <div className="flex flex-col gap-4 mb-6">
+              <div className="overflow-x-auto">
+                <TabsList className="grid w-full grid-cols-4 min-h-[44px]">
+                  <TabsTrigger value="all">Όλες</TabsTrigger>
+                  <TabsTrigger value="draft">Εκκρεμείς</TabsTrigger>
+                  <TabsTrigger value="published">Δημοσιευμένες</TabsTrigger>
+                  <TabsTrigger value="archived">Αρχειοθετημένες</TabsTrigger>
+                </TabsList>
+              </div>
 
-              <div className="relative flex-1">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <div className="relative w-full">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
                 <Input
                   placeholder="Αναζήτηση αγγελίας ή ιδιοκτήτη..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-9"
+                  className="pl-9 w-full"
+                  inputMode="search"
                 />
               </div>
             </div>

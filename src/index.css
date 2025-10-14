@@ -359,4 +359,23 @@
     font-size: var(--caption);
     line-height: 1.4;
   }
+
+  /* Mobile-first spacing utilities */
+  .container-mobile {
+    @apply px-4 sm:px-6 lg:px-8;
+  }
+
+  /* Touch-friendly interactive elements */
+  .touch-target {
+    @apply min-h-[44px] min-w-[44px] touch-manipulation active:scale-95 transition-transform;
+  }
+
+  /* Mobile keyboard safe area */
+  .pb-safe {
+    padding-bottom: max(1rem, env(safe-area-inset-bottom));
+  }
+
+  .pt-safe {
+    padding-top: max(0.5rem, env(safe-area-inset-top));
+  }
 }
