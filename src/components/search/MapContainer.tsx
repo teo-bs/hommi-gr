@@ -1,4 +1,5 @@
 import { useEffect, useRef, useCallback } from "react";
+import { useNavigate } from 'react-router-dom';
 import mapboxgl from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
 import { useMapState } from "@/hooks/useMapState";
@@ -7,6 +8,7 @@ import { supabase } from '@/integrations/supabase/client';
 
 export interface Listing {
   id: string;
+  slug: string;
   title: string;
   price_month: number;
   lat: number;
@@ -27,6 +29,7 @@ interface MapContainerProps {
   autoSearch?: boolean;
   onAutoSearchChange?: (checked: boolean) => void;
   onManualSearch?: () => void;
+  hasUserMoved?: boolean;
 }
 
 export const MapContainer = ({ 
@@ -37,8 +40,10 @@ export const MapContainer = ({
   selectedListingId,
   autoSearch = false,
   onAutoSearchChange,
-  onManualSearch
+  onManualSearch,
+  hasUserMoved = false
 }: MapContainerProps) => {
+  const navigate = useNavigate();
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<mapboxgl.Map | null>(null);
   const clustersSource = useRef<mapboxgl.GeoJSONSource | null>(null);
@@ -61,9 +66,15 @@ export const MapContainer = ({
   const markersRef = useRef<Map<string, mapboxgl.Marker>>(new Map());
 
   // Create popup content with carousel
-  const createPopupContent = (props: any, photos: string[]) => {
+  const createPopupContent = (props: any, photos: string[], slug: string) => {
     const container = document.createElement('div');
     container.className = 'map-popup-container';
+    container.style.cursor = 'pointer';
+    
+    // Make entire container clickable
+    container.onclick = () => {
+      navigate(`/rooms/${slug}`);
+    };
     
     // Create carousel wrapper
     const carouselWrapper = document.createElement('div');
@@ -87,7 +98,7 @@ export const MapContainer = ({
     if (photos.length > 1) {
       const prevBtn = document.createElement('button');
       prevBtn.innerHTML = '‹';
-      prevBtn.className = 'absolute left-2 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-white/90 hover:bg-white shadow-lg flex items-center justify-center text-2xl font-bold z-10 cursor-pointer transition-all hover:scale-110';
+      prevBtn.className = 'absolute left-2 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white/90 hover:bg-white shadow-lg flex items-center justify-center text-2xl font-bold z-10 cursor-pointer transition-all hover:scale-110';
       prevBtn.style.border = 'none';
       prevBtn.style.display = 'flex';
       prevBtn.style.alignItems = 'center';
@@ -100,7 +111,7 @@ export const MapContainer = ({
       
       const nextBtn = document.createElement('button');
       nextBtn.innerHTML = '›';
-      nextBtn.className = 'absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-white/90 hover:bg-white shadow-lg flex items-center justify-center text-2xl font-bold z-10 cursor-pointer transition-all hover:scale-110';
+      nextBtn.className = 'absolute right-2 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white/90 hover:bg-white shadow-lg flex items-center justify-center text-2xl font-bold z-10 cursor-pointer transition-all hover:scale-110';
       nextBtn.style.border = 'none';
       nextBtn.style.display = 'flex';
       nextBtn.style.alignItems = 'center';
@@ -495,6 +506,10 @@ export const MapContainer = ({
                 photoUrls = photos.length > 0 ? photos : ['/placeholder.svg'];
               }
               
+              // Extract slug from listing
+              const listing = listings.find(l => l.id === id);
+              const slug = (listing as any)?.slug || id;
+              
               hoverPopup.current = new mapboxgl.Popup({
                 closeButton: false,
                 closeOnClick: false,
@@ -503,7 +518,7 @@ export const MapContainer = ({
                 maxWidth: '300px'
               })
                 .setLngLat(coords)
-                .setDOMContent(createPopupContent(props, photoUrls))
+                .setDOMContent(createPopupContent(props, photoUrls, slug))
                 .addTo(map.current!);
               
               // Keep popup open when hovering over it

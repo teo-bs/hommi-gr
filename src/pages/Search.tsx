@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo } from "react";
 import { useSearchParams, useLocation } from "react-router-dom";
 import { MapContainer } from "@/components/search/MapContainer";
+import { MapListingsCarousel } from "@/components/search/MapListingsCarousel";
 import { FilterBar, FilterBarState } from "@/components/search/FilterBar";
 import { ViewSwitcher } from "@/components/search/ViewSwitcher";
 import { useSearchStateCache } from "@/hooks/useSearchStateCache";
@@ -36,6 +37,7 @@ const Search = () => {
   const [hoveredListingId, setHoveredListingId] = useState<string | null>(null);
   const [selectedListingId, setSelectedListingId] = useState<string | null>(null);
   const [autoSearch, setAutoSearch] = useState<boolean>(true);
+  const [hasUserMoved, setHasUserMoved] = useState<boolean>(false);
   const [mobileView, setMobileView] = useState<'list' | 'map'>('list');
   
   // Pagination state - initialize from URL
@@ -173,7 +175,7 @@ const Search = () => {
       .filter(listing => listing.lat && listing.lng) // Only include listings with valid coordinates
       .map(listing => ({
         id: listing.room_id,
-        room_id: listing.room_id,
+        slug: listing.slug,
         title: listing.title,
         price_month: listing.price_month,
         neighborhood: listing.neighborhood,
@@ -181,7 +183,6 @@ const Search = () => {
         flatmates_count: listing.flatmates_count,
         couples_accepted: listing.couples_accepted,
         photos: listing.cover_photo_url ? [listing.cover_photo_url] : ['/placeholder.svg'],
-        room_slug: listing.slug,
         lat: listing.lat,
         lng: listing.lng,
         formatted_address: (listing as any).formatted_address,
@@ -460,7 +461,17 @@ const Search = () => {
                 autoSearch={autoSearch}
                 onAutoSearchChange={setAutoSearch}
                 onManualSearch={handleManualMapSearch}
+                hasUserMoved={hasUserMoved}
               />
+              
+              {/* Mobile Listings Carousel - Only on mobile map view */}
+              {mobileView === 'map' && (
+                <MapListingsCarousel
+                  listings={mapListings}
+                  selectedListingId={selectedListingId}
+                  onListingSelect={handleCarouselListingSelect}
+                />
+              )}
             </div>
           </div>
         </div>

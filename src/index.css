@@ -191,6 +191,26 @@
   }
 }
 
+/* Hide scrollbar for carousel */
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+/* Map popup styles */
+.map-popup-container {
+  width: 280px;
+  background: hsl(var(--background));
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  transition: transform 0.2s;
+}
+
 @layer base {
   * {
     @apply border-border touch-manipulation;
