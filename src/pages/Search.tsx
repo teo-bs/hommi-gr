@@ -255,6 +255,11 @@ const Search = () => {
     setSelectedListingId(listingId);
   };
 
+  const handleCarouselListingSelect = (id: string, lat: number, lng: number) => {
+    setSelectedListingId(id);
+    // Map will automatically center on this marker via selectedListingId
+  };
+
   const handleManualMapSearch = () => {
     // Trigger a new search based on current map bounds
     window.dispatchEvent(new CustomEvent('mapBoundsChanged', { 
