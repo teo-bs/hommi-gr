@@ -17,10 +17,11 @@ interface MapListingCardProps {
     references_count?: number;
   };
   isSelected: boolean;
+  isActive?: boolean;
   onClick: () => void;
 }
 
-export const MapListingCard = ({ listing, isSelected, onClick }: MapListingCardProps) => {
+export const MapListingCard = ({ listing, isSelected, isActive = false, onClick }: MapListingCardProps) => {
   const navigate = useNavigate();
   const coverPhoto = Array.isArray(listing.photos) ? listing.photos[0] : undefined;
 
@@ -36,8 +37,10 @@ export const MapListingCard = ({ listing, isSelected, onClick }: MapListingCardP
   return (
     <Card
       className={cn(
-        "flex-shrink-0 w-[280px] snap-start overflow-hidden cursor-pointer transition-all duration-200 touch-manipulation active:scale-95",
-        isSelected && "ring-2 ring-primary shadow-lg"
+        "flex-shrink-0 w-[280px] snap-start overflow-hidden cursor-pointer transition-all duration-300 touch-manipulation active:scale-[0.98]",
+        "hover:shadow-lg",
+        isActive && "ring-2 ring-primary shadow-xl scale-[1.02]",
+        isSelected && !isActive && "ring-2 ring-primary shadow-lg"
       )}
       onClick={handleCardClick}
     >

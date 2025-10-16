@@ -284,7 +284,10 @@ export const MapContainer = ({
       style: 'mapbox://styles/mapbox/streets-v12',
       center: mapState.center,
       zoom: mapState.zoom,
-      attributionControl: false
+      attributionControl: false,
+      maxTileCacheSize: 50,
+      refreshExpiredTiles: false,
+      trackResize: true
     });
 
     // Add navigation controls
@@ -297,8 +300,9 @@ export const MapContainer = ({
     // Disable scroll zoom on mobile by default (require two-finger pinch)
     if (window.innerWidth < 768) {
       map.current.scrollZoom.disable();
-      map.current.touchZoomRotate.enable(); // Enable pinch to zoom
-      map.current.touchPitch.disable(); // Disable pitch on touch for simpler UX
+      map.current.touchZoomRotate.enable();
+      map.current.touchPitch.disable();
+      map.current.dragRotate.disable();
     }
 
     // Map event handlers with debouncing for better mobile performance
@@ -638,6 +642,33 @@ export const MapContainer = ({
       }
     });
   }, [hoveredListingId, selectedListingId]);
+
+  // Smooth flyTo when selectedListingId changes (mobile carousel sync)
+  useEffect(() => {
+    if (!selectedListingId || !map.current) return;
+    
+    const listing = listings.find(l => l.id === selectedListingId);
+    if (!listing) return;
+    
+    // Smooth fly to listing location
+    map.current.flyTo({
+      center: [listing.lng, listing.lat],
+      zoom: Math.max(map.current.getZoom(), 14),
+      duration: 800,
+      essential: true,
+      easing: (t) => t * (2 - t)
+    });
+    
+    // Trigger pin pulse animation
+    const marker = markersRef.current.get(selectedListingId);
+    if (marker) {
+      const bubble = marker.getElement().querySelector('.price-bubble');
+      if (bubble) {
+        bubble.classList.add('active');
+        setTimeout(() => bubble.classList.remove('active'), 600);
+      }
+    }
+  }, [selectedListingId, listings]);
 
   const handleUpdateResults = () => {
     console.log('Updating results for current map bounds');

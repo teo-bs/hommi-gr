@@ -1,4 +1,5 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import { useDebounce } from 'use-debounce';
 import { MapListingCard } from './MapListingCard';
 
 interface Listing {
@@ -28,8 +29,48 @@ export const MapListingsCarousel = ({
 }: MapListingsCarouselProps) => {
   const carouselRef = useRef<HTMLDivElement>(null);
   const cardRefs = useRef<{ [key: string]: HTMLDivElement | null }>({});
+  const [localActiveId, setLocalActiveId] = useState<string | null>(null);
+  const [debouncedActiveId] = useDebounce(localActiveId, 150);
 
-  // Auto-scroll to selected card when marker is clicked
+  // Detect active card via Intersection Observer
+  useEffect(() => {
+    if (!carouselRef.current) return;
+    
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting && entry.intersectionRatio >= 0.6) {
+            const listingId = entry.target.getAttribute('data-listing-id');
+            setLocalActiveId(listingId);
+          }
+        });
+      },
+      {
+        root: carouselRef.current,
+        threshold: [0.6],
+        rootMargin: '0px'
+      }
+    );
+
+    // Observe all cards
+    Object.values(cardRefs.current).forEach(card => {
+      if (card) observer.observe(card);
+    });
+
+    return () => observer.disconnect();
+  }, [listings]);
+
+  // Notify parent of active listing change
+  useEffect(() => {
+    if (debouncedActiveId) {
+      const listing = listings.find(l => l.id === debouncedActiveId);
+      if (listing) {
+        onListingSelect(listing.id, listing.lat, listing.lng);
+      }
+    }
+  }, [debouncedActiveId, listings, onListingSelect]);
+
+  // Auto-scroll when external selection changes
   useEffect(() => {
     if (selectedListingId && cardRefs.current[selectedListingId]) {
       cardRefs.current[selectedListingId]?.scrollIntoView({
@@ -55,10 +96,13 @@ export const MapListingsCarousel = ({
               <div
                 key={listing.id}
                 ref={(el) => (cardRefs.current[listing.id] = el)}
+                data-listing-id={listing.id}
+                className="snap-center"
               >
                 <MapListingCard
                   listing={listing}
                   isSelected={selectedListingId === listing.id}
+                  isActive={debouncedActiveId === listing.id}
                   onClick={() => onListingSelect(listing.id, listing.lat, listing.lng)}
                 />
               </div>

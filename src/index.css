@@ -195,6 +195,8 @@
 .scrollbar-hide {
   -ms-overflow-style: none;
   scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+  scroll-behavior: smooth;
 }
 
 .scrollbar-hide::-webkit-scrollbar {
@@ -209,6 +211,7 @@
   overflow: hidden;
   box-shadow: 0 4px 12px rgba(0,0,0,0.15);
   transition: transform 0.2s;
+  transform: translateZ(0);
 }
 
 @layer base {
@@ -258,7 +261,8 @@
     font-size: 13px;
     white-space: nowrap;
     box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
-    transition: all 0.2s ease;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    will-change: transform, box-shadow;
   }
 
   .price-bubble:hover,
@@ -270,8 +274,20 @@
 
   .price-bubble.selected {
     background: hsl(var(--foreground));
-    transform: scale(1.15);
+    transform: scale(1.05);
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  }
+
+  /* Pin pulse animation when active via carousel */
+  @keyframes pin-pulse {
+    0%, 100% { transform: scale(1.05); }
+    50% { transform: scale(1.2); }
+  }
+
+  .price-bubble.active {
+    animation: pin-pulse 0.6s ease-out;
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+    z-index: 100 !important;
   }
 
   h1 {
@@ -397,5 +413,16 @@
 
   .pt-safe {
     padding-top: max(0.5rem, env(safe-area-inset-top));
+  }
+
+  /* Mobile-specific optimizations */
+  @media (max-width: 768px) {
+    .map-popup-container {
+      transform: translateZ(0);
+    }
+    
+    .price-bubble {
+      -webkit-tap-highlight-color: transparent;
+    }
   }
 }
