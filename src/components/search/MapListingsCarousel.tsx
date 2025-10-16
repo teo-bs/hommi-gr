@@ -30,7 +30,7 @@ export const MapListingsCarousel = ({
   const carouselRef = useRef<HTMLDivElement>(null);
   const cardRefs = useRef<{ [key: string]: HTMLDivElement | null }>({});
   const [localActiveId, setLocalActiveId] = useState<string | null>(null);
-  const [debouncedActiveId] = useDebounce(localActiveId, 150);
+  const [debouncedActiveId] = useDebounce(localActiveId, 80);
 
   // Detect active card via Intersection Observer
   useEffect(() => {
@@ -38,16 +38,19 @@ export const MapListingsCarousel = ({
     
     const observer = new IntersectionObserver(
       (entries) => {
-        entries.forEach(entry => {
-          if (entry.isIntersecting && entry.intersectionRatio >= 0.6) {
-            const listingId = entry.target.getAttribute('data-listing-id');
-            setLocalActiveId(listingId);
-          }
-        });
+        // Only process the most intersecting entry
+        const mostVisible = entries.reduce((max, entry) => 
+          entry.intersectionRatio > (max?.intersectionRatio || 0) ? entry : max
+        , entries[0]);
+        
+        if (mostVisible && mostVisible.isIntersecting && mostVisible.intersectionRatio >= 0.5) {
+          const listingId = mostVisible.target.getAttribute('data-listing-id');
+          setLocalActiveId(listingId);
+        }
       },
       {
         root: carouselRef.current,
-        threshold: [0.6],
+        threshold: [0.5, 0.6, 0.7, 0.8, 0.9, 1.0],
         rootMargin: '0px'
       }
     );
@@ -85,11 +88,17 @@ export const MapListingsCarousel = ({
 
   return (
     <div className="fixed bottom-0 left-0 right-0 z-30 lg:hidden pb-safe">
-      <div className="bg-gradient-to-t from-background via-background to-transparent pt-4 pb-3">
+      <div className="bg-gradient-to-t from-black/20 via-transparent to-transparent backdrop-blur-sm pt-4 pb-3">
         <div 
           ref={carouselRef}
           className="overflow-x-auto snap-x snap-mandatory scrollbar-hide"
-          style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+          style={{ 
+            scrollbarWidth: 'none', 
+            msOverflowStyle: 'none',
+            WebkitOverflowScrolling: 'touch',
+            transform: 'translateZ(0)',
+            willChange: 'scroll-position'
+          }}
         >
           <div className="flex gap-3 px-4">
             {listings.map((listing) => (

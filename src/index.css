@@ -253,41 +253,58 @@
   }
 
   .price-bubble {
-    background: #FF6B35;
-    color: white;
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
     padding: 6px 12px;
+    background: white;
+    color: black;
     border-radius: 20px;
+    font-size: 14px;
     font-weight: 600;
-    font-size: 13px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    cursor: pointer;
     white-space: nowrap;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    will-change: transform, box-shadow;
+    transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1),
+                box-shadow 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    will-change: transform;
+    z-index: 10;
+    touch-action: manipulation;
   }
 
   .price-bubble:hover,
   .price-bubble.hovered {
-    background: #E85A25;
-    transform: scale(1.1);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+    transform: scale(1.05);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
   }
 
   .price-bubble.selected {
-    background: hsl(var(--foreground));
+    background: hsl(var(--primary));
+    color: hsl(var(--primary-foreground));
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
     transform: scale(1.05);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    z-index: 50;
   }
 
-  /* Pin pulse animation when active via carousel */
-  @keyframes pin-pulse {
-    0%, 100% { transform: scale(1.05); }
-    50% { transform: scale(1.2); }
-  }
-
+  /* Subtle active state - no pulse animation */
   .price-bubble.active {
-    animation: pin-pulse 0.6s ease-out;
-    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+    transform: scale(1.05);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
     z-index: 100 !important;
+  }
+
+  /* Safari-specific optimizations */
+  @supports (-webkit-touch-callout: none) {
+    .price-bubble {
+      -webkit-transform: translateZ(0);
+      -webkit-backface-visibility: hidden;
+      -webkit-perspective: 1000;
+    }
+    
+    .map-popup-container {
+      -webkit-transform: translate3d(0, 0, 0);
+    }
   }
 
   h1 {

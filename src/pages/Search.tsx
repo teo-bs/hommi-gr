@@ -21,6 +21,22 @@ import {
   PaginationEllipsis,
 } from "@/components/ui/pagination";
 
+// Helper to expand bounds to show surrounding listings
+const expandBounds = (bounds: { north: number; south: number; east: number; west: number } | undefined, factor: number = 1.5): { north: number; south: number; east: number; west: number } | undefined => {
+  if (!bounds) return undefined;
+  
+  const { north, south, east, west } = bounds;
+  const lngDelta = (east - west) * (factor - 1) / 2;
+  const latDelta = (north - south) * (factor - 1) / 2;
+  
+  return {
+    north: north + latDelta,
+    south: south - latDelta,
+    east: east + lngDelta,
+    west: west - lngDelta
+  };
+};
+
 export interface FilterState extends FilterBarState {
   bounds?: {
     north: number;
@@ -147,7 +163,7 @@ const Search = () => {
     return map;
   }, [roomPhotos]);
 
-  // Fetch ALL listings for map (without pagination)
+  // Fetch ALL listings for map (without pagination) with expanded bounds
   const { data: allListingsForMap = [] } = useOptimizedSearch({
     filters: {
       budget: { min: filters.budget[0], max: filters.budget[1] },
@@ -163,7 +179,7 @@ const Search = () => {
         filters.duration === 'long' ? 12 : undefined
       ) : undefined,
       sort: filters.sort,
-      bounds: filters.bounds,
+      bounds: expandBounds(filters.bounds, 1.5), // Show listings 50% beyond viewport
       page: 1,
       pageSize: 1000, // Fetch all results for map
     }

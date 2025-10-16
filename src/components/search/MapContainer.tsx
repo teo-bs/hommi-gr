@@ -650,22 +650,21 @@ export const MapContainer = ({
     const listing = listings.find(l => l.id === selectedListingId);
     if (!listing) return;
     
-    // Smooth fly to listing location
-    map.current.flyTo({
+    // Only center, don't change zoom - respect user's preference
+    map.current.easeTo({
       center: [listing.lng, listing.lat],
-      zoom: Math.max(map.current.getZoom(), 14),
-      duration: 800,
+      duration: 400,
       essential: true,
-      easing: (t) => t * (2 - t)
+      easing: (t) => 1 - Math.pow(1 - t, 3) // Ease-out cubic
     });
     
-    // Trigger pin pulse animation
+    // Subtle highlight (no pulse animation)
     const marker = markersRef.current.get(selectedListingId);
     if (marker) {
       const bubble = marker.getElement().querySelector('.price-bubble');
       if (bubble) {
         bubble.classList.add('active');
-        setTimeout(() => bubble.classList.remove('active'), 600);
+        setTimeout(() => bubble.classList.remove('active'), 300);
       }
     }
   }, [selectedListingId, listings]);
