@@ -13,6 +13,7 @@ import { ListingWizard } from "@/components/listing/ListingWizard";
 import { useToast } from "@/hooks/use-toast";
 import { useAdminCheck } from "@/hooks/useAdminCheck";
 import { AvatarWithBadge } from "@/components/ui/avatar-with-badge";
+import { useTranslation } from "@/hooks/useTranslation";
 import hommiLogo from "@/assets/hommi-logo.png";
 
 export const Header = () => {
@@ -24,9 +25,9 @@ export const Header = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { toast } = useToast();
+  const { t, language, toggleLanguage } = useTranslation();
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [language, setLanguage] = useState('el'); // Greek default
   const [searchLocation, setSearchLocation] = useState('');
   const [locationLoading, setLocationLoading] = useState(false);
 
@@ -109,9 +110,6 @@ export const Header = () => {
     listingFlow.initiateListingFlow();
   };
 
-  const toggleLanguage = () => {
-    setLanguage(prev => prev === 'el' ? 'en' : 'el');
-  };
 
   const handleLogout = async () => {
     await signOut();
@@ -126,16 +124,16 @@ export const Header = () => {
       
       if (error) {
         toast({
-          title: "Σφάλμα",
-          description: "Δεν ήταν δυνατή η αλλαγή ρόλου",
+          title: t('notifications.error'),
+          description: t('notifications.somethingWentWrong'),
           variant: "destructive",
         });
         return;
       }
       
       toast({
-        title: "Επιτυχία",
-        description: `Μετάβαση σε ${newRole === 'tenant' ? 'Tenant' : 'Lister'}`,
+        title: t('notifications.success'),
+        description: newRole === 'tenant' ? t('header.switchToTenant') : t('header.switchToLister'),
       });
       
       // Redirect to appropriate page based on new role
@@ -146,8 +144,8 @@ export const Header = () => {
       }
     } catch (error) {
       toast({
-        title: "Σφάλμα",
-        description: "Παρουσιάστηκε απροσδόκητο σφάλμα",
+        title: t('notifications.error'),
+        description: t('notifications.somethingWentWrong'),
         variant: "destructive",
       });
     }
@@ -163,22 +161,22 @@ export const Header = () => {
   const tenantNavItems = [
     { 
       href: "/search", 
-      label: language === 'el' ? 'Αναζήτηση' : 'Search',
+      label: t('header.search'),
       icon: Search
     },
     { 
       href: "/favourites", 
-      label: language === 'el' ? 'Αγαπημένα' : 'Favourites',
+      label: t('header.saved'),
       icon: Heart
     },
     { 
       href: "/inbox", 
-      label: `${language === 'el' ? 'Μηνύματα' : 'Inbox'}${unreadCount > 0 ? ` (${unreadCount})` : ''}`,
+      label: `${t('header.messages')}${unreadCount > 0 ? ` (${unreadCount})` : ''}`,
       icon: MessageSquare
     },
     { 
       href: "/help", 
-      label: language === 'el' ? 'Βοήθεια' : 'Help',
+      label: t('common.help'),
       icon: MessageSquare
     }
   ];
@@ -187,23 +185,23 @@ export const Header = () => {
     ...(listingsCount > 0 ? [
       { 
         href: "/overview", 
-        label: language === 'el' ? 'Επισκόπηση' : 'Overview',
+        label: t('header.overview'),
         icon: BarChart3
       },
       { 
         href: "/my-listings", 
-        label: language === 'el' ? 'Οι αγγελίες μου' : 'My listings',
+        label: t('header.myListings'),
         icon: List
       }
     ] : []),
     { 
       href: "/inbox", 
-      label: `${language === 'el' ? 'Μηνύματα' : 'Inbox'}${unreadCount > 0 ? ` (${unreadCount})` : ''}`,
+      label: `${t('header.messages')}${unreadCount > 0 ? ` (${unreadCount})` : ''}`,
       icon: MessageSquare
     },
     { 
       href: "/help", 
-      label: language === 'el' ? 'Βοήθεια' : 'Help',
+      label: t('common.help'),
       icon: MessageSquare
     }
   ];
@@ -237,7 +235,7 @@ export const Header = () => {
                       <MapPin className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                       <Input
                         type="text"
-                        placeholder={locationLoading ? "Εντοπισμός..." : "Πού θέλετε να μείνετε;"}
+                        placeholder={locationLoading ? t('common.loading') : t('header.searchPlaceholder')}
                         value={searchLocation}
                         onChange={(e) => setSearchLocation(e.target.value)}
                         className="pl-10 pr-4 w-80 bg-background border-border"
@@ -269,7 +267,7 @@ export const Header = () => {
                     data-testid="publish-listing-btn"
                   >
                     <Plus className="h-4 w-4 mr-2" />
-                    {language === 'el' ? 'Δημοσίευσε αγγελία' : 'Publish listing'}
+                    {t('header.publishListing')}
                   </Button>
                 )}
               </nav>
@@ -282,7 +280,7 @@ export const Header = () => {
                   className="border-foreground/20"
                   onClick={handlePublishListing}
                 >
-                  {language === 'el' ? 'Καταχώρησε το ακίνητό σου' : 'List your property'}
+                  {t('header.publishListing')}
                 </Button>
               </nav>
             )}
@@ -318,20 +316,20 @@ export const Header = () => {
                     align="end" 
                     className="w-56 bg-background border border-border shadow-lg z-50"
                   >
-                     <DropdownMenuItem onClick={() => navigate('/me')}>
+                   <DropdownMenuItem onClick={() => navigate('/me')}>
                        <User className="h-4 w-4 mr-2" />
-                       {language === 'el' ? 'Το προφίλ μου' : 'My profile'}
+                       {t('header.profile')}
                      </DropdownMenuItem>
                     <DropdownMenuItem onClick={() => navigate('/settings')}>
                       <Settings className="h-4 w-4 mr-2" />
-                      {language === 'el' ? 'Ρυθμίσεις' : 'Settings'}
+                      {t('header.settings')}
                     </DropdownMenuItem>
                     
                     {/* Admin Link */}
                     {isAdmin && (
                       <DropdownMenuItem onClick={() => navigate('/admin')}>
                         <BarChart3 className="h-4 w-4 mr-2" />
-                        {language === 'el' ? 'Admin' : 'Admin'}
+                        {t('header.admin')}
                       </DropdownMenuItem>
                     )}
                     
@@ -339,12 +337,12 @@ export const Header = () => {
                     {currentRole === 'tenant' ? (
                       <DropdownMenuItem onClick={() => navigate('/search-preferences')}>
                         <Search className="h-4 w-4 mr-2" />
-                        {language === 'el' ? 'Προτιμήσεις αναζήτησης' : 'Search preferences'}
+                        {t('profile.preferences')}
                       </DropdownMenuItem>
                     ) : (
                       <DropdownMenuItem onClick={() => navigate('/booking-settings')}>
                         <Calendar className="h-4 w-4 mr-2" />
-                        {language === 'el' ? 'Ρυθμίσεις κρατήσεων' : 'Booking settings'}
+                        {t('owner.settings')}
                       </DropdownMenuItem>
                     )}
                     
@@ -354,10 +352,7 @@ export const Header = () => {
                     {profile?.can_switch_roles && (
                       <DropdownMenuItem onClick={() => handleRoleSwitch(currentRole === 'tenant' ? 'lister' : 'tenant')}>
                         <UserCheck className="h-4 w-4 mr-2" />
-                        {currentRole === 'tenant' 
-                          ? (language === 'el' ? 'Μετάβαση σε Lister' : 'Switch to Lister')
-                          : (language === 'el' ? 'Μετάβαση σε Tenant' : 'Switch to Tenant')
-                        }
+                        {currentRole === 'tenant' ? t('header.switchToLister') : t('header.switchToTenant')}
                       </DropdownMenuItem>
                     )}
                     
@@ -365,7 +360,7 @@ export const Header = () => {
                     
                     <DropdownMenuItem onClick={handleLogout}>
                       <LogOut className="h-4 w-4 mr-2" />
-                      {language === 'el' ? 'Αποσύνδεση' : 'Logout'}
+                      {t('header.logout')}
                     </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
@@ -388,7 +383,7 @@ export const Header = () => {
               className="lg:hidden min-h-[44px] min-w-[44px] touch-manipulation active:scale-95 transition-transform"
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
               data-testid="mobile-menu-btn"
-              aria-label={mobileMenuOpen ? "Κλείσιμο μενού" : "Άνοιγμα μενού"}
+              aria-label={mobileMenuOpen ? t('common.close') : t('common.menu')}
             >
               {mobileMenuOpen ? (
                 <X className="h-5 w-5" />
@@ -409,7 +404,7 @@ export const Header = () => {
                       <MapPin className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                       <Input
                         type="text"
-                        placeholder={locationLoading ? "Εντοπισμός..." : "Πού θέλετε να μείνετε;"}
+                        placeholder={locationLoading ? t('common.loading') : t('header.searchPlaceholder')}
                         value={searchLocation}
                         onChange={(e) => setSearchLocation(e.target.value)}
                         className="pl-10 pr-4 w-full min-h-[44px]"
@@ -457,39 +452,36 @@ export const Header = () => {
                     }}
                   >
                     <Plus className="h-4 w-4 mr-2" />
-                    {currentRole === 'lister' 
-                      ? (language === 'el' ? 'Δημοσίευσε αγγελία' : 'Publish listing')
-                      : (language === 'el' ? 'Καταχώρησε το ακίνητό σου' : 'List your property')
-                    }
+                    {t('header.publishListing')}
                   </Button>
                 )}
 
                 {user ? (
-                  <>
+                 <>
                      <Link to="/me" onClick={() => setMobileMenuOpen(false)}>
                        <Button variant="ghost" size="sm" className="w-full justify-start">
                          <User className="h-4 w-4 mr-2" />
-                         {language === 'el' ? 'Το προφίλ μου' : 'My profile'}
+                         {t('header.profile')}
                        </Button>
                      </Link>
                     <Link to="/settings" onClick={() => setMobileMenuOpen(false)}>
                       <Button variant="ghost" size="sm" className="w-full justify-start">
                         <Settings className="h-4 w-4 mr-2" />
-                        {language === 'el' ? 'Ρυθμίσεις' : 'Settings'}
+                        {t('header.settings')}
                       </Button>
                     </Link>
                     {currentRole === 'tenant' ? (
                       <Link to="/search-preferences" onClick={() => setMobileMenuOpen(false)}>
                         <Button variant="ghost" size="sm" className="w-full justify-start">
                           <Search className="h-4 w-4 mr-2" />
-                          {language === 'el' ? 'Προτιμήσεις αναζήτησης' : 'Search preferences'}
+                          {t('profile.preferences')}
                         </Button>
                       </Link>
                     ) : (
                       <Link to="/booking-settings" onClick={() => setMobileMenuOpen(false)}>
                         <Button variant="ghost" size="sm" className="w-full justify-start">
                           <Calendar className="h-4 w-4 mr-2" />
-                          {language === 'el' ? 'Ρυθμίσεις κρατήσεων' : 'Booking settings'}
+                          {t('owner.settings')}
                         </Button>
                       </Link>
                     )}
@@ -503,10 +495,7 @@ export const Header = () => {
                       }}
                     >
                       <UserCheck className="h-4 w-4 mr-2" />
-                      {currentRole === 'tenant' 
-                        ? (language === 'el' ? 'Μετάβαση σε Lister' : 'Switch to Lister')
-                        : (language === 'el' ? 'Μετάβαση σε Tenant' : 'Switch to Tenant')
-                      }
+                      {currentRole === 'tenant' ? t('header.switchToLister') : t('header.switchToTenant')}
                     </Button>
                     <Button
                       variant="ghost"
@@ -518,7 +507,7 @@ export const Header = () => {
                       }}
                     >
                       <LogOut className="h-4 w-4 mr-2" />
-                      {language === 'el' ? 'Αποσύνδεση' : 'Logout'}
+                      {t('header.logout')}
                     </Button>
                   </>
                 ) : (
@@ -532,7 +521,7 @@ export const Header = () => {
                     }}
                   >
                     <User className="h-4 w-4 mr-2" />
-                    {language === 'el' ? 'Σύνδεση / Εγγραφή' : 'Login / Sign Up'}
+                    {t('header.login')} / {t('header.signup')}
                   </Button>
                 )}
               </div>

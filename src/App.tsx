@@ -8,6 +8,7 @@ import { useRealtimeNotifications } from "@/hooks/useRealtimeNotifications";
 import { useUnreadCount } from "@/hooks/useUnreadCount";
 import { Header } from "@/components/layout/Header";
 import { GlobalTermsHandler } from "@/components/auth/GlobalTermsHandler";
+import { LanguageProvider } from "@/contexts/LanguageContext";
 
 import Index from "./pages/Index";
 import Search from "./pages/Search";
@@ -77,13 +78,15 @@ const AppContent = () => {
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
-    <AuthProvider>
-      <TooltipProvider>
-        <Toaster />
-        <Sonner />
-        <AppContent />
-      </TooltipProvider>
-    </AuthProvider>
+    <LanguageProvider>
+      <AuthProvider>
+        <TooltipProvider>
+          <Toaster />
+          <Sonner />
+          <AppContent />
+        </TooltipProvider>
+      </AuthProvider>
+    </LanguageProvider>
   </QueryClientProvider>
 );
 
