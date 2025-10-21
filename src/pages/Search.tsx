@@ -55,6 +55,7 @@ const Search = () => {
   const [autoSearch, setAutoSearch] = useState<boolean>(true);
   const [hasUserMoved, setHasUserMoved] = useState<boolean>(false);
   const [mobileView, setMobileView] = useState<'list' | 'map'>('list');
+  const [isMapReady, setIsMapReady] = useState(false);
   
   // Pagination state - initialize from URL
   const initialPage = Math.max(1, parseInt(searchParams.get('page') || '1', 10) || 1);
@@ -309,6 +310,20 @@ const Search = () => {
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }, [currentPage]);
+
+  // Trigger map resize when switching to map view on mobile
+  useEffect(() => {
+    if (mobileView === 'map') {
+      setIsMapReady(false);
+      // Wait for DOM to update and transition to complete, then resize map
+      const timer = setTimeout(() => {
+        window.dispatchEvent(new Event('resize'));
+        setIsMapReady(true);
+      }, 350); // Match transition duration
+      
+      return () => clearTimeout(timer);
+    }
+  }, [mobileView]);
   
   // Helper to generate page numbers with ellipsis
   const getPageNumbers = () => {
@@ -471,8 +486,18 @@ const Search = () => {
           </div>
 
           {/* Map Panel - Show on desktop always (sticky), on mobile only if map view (full screen) */}
-          <div className={`flex-1 ${mobileView === 'map' ? 'block fixed inset-0 top-[164px] z-20' : 'hidden'} lg:block lg:sticky lg:top-[120px] lg:h-[calc(100vh-140px)] lg:relative`}>
-            <div className="w-full h-full rounded-none lg:rounded-xl overflow-hidden">
+          <div className={`flex-1 transition-all duration-300 ${
+            mobileView === 'map' 
+              ? 'fixed inset-0 top-0 z-40 pt-[160px]' 
+              : 'hidden'
+          } lg:block lg:sticky lg:top-[120px] lg:h-[calc(100vh-140px)] lg:z-auto lg:pt-0`}>
+            <div className="w-full h-full rounded-none lg:rounded-xl overflow-hidden relative">
+              {/* Loading overlay for mobile map */}
+              {mobileView === 'map' && !isMapReady && (
+                <div className="absolute inset-0 bg-background/80 backdrop-blur-sm z-50 flex items-center justify-center lg:hidden">
+                  <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+                </div>
+              )}
               <MapContainer 
                 listings={mapListings}
                 onListingHover={setHoveredListingId}
@@ -483,6 +508,7 @@ const Search = () => {
                 onAutoSearchChange={setAutoSearch}
                 onManualSearch={handleManualMapSearch}
                 hasUserMoved={hasUserMoved}
+                onMapReady={() => setIsMapReady(true)}
               />
               
               {/* Mobile Listings Carousel - Only on mobile map view */}

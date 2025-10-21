@@ -8,7 +8,7 @@ interface ViewSwitcherProps {
 
 export const ViewSwitcher = ({ view, onViewChange }: ViewSwitcherProps) => {
   return (
-    <div className="lg:hidden sticky top-[114px] z-30 bg-background border-b border-border shadow-sm">
+    <div className="lg:hidden sticky top-[112px] z-50 bg-background/95 border-b border-border shadow-sm backdrop-blur-md">
       <div className="container mx-auto px-6 py-3">
         <ToggleGroup 
           type="single" 

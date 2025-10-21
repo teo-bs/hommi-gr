@@ -37,7 +37,7 @@ export const MapListingCard = ({ listing, isSelected, isActive = false, onClick 
   return (
     <Card
       className={cn(
-        "flex-shrink-0 w-[280px] snap-start overflow-hidden cursor-pointer transition-all duration-200 touch-manipulation active:scale-[0.98]",
+        "flex-shrink-0 w-[280px] min-w-[280px] snap-start overflow-hidden cursor-pointer transition-all duration-200 touch-manipulation active:scale-[0.98]",
         "hover:shadow-lg",
         isActive && "ring-2 ring-primary shadow-xl scale-[1.02]",
         isSelected && !isActive && "ring-2 ring-primary shadow-lg"

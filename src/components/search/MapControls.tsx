@@ -17,7 +17,7 @@ export const MapControls = ({
   hasUserMoved 
 }: MapControlsProps) => {
   return (
-    <div className="absolute top-4 left-1/2 transform -translate-x-1/2 z-[25] flex flex-col gap-2 items-center px-4">
+    <div className="absolute top-2 left-1/2 transform -translate-x-1/2 z-[35] flex flex-col gap-2 items-center px-4 lg:top-4">
       {/* Search as I move checkbox */}
       <div className="bg-background border rounded-lg shadow-lg px-3 sm:px-4 py-2.5 sm:py-3 flex items-center gap-2 sm:gap-3 max-w-[90vw]">
         <Checkbox 

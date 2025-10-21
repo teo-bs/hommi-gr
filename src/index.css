@@ -226,12 +226,19 @@
   }
   
   /* Safe area support for mobile devices with notches */
-  .pb-safe {
-    padding-bottom: env(safe-area-inset-bottom, 0px);
-  }
-  
-  .pt-safe {
-    padding-top: env(safe-area-inset-top, 0px);
+  @supports (padding: env(safe-area-inset-bottom)) {
+    .pb-safe {
+      padding-bottom: calc(0.75rem + env(safe-area-inset-bottom));
+    }
+    
+    .pt-safe {
+      padding-top: calc(0.75rem + env(safe-area-inset-top));
+    }
+    
+    /* Map view specific */
+    .map-view-container {
+      height: calc(100vh - env(safe-area-inset-top) - env(safe-area-inset-bottom));
+    }
   }
   
   /* Prevent double-tap zoom on interactive elements */
@@ -244,6 +251,39 @@
     html {
       scroll-behavior: smooth;
       -webkit-overflow-scrolling: touch;
+    }
+  }
+
+  /* Mobile map view transition animations */
+  @media (max-width: 1023px) {
+    .map-view-enter {
+      animation: slideInFromBottom 0.3s ease-out;
+    }
+    
+    .map-view-exit {
+      animation: slideOutToBottom 0.3s ease-in;
+    }
+  }
+
+  @keyframes slideInFromBottom {
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes slideOutToBottom {
+    from {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    to {
+      opacity: 0;
+      transform: translateY(20px);
     }
   }
 
@@ -424,12 +464,14 @@
   }
 
   /* Mobile keyboard safe area */
-  .pb-safe {
-    padding-bottom: max(1rem, env(safe-area-inset-bottom));
-  }
+  @supports (padding: env(safe-area-inset-bottom)) {
+    .pb-safe {
+      padding-bottom: max(1rem, env(safe-area-inset-bottom));
+    }
 
-  .pt-safe {
-    padding-top: max(0.5rem, env(safe-area-inset-top));
+    .pt-safe {
+      padding-top: max(0.5rem, env(safe-area-inset-top));
+    }
   }
 
   /* Mobile-specific optimizations */

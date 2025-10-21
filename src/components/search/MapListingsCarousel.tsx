@@ -88,34 +88,36 @@ export const MapListingsCarousel = ({
 
   return (
     <div className="fixed bottom-0 left-0 right-0 z-30 lg:hidden pb-safe">
-      <div className="bg-gradient-to-t from-black/20 via-transparent to-transparent backdrop-blur-sm pt-4 pb-3">
-        <div 
-          ref={carouselRef}
-          className="overflow-x-auto snap-x snap-mandatory scrollbar-hide"
-          style={{ 
-            scrollbarWidth: 'none', 
-            msOverflowStyle: 'none',
-            WebkitOverflowScrolling: 'touch',
-            transform: 'translateZ(0)',
-            willChange: 'scroll-position'
-          }}
-        >
-          <div className="flex gap-3 px-4">
-            {listings.map((listing) => (
-              <div
-                key={listing.id}
-                ref={(el) => (cardRefs.current[listing.id] = el)}
-                data-listing-id={listing.id}
-                className="snap-center"
-              >
-                <MapListingCard
-                  listing={listing}
-                  isSelected={selectedListingId === listing.id}
-                  isActive={debouncedActiveId === listing.id}
-                  onClick={() => onListingSelect(listing.id, listing.lat, listing.lng)}
-                />
-              </div>
-            ))}
+      <div className="bg-gradient-to-t from-black/30 via-black/10 to-transparent backdrop-blur-md pt-4 pb-3 pointer-events-none">
+        <div className="pointer-events-auto">
+          <div 
+            ref={carouselRef}
+            className="overflow-x-auto snap-x snap-mandatory scrollbar-hide"
+            style={{ 
+              scrollbarWidth: 'none', 
+              msOverflowStyle: 'none',
+              WebkitOverflowScrolling: 'touch',
+              transform: 'translateZ(0)',
+              willChange: 'scroll-position'
+            }}
+          >
+            <div className="flex gap-3 px-4">
+              {listings.map((listing) => (
+                <div
+                  key={listing.id}
+                  ref={(el) => (cardRefs.current[listing.id] = el)}
+                  data-listing-id={listing.id}
+                  className="snap-center"
+                >
+                  <MapListingCard
+                    listing={listing}
+                    isSelected={selectedListingId === listing.id}
+                    isActive={debouncedActiveId === listing.id}
+                    onClick={() => onListingSelect(listing.id, listing.lat, listing.lng)}
+                  />
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       </div>

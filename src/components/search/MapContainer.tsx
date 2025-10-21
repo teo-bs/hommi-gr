@@ -30,6 +30,7 @@ interface MapContainerProps {
   onAutoSearchChange?: (checked: boolean) => void;
   onManualSearch?: () => void;
   hasUserMoved?: boolean;
+  onMapReady?: () => void;
 }
 
 export const MapContainer = ({ 
@@ -41,7 +42,8 @@ export const MapContainer = ({
   autoSearch = false,
   onAutoSearchChange,
   onManualSearch,
-  hasUserMoved = false
+  hasUserMoved = false,
+  onMapReady
 }: MapContainerProps) => {
   const navigate = useNavigate();
   const mapContainer = useRef<HTMLDivElement>(null);
@@ -297,12 +299,30 @@ export const MapContainer = ({
     }), 'top-right');
     map.current.addControl(new mapboxgl.AttributionControl({ compact: true }), 'bottom-right');
     
-    // Disable scroll zoom on mobile by default (require two-finger pinch)
+    // Enhanced mobile optimizations
     if (window.innerWidth < 768) {
       map.current.scrollZoom.disable();
       map.current.touchZoomRotate.enable();
       map.current.touchPitch.disable();
       map.current.dragRotate.disable();
+      
+      // Set zoom limits to prevent users from zooming too far in/out
+      map.current.setMaxZoom(18);
+      map.current.setMinZoom(10);
+      
+      // Optimize drag pan with custom easing and speed for mobile
+      map.current.dragPan.enable();
+    }
+
+    // Handle container resize (important for mobile view switching)
+    const resizeObserver = new ResizeObserver(() => {
+      if (map.current) {
+        map.current.resize();
+      }
+    });
+
+    if (mapContainer.current) {
+      resizeObserver.observe(mapContainer.current);
     }
 
     // Map event handlers with debouncing for better mobile performance
@@ -349,6 +369,9 @@ export const MapContainer = ({
     // Load complete handler
     map.current.on('load', () => {
       if (!map.current) return;
+      
+      // Notify parent that map is ready
+      onMapReady?.();
 
       // Add clusters source with price aggregations
       map.current.addSource('listings', {
@@ -620,6 +643,7 @@ export const MapContainer = ({
       // Clean up markers
       markersRef.current.forEach(marker => marker.remove());
       markersRef.current.clear();
+      resizeObserver.disconnect();
       map.current?.remove();
     };
   }, []);
