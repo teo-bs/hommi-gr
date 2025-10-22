@@ -212,14 +212,32 @@ export const MapContainer = ({
     carouselWrapper.appendChild(imageContainer);
     container.appendChild(carouselWrapper);
     
-  // Add content section
+  // Add content section - using textContent to prevent XSS
   const content = document.createElement('div');
   content.style.padding = '12px';
-  content.innerHTML = `
-    <div style="font-weight: 600; font-size: 14px; margin-bottom: 2px; color: hsl(var(--foreground));">${props.title}</div>
-    <div style="font-size: 13px; margin-bottom: 4px; color: hsl(var(--muted-foreground));">${props.lister_name || 'Host'}</div>
-    <div style="font-size: 14px; color: hsl(var(--foreground));"><span style="font-weight: 600;">€${props.price}</span> <span style="color: hsl(var(--muted-foreground)); font-size: 13px;">/μήνα</span></div>
-  `;
+  
+  const titleDiv = document.createElement('div');
+  titleDiv.style.cssText = 'font-weight: 600; font-size: 14px; margin-bottom: 2px; color: hsl(var(--foreground));';
+  titleDiv.textContent = props.title;
+  
+  const listerDiv = document.createElement('div');
+  listerDiv.style.cssText = 'font-size: 13px; margin-bottom: 4px; color: hsl(var(--muted-foreground));';
+  listerDiv.textContent = props.lister_name || 'Host';
+  
+  const priceDiv = document.createElement('div');
+  priceDiv.style.cssText = 'font-size: 14px; color: hsl(var(--foreground));';
+  const priceStrong = document.createElement('span');
+  priceStrong.style.fontWeight = '600';
+  priceStrong.textContent = `€${props.price}`;
+  const priceLabel = document.createElement('span');
+  priceLabel.style.cssText = 'color: hsl(var(--muted-foreground)); font-size: 13px;';
+  priceLabel.textContent = ' /μήνα';
+  priceDiv.appendChild(priceStrong);
+  priceDiv.appendChild(priceLabel);
+  
+  content.appendChild(titleDiv);
+  content.appendChild(listerDiv);
+  content.appendChild(priceDiv);
   container.appendChild(content);
     
     return container;
@@ -461,14 +479,16 @@ export const MapContainer = ({
           let marker = markersRef.current.get(id);
           
           if (!marker) {
-            // Create new HTML marker
+            // Create new HTML marker - using textContent to prevent XSS
             const el = document.createElement('div');
             el.className = 'map-price-marker';
-            el.innerHTML = `
-              <div class="price-bubble" data-listing-id="${id}">
-                €${props.price.toLocaleString()}
-              </div>
-            `;
+            
+            const priceBubble = document.createElement('div');
+            priceBubble.className = 'price-bubble';
+            priceBubble.setAttribute('data-listing-id', id);
+            priceBubble.textContent = `€${props.price.toLocaleString()}`;
+            
+            el.appendChild(priceBubble);
             
             marker = new mapboxgl.Marker({ element: el, anchor: 'center' })
               .setLngLat(coords)

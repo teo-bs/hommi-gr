@@ -20,7 +20,7 @@ export type Database = {
           created_at: string
           ended_at: string | null
           id: string
-          ip_address: unknown | null
+          ip_address: unknown
           reason: string
           started_at: string
           target_user_id: string
@@ -31,7 +31,7 @@ export type Database = {
           created_at?: string
           ended_at?: string | null
           id?: string
-          ip_address?: unknown | null
+          ip_address?: unknown
           reason: string
           started_at?: string
           target_user_id: string
@@ -42,7 +42,7 @@ export type Database = {
           created_at?: string
           ended_at?: string | null
           id?: string
-          ip_address?: unknown | null
+          ip_address?: unknown
           reason?: string
           started_at?: string
           target_user_id?: string
@@ -781,7 +781,7 @@ export type Database = {
           floor: number | null
           formatted_address: string | null
           geo: Json | null
-          geo_point: unknown | null
+          geo_point: unknown
           has_lift: boolean | null
           house_rules: string[] | null
           i_live_here: boolean | null
@@ -811,7 +811,7 @@ export type Database = {
           region: string | null
           required_verifications: string[] | null
           room_size_m2: number | null
-          search_tsv: unknown | null
+          search_tsv: unknown
           services: string[] | null
           slug: string | null
           smoking_allowed: boolean | null
@@ -852,7 +852,7 @@ export type Database = {
           floor?: number | null
           formatted_address?: string | null
           geo?: Json | null
-          geo_point?: unknown | null
+          geo_point?: unknown
           has_lift?: boolean | null
           house_rules?: string[] | null
           i_live_here?: boolean | null
@@ -882,7 +882,7 @@ export type Database = {
           region?: string | null
           required_verifications?: string[] | null
           room_size_m2?: number | null
-          search_tsv?: unknown | null
+          search_tsv?: unknown
           services?: string[] | null
           slug?: string | null
           smoking_allowed?: boolean | null
@@ -923,7 +923,7 @@ export type Database = {
           floor?: number | null
           formatted_address?: string | null
           geo?: Json | null
-          geo_point?: unknown | null
+          geo_point?: unknown
           has_lift?: boolean | null
           house_rules?: string[] | null
           i_live_here?: boolean | null
@@ -953,7 +953,7 @@ export type Database = {
           region?: string | null
           required_verifications?: string[] | null
           room_size_m2?: number | null
-          search_tsv?: unknown | null
+          search_tsv?: unknown
           services?: string[] | null
           slug?: string | null
           smoking_allowed?: boolean | null
@@ -2314,10 +2314,7 @@ export type Database = {
       }
     }
     Functions: {
-      current_profile_id: {
-        Args: Record<PropertyKey, never>
-        Returns: string
-      }
+      current_profile_id: { Args: never; Returns: string }
       ensure_unique_listing_slug: {
         Args: { p_base: string; p_id: string }
         Returns: string
@@ -2361,10 +2358,7 @@ export type Database = {
         }
         Returns: boolean
       }
-      increment_room_views: {
-        Args: { rid: string }
-        Returns: undefined
-      }
+      increment_room_views: { Args: { rid: string }; Returns: undefined }
       is_lister_with_published: {
         Args: { profile_id: string }
         Returns: boolean
@@ -2373,20 +2367,14 @@ export type Database = {
         Args: { room_uuid: string; user_uuid: string }
         Returns: boolean
       }
-      publish_listing_atomic: {
-        Args:
-          | { p_listing_id: string }
-          | { p_listing_id: string; p_room_slug?: string }
-        Returns: Json
-      }
-      refresh_listing_amenity_facets: {
-        Args: Record<PropertyKey, never>
-        Returns: undefined
-      }
-      refresh_room_search_cache: {
-        Args: Record<PropertyKey, never>
-        Returns: undefined
-      }
+      publish_listing_atomic:
+        | { Args: { p_listing_id: string }; Returns: Json }
+        | {
+            Args: { p_listing_id: string; p_room_slug?: string }
+            Returns: Json
+          }
+      refresh_listing_amenity_facets: { Args: never; Returns: undefined }
+      refresh_room_search_cache: { Args: never; Returns: undefined }
       reset_unread_count: {
         Args: { p_thread_id: string; p_user_role: string }
         Returns: undefined
@@ -2399,18 +2387,8 @@ export type Database = {
         Args: { p_keys: string[]; p_room_id: string }
         Returns: undefined
       }
-      slugify: {
-        Args: { input: string }
-        Returns: string
-      }
-      unaccent: {
-        Args: { "": string }
-        Returns: string
-      }
-      unaccent_init: {
-        Args: { "": unknown }
-        Returns: unknown
-      }
+      slugify: { Args: { input: string }; Returns: string }
+      unaccent: { Args: { "": string }; Returns: string }
       update_thread_status: {
         Args: {
           new_status: Database["public"]["Enums"]["thread_status_enum"]
