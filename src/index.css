@@ -17,6 +17,16 @@
     }
   }
 
+  /* Shimmer animation for skeleton loaders */
+  @keyframes shimmer {
+    0% {
+      background-position: -200% 0;
+    }
+    100% {
+      background-position: 200% 0;
+    }
+  }
+
   .mapboxgl-popup-content {
     padding: 0 !important;
     border-radius: 12px !important;
@@ -99,389 +109,168 @@
     --muted-foreground: 220 15% 55%;
     --muted-darker: 220 15% 45%;
 
-    /* Trust indicators */
-    --success: 142 76% 36%;
-    --success-foreground: 0 0% 100%;
-    --success-light: 145 65% 95%;
-
-    --warning: 45 95% 55%;
-    --warning-foreground: 220 25% 8%;
-    --warning-light: 45 95% 95%;
-
-    --destructive: 0 84% 60%;
-    --destructive-foreground: 0 0% 100%;
-
-    /* UI elements */
-    --border: 210 40% 92%;
-    --border-light: 210 40% 95%;
-    --input: 210 40% 92%;
+    /* Borders */
+    --border: 220 15% 88%;
+    --border-subtle: 220 15% 93%;
+    --input: 220 15% 88%;
     --ring: 208 88% 55%;
 
-    /* Shadows and effects */
-    --shadow-subtle: 0px 1px 3px rgba(0, 0, 0, 0.08);
-    --shadow-moderate: 0px 4px 12px rgba(0, 0, 0, 0.1);
-    --shadow-elevated: 0px 8px 24px rgba(0, 0, 0, 0.12);
-    --shadow-primary: 0px 4px 24px rgba(59, 130, 246, 0.15);
+    /* States */
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+    --success: 145 65% 45%;
+    --success-foreground: 0 0% 100%;
+    --warning: 35 90% 55%;
+    --warning-foreground: 220 25% 8%;
 
-    /* Gradients */
-    --gradient-primary: linear-gradient(135deg, hsl(208, 88%, 55%) 0%, hsl(208, 88%, 45%) 100%);
-    --gradient-hero: linear-gradient(135deg, hsl(208, 88%, 55%) 0%, hsl(145, 65%, 45%) 100%);
-    --gradient-card: linear-gradient(180deg, hsl(0, 0%, 100%) 0%, hsl(210, 40%, 99%) 100%);
+    /* Chart colors */
+    --chart-1: 208 88% 55%;
+    --chart-2: 145 65% 45%;
+    --chart-3: 35 90% 55%;
+    --chart-4: 280 65% 60%;
+    --chart-5: 0 84% 60%;
 
-    /* Spacing and layout */
-    --radius: 12px;
-    --radius-sm: 8px;
-    --radius-lg: 16px;
-    --radius-xl: 24px;
+    /* Shadows */
+    --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+    --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+    --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+    --shadow-elevated: 0 12px 32px rgba(0, 0, 0, 0.12);
 
-    /* Typography */
-    --font-size-xs: 0.75rem;
-    --font-size-sm: 0.875rem;
-    --font-size-base: 1rem;
-    --font-size-lg: 1.125rem;
-    --font-size-xl: 1.25rem;
-    --font-size-2xl: 1.5rem;
-    --font-size-3xl: 1.875rem;
-    --font-size-4xl: 2.25rem;
-
-    /* Animation */
-    --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
-    --transition-normal: 250ms cubic-bezier(0.4, 0, 0.2, 1);
-    --transition-slow: 350ms cubic-bezier(0.4, 0, 0.2, 1);
+    /* Border radius */
+    --radius: 0.5rem;
   }
 
   .dark {
-    --background: 220 25% 6%;
-    --foreground: 210 40% 95%;
+    --background: 222 47% 11%;
+    --foreground: 210 40% 98%;
 
-    --card: 220 25% 8%;
-    --card-foreground: 210 40% 95%;
-    --surface-elevated: 220 25% 10%;
+    --card: 222 47% 11%;
+    --card-foreground: 210 40% 98%;
+    --surface-elevated: 220 40% 15%;
 
-    --popover: 220 25% 8%;
-    --popover-foreground: 210 40% 95%;
+    --popover: 222 47% 11%;
+    --popover-foreground: 210 40% 98%;
 
-    --primary: 208 88% 60%;
-    --primary-foreground: 220 25% 6%;
-    --primary-hover: 208 88% 70%;
-    --primary-light: 208 88% 75%;
-    --primary-lighter: 208 88% 20%;
+    --primary: 208 88% 55%;
+    --primary-foreground: 0 0% 100%;
+    --primary-hover: 208 88% 65%;
 
-    --secondary: 220 25% 12%;
-    --secondary-foreground: 210 40% 95%;
-    --secondary-hover: 220 25% 16%;
+    --secondary: 217 33% 17%;
+    --secondary-foreground: 210 40% 98%;
+    --secondary-hover: 217 33% 20%;
 
-    --accent: 145 65% 55%;
-    --accent-foreground: 220 25% 6%;
-    --accent-light: 145 65% 15%;
+    --accent: 145 65% 45%;
+    --accent-foreground: 0 0% 100%;
 
-    --muted: 220 25% 12%;
-    --muted-foreground: 220 15% 65%;
-    --muted-darker: 220 15% 55%;
+    --muted: 217 33% 17%;
+    --muted-foreground: 215 20% 65%;
 
-    --border: 220 25% 16%;
-    --border-light: 220 25% 20%;
-    --input: 220 25% 16%;
-    --ring: 208 88% 60%;
+    --border: 217 33% 22%;
+    --input: 217 33% 22%;
+    --ring: 208 88% 55%;
 
-    --shadow-subtle: 0px 1px 3px rgba(0, 0, 0, 0.3);
-    --shadow-moderate: 0px 4px 12px rgba(0, 0, 0, 0.4);
-    --shadow-elevated: 0px 8px 24px rgba(0, 0, 0, 0.5);
-    --shadow-primary: 0px 4px 24px rgba(59, 130, 246, 0.25);
+    --destructive: 0 63% 31%;
+    --destructive-foreground: 210 40% 98%;
+
+    --chart-1: 208 88% 55%;
+    --chart-2: 145 65% 45%;
+    --chart-3: 35 90% 55%;
+    --chart-4: 280 65% 60%;
+    --chart-5: 0 84% 60%;
   }
-}
-
-/* Hide scrollbar for carousel */
-.scrollbar-hide {
-  -ms-overflow-style: none;
-  scrollbar-width: none;
-  -webkit-overflow-scrolling: touch;
-  scroll-behavior: smooth;
-}
-
-.scrollbar-hide::-webkit-scrollbar {
-  display: none;
-}
-
-/* Map popup styles */
-.map-popup-container {
-  width: 280px;
-  background: hsl(var(--background));
-  border-radius: 12px;
-  overflow: hidden;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-  transition: transform 0.2s;
-  transform: translateZ(0);
 }
 
 @layer base {
   * {
-    @apply border-border touch-manipulation;
+    @apply border-border;
   }
-
   body {
     @apply bg-background text-foreground;
-    font: 400 var(--body)/1.6 "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-    font-kerning: normal;
-  }
-  
-  /* Safe area support for mobile devices with notches */
-  @supports (padding: env(safe-area-inset-bottom)) {
-    .pb-safe {
-      padding-bottom: calc(0.75rem + env(safe-area-inset-bottom));
-    }
-    
-    .pt-safe {
-      padding-top: calc(0.75rem + env(safe-area-inset-top));
-    }
-    
-    /* Map view specific */
-    .map-view-container {
-      height: calc(100vh - env(safe-area-inset-top) - env(safe-area-inset-bottom));
-    }
-  }
-  
-  /* Prevent double-tap zoom on interactive elements */
-  button, a, [role="button"], [role="link"] {
-    touch-action: manipulation;
-  }
-  
-  /* Smooth scrolling for mobile */
-  @media (max-width: 768px) {
-    html {
-      scroll-behavior: smooth;
-      -webkit-overflow-scrolling: touch;
-    }
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica Neue', Arial, sans-serif;
+    font-size: 16px;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
   }
 
-  /* Mobile map view transition animations */
-  @media (max-width: 1023px) {
-    .map-view-enter {
-      animation: slideInFromBottom 0.3s ease-out;
-    }
-    
-    .map-view-exit {
-      animation: slideOutToBottom 0.3s ease-in;
-    }
+  /* Typography */
+  h1 { font-size: var(--h1); font-weight: 700; line-height: 1.2; letter-spacing: -0.02em; }
+  h2 { font-size: var(--h2); font-weight: 700; line-height: 1.25; letter-spacing: -0.015em; }
+  h3 { font-size: var(--h3); font-weight: 600; line-height: 1.3; }
+  h4 { font-size: var(--h4); font-weight: 600; line-height: 1.35; }
+
+  /* Scrollbar styles */
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
   }
 
-  @keyframes slideInFromBottom {
-    from {
-      opacity: 0;
-      transform: translateY(20px);
-    }
-    to {
-      opacity: 1;
-      transform: translateY(0);
-    }
+  /* Focus states */
+  *:focus-visible {
+    @apply outline-none ring-2 ring-ring ring-offset-2 ring-offset-background;
   }
 
-  @keyframes slideOutToBottom {
-    from {
-      opacity: 1;
-      transform: translateY(0);
-    }
-    to {
-      opacity: 0;
-      transform: translateY(20px);
-    }
-  }
-
-  /* Map price marker styles */
-  .map-price-marker {
-    cursor: pointer;
-  }
-
-  .price-bubble {
-    position: relative;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    padding: 6px 12px;
-    background: white;
-    color: black;
-    border-radius: 20px;
-    font-size: 14px;
-    font-weight: 600;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-    cursor: pointer;
-    white-space: nowrap;
-    transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1),
-                box-shadow 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-    will-change: transform;
-    z-index: 10;
-    touch-action: manipulation;
-  }
-
-  .price-bubble:hover,
-  .price-bubble.hovered {
-    transform: scale(1.05);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-  }
-
-  .price-bubble.selected {
-    background: hsl(var(--primary));
-    color: hsl(var(--primary-foreground));
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-    transform: scale(1.05);
-    z-index: 50;
-  }
-
-  /* Subtle active state - no pulse animation */
-  .price-bubble.active {
-    transform: scale(1.05);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-    z-index: 100 !important;
-  }
-
-  /* Safari-specific optimizations */
-  @supports (-webkit-touch-callout: none) {
-    .price-bubble {
-      -webkit-transform: translateZ(0);
-      -webkit-backface-visibility: hidden;
-      -webkit-perspective: 1000;
-    }
-    
-    .map-popup-container {
-      -webkit-transform: translate3d(0, 0, 0);
-    }
-  }
-
-  h1 {
-    font: 700 var(--h1)/1.15 "Inter", system-ui;
-    letter-spacing: -0.005em;
-  }
-
-  h2 {
-    font: 700 var(--h2)/1.2 "Inter", system-ui;
-    letter-spacing: -0.0025em;
-  }
-
-  h3 {
-    font: 600 var(--h3)/1.25 "Inter", system-ui;
-  }
-
-  h4 {
-    font: 600 var(--h4)/1.3 "Inter", system-ui;
+  /* Selection */
+  ::selection {
+    @apply bg-primary/20 text-foreground;
   }
 }
 
 @layer utilities {
-  .text-success {
-    color: hsl(var(--success));
+  /* Animation delays */
+  .animation-delay-100 { animation-delay: 100ms; }
+  .animation-delay-200 { animation-delay: 200ms; }
+  .animation-delay-300 { animation-delay: 300ms; }
+  .animation-delay-400 { animation-delay: 400ms; }
+  .animation-delay-500 { animation-delay: 500ms; }
+
+  /* Touch-friendly utilities */
+  .touch-manipulation {
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
   }
 
-  .text-success-foreground {
-    color: hsl(var(--success-foreground));
+  /* Smooth scrolling */
+  .scroll-smooth {
+    scroll-behavior: smooth;
   }
 
-  .bg-success {
-    background-color: hsl(var(--success));
+  /* Custom animations */
+  .animate-shimmer {
+    animation: shimmer 2s infinite;
+    background: linear-gradient(
+      90deg,
+      transparent 0%,
+      hsl(var(--muted-foreground) / 0.05) 50%,
+      transparent 100%
+    );
+    background-size: 200% 100%;
   }
+}
 
-  .overflow-wrap-anywhere {
-    overflow-wrap: anywhere;
-  }
+/* Mapbox overrides */
+.mapboxgl-ctrl-bottom-left,
+.mapboxgl-ctrl-bottom-right {
+  @apply pb-4;
+}
 
-  /* Tabular numbers for prices & stats alignment */
-  .prices,
-  .stats,
-  .tabular-nums {
-    font-feature-settings: var(--num);
-    font-variant-numeric: tabular-nums;
-  }
+.mapboxgl-ctrl button {
+  @apply touch-manipulation;
+}
 
-  /* Greek all-caps with proper spacing */
-  .uppercase-greek {
-    text-transform: uppercase;
-    letter-spacing: 0.02em;
-  }
+/* React Query DevTools (hide in production) */
+.ReactQueryDevtools {
+  @apply hidden;
+}
 
-  /* Serif for editorial content */
-  .serif {
-    font-family: "Noto Serif", Georgia, serif;
-  }
+/* Custom utility for vaul drawer */
+[vaul-drawer] {
+  touch-action: none;
+}
 
-  /* Typography utilities */
-  .text-h1 {
-    font-size: var(--h1);
-    line-height: 1.15;
-  }
-
-  .text-h2 {
-    font-size: var(--h2);
-    line-height: 1.2;
-  }
-
-  .text-h3 {
-    font-size: var(--h3);
-    line-height: 1.25;
-  }
-
-  .text-h4 {
-    font-size: var(--h4);
-    line-height: 1.3;
-  }
-
-  .text-body-l {
-    font-size: var(--body-l);
-    line-height: 1.55;
-  }
-
-  .text-body {
-    font-size: var(--body);
-    line-height: 1.6;
-  }
-
-  .text-small {
-    font-size: var(--small);
-    line-height: 1.5;
-  }
-
-  .text-micro {
-    font-size: var(--micro);
-    line-height: 1.45;
-  }
-
-  .text-button {
-    font-size: var(--button);
-    line-height: 1.2;
-  }
-
-  .text-caption {
-    font-size: var(--caption);
-    line-height: 1.4;
-  }
-
-  /* Mobile-first spacing utilities */
-  .container-mobile {
-    @apply px-4 sm:px-6 lg:px-8;
-  }
-
-  /* Touch-friendly interactive elements */
-  .touch-target {
-    @apply min-h-[44px] min-w-[44px] touch-manipulation active:scale-95 transition-transform;
-  }
-
-  /* Mobile keyboard safe area */
-  @supports (padding: env(safe-area-inset-bottom)) {
-    .pb-safe {
-      padding-bottom: max(1rem, env(safe-area-inset-bottom));
-    }
-
-    .pt-safe {
-      padding-top: max(0.5rem, env(safe-area-inset-top));
-    }
-  }
-
-  /* Mobile-specific optimizations */
-  @media (max-width: 768px) {
-    .map-popup-container {
-      transform: translateZ(0);
-    }
-    
-    .price-bubble {
-      -webkit-tap-highlight-color: transparent;
-    }
-  }
+[vaul-drawer][vaul-drawer-direction="bottom"] {
+  @apply rounded-t-2xl;
 }

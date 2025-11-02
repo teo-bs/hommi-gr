@@ -30,6 +30,8 @@ export const Header = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [searchLocation, setSearchLocation] = useState('');
   const [locationLoading, setLocationLoading] = useState(false);
+  const [isHeaderVisible, setIsHeaderVisible] = useState(true);
+  const [lastScrollY, setLastScrollY] = useState(0);
 
   // Get current user role, default to 'tenant'
   const currentRole = profile?.role || 'tenant';
@@ -39,6 +41,27 @@ export const Header = () => {
   useEffect(() => {
     detectLocation();
   }, []);
+
+  // Handle header visibility on scroll
+  useEffect(() => {
+    const handleScroll = () => {
+      const currentScrollY = window.scrollY;
+      
+      // Show header when scrolling up or at top
+      if (currentScrollY < lastScrollY || currentScrollY < 10) {
+        setIsHeaderVisible(true);
+      } 
+      // Hide header when scrolling down (after 100px)
+      else if (currentScrollY > 100 && currentScrollY > lastScrollY) {
+        setIsHeaderVisible(false);
+      }
+      
+      setLastScrollY(currentScrollY);
+    };
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, [lastScrollY]);
 
   const detectLocation = async () => {
     if (!navigator.geolocation) {
@@ -210,9 +233,13 @@ export const Header = () => {
 
   return (
     <>
-      <header className="sticky top-0 z-50 w-full border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+      <header 
+        className={`sticky top-0 z-50 w-full border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 transition-transform duration-300 ${
+          isHeaderVisible ? 'translate-y-0' : '-translate-y-full'
+        }`}
+      >
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex h-16 items-center justify-between">
+          <div className="flex h-12 sm:h-14 items-center justify-between">
             {/* Logo */}
             <Link to="/" className="flex items-center space-x-2">
               <img 

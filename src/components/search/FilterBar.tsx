@@ -28,7 +28,7 @@ interface FilterBarProps {
 
 export const FilterBar = ({ filters, onFilterChange }: FilterBarProps) => {
   return (
-    <div className="sticky top-[64px] z-40 border-b bg-background shadow-sm">
+    <div className="sticky top-[48px] sm:top-[56px] z-40 border-b bg-background shadow-sm">
       <div className="container mx-auto px-4 sm:px-6 py-2 sm:py-3">
         <div className="flex items-center gap-2 sm:gap-3 overflow-x-auto scrollbar-hide scroll-smooth snap-x snap-mandatory pb-1">
           <SortFilterPopover

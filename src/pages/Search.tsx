@@ -8,6 +8,7 @@ import { useSearchStateCache } from "@/hooks/useSearchStateCache";
 import { useDebouncedCallback } from 'use-debounce';
 import { useOptimizedSearch } from '@/hooks/useOptimizedSearch';
 import { ListingCard } from "@/components/search/ListingCard";
+import { ListingCardSkeleton } from "@/components/search/ListingCardSkeleton";
 import { ResultsCounter } from "@/components/search/ResultsCounter";
 import { supabase } from '@/integrations/supabase/client';
 import { useQuery } from '@tanstack/react-query';
@@ -395,13 +396,7 @@ const Search = () => {
             {isLoading ? (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
                 {Array.from({ length: 6 }).map((_, i) => (
-                  <div key={i} className="animate-pulse">
-                    <div className="aspect-[4/3] bg-muted rounded-xl sm:rounded-2xl mb-3 animate-scale-in"></div>
-                    <div className="space-y-2">
-                      <div className="h-4 bg-muted rounded w-3/4"></div>
-                      <div className="h-4 bg-muted rounded w-1/2"></div>
-                    </div>
-                  </div>
+                  <ListingCardSkeleton key={i} />
                 ))}
               </div>
             ) : (

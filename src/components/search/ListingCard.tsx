@@ -5,6 +5,7 @@ import { OptimizedListing } from "@/hooks/useOptimizedSearch";
 import { ListerBadge } from "./ListerBadge";
 import { calculateMatchScore } from "@/lib/matching";
 import { SaveRoomButton } from "@/components/room/SaveRoomButton";
+import { cn } from "@/lib/utils";
 
 interface ListingCardProps {
   listing: OptimizedListing;
@@ -20,6 +21,14 @@ interface ListingCardProps {
 const getOptimizedImageUrl = (url: string, width: number = 600): string => {
   if (url.includes('supabase.co') && url.includes('/storage/v1/object/public/')) {
     return `${url}?width=${width}&quality=70&format=webp`;
+  }
+  return url;
+};
+
+// Generate LQIP (Low Quality Image Placeholder) URL
+const getLQIPUrl = (url: string): string => {
+  if (url.includes('supabase.co') && url.includes('/storage/v1/object/public/')) {
+    return `${url}?width=40&quality=30&format=webp`;
   }
   return url;
 };
@@ -44,6 +53,7 @@ export const ListingCard = ({
   const isHighlighted = hoveredListingId === listing.room_id || selectedListingId === listing.room_id;
   const [isHovered, setIsHovered] = useState(false);
   const [imageLoaded, setImageLoaded] = useState(false);
+  const [lqipLoaded, setLqipLoaded] = useState(false);
   const [imageError, setImageError] = useState(false);
   const [currentPhotoIndex, setCurrentPhotoIndex] = useState(0);
   const carouselIntervalRef = useRef<NodeJS.Timeout | null>(null);
@@ -58,6 +68,7 @@ export const ListingCard = ({
   // Reset image state when cover photo changes
   useEffect(() => {
     setImageLoaded(false);
+    setLqipLoaded(false);
     setImageError(false);
   }, [imageUrl]);
 
@@ -125,31 +136,45 @@ export const ListingCard = ({
       }}
     >
       <div className={`transition-all duration-200 active:scale-[0.98] ${isHighlighted ? 'scale-[1.02]' : ''}`}>
-        {/* Cover Image with Carousel */}
+        {/* Cover Image with Carousel - Progressive Loading */}
         <div className="relative aspect-[4/3] mb-3 rounded-xl sm:rounded-2xl overflow-hidden bg-muted">
           {/* Show all images stacked with transitions */}
           {photos.map((photo, index) => (
-            <img
-              key={index}
-              src={imageError ? '/placeholder.svg' : getOptimizedImageUrl(photo, 720)}
-              srcSet={!imageError ? getImageSrcSet(photo) : undefined}
-              sizes="(min-width: 1024px) 320px, (min-width: 768px) 50vw, 100vw"
-              alt={`${listing.title} - Photo ${index + 1}`}
-              loading="lazy"
-              decoding="async"
-              className={`absolute inset-0 w-full h-full object-cover transition-all duration-500 ${
-                index === currentPhotoIndex ? 'opacity-100' : 'opacity-0'
-              } ${isHovered && index === currentPhotoIndex ? 'scale-105' : 'scale-100'}`}
-              onLoad={() => index === 0 && setImageLoaded(true)}
-              onError={() => index === 0 && setImageError(true)}
-            />
-          ))}
-          
-          {!imageLoaded && !imageError && (
-            <div className="absolute inset-0 flex items-center justify-center bg-muted">
-              <div className="animate-pulse text-muted-foreground text-sm">Φόρτωση...</div>
+            <div key={index} className="absolute inset-0">
+              {/* LQIP (Low Quality Image Placeholder) - loads instantly */}
+              <img
+                src={getLQIPUrl(photo)}
+                alt=""
+                className={cn(
+                  "absolute inset-0 w-full h-full object-cover transition-all duration-500",
+                  index === currentPhotoIndex ? 'opacity-100' : 'opacity-0',
+                  lqipLoaded && imageLoaded ? 'blur-0 scale-100' : 'blur-md scale-105'
+                )}
+                onLoad={() => index === 0 && setLqipLoaded(true)}
+                style={{ filter: lqipLoaded && !imageLoaded ? 'blur(20px)' : 'none' }}
+              />
+              
+              {/* Full quality image - loads in background */}
+              {!imageError && (
+                <img
+                  src={getOptimizedImageUrl(photo, 720)}
+                  srcSet={getImageSrcSet(photo)}
+                  sizes="(min-width: 1024px) 320px, (min-width: 768px) 50vw, 100vw"
+                  alt={`${listing.title} - Photo ${index + 1}`}
+                  loading="lazy"
+                  decoding="async"
+                  className={cn(
+                    "absolute inset-0 w-full h-full object-cover transition-all duration-700",
+                    index === currentPhotoIndex ? 'opacity-100' : 'opacity-0',
+                    isHovered && index === currentPhotoIndex ? 'scale-105' : 'scale-100',
+                    imageLoaded ? 'opacity-100' : 'opacity-0'
+                  )}
+                  onLoad={() => index === 0 && setImageLoaded(true)}
+                  onError={() => index === 0 && setImageError(true)}
+                />
+              )}
             </div>
-          )}
+          ))}
           
           {/* Navigation arrows for multiple photos - visible on hover */}
           {hasMultiplePhotos && isHovered && (
