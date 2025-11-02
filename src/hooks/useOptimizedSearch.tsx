@@ -87,33 +87,15 @@ export const useOptimizedSearch = ({ filters, enabled = true }: UseOptimizedSear
   const from = (page - 1) * pageSize;
   const to = from + pageSize - 1;
 
-  // Count query
-  const { data: countData } = useQuery({
-    queryKey: ['search-count', filters],
-    queryFn: async () => {
-      let countQuery = supabase
-        .from('room_search_cache')
-        .select('room_id', { count: 'exact', head: true });
+  // Combined count + data query for better performance
 
-      // Apply all filters for count
-      countQuery = applyFilters(countQuery, filters);
-
-      const { count, error } = await countQuery;
-      if (error) throw error;
-      return count ?? 0;
-    },
-    enabled,
-    staleTime: 30000,
-    gcTime: 300000,
-  });
-
-  // Data query
-  const { data, isLoading, error } = useQuery({
+  // Data query with count
+  const { data: result, isLoading, error } = useQuery({
     queryKey: ['optimized-search', filters, page],
-    queryFn: async (): Promise<OptimizedListing[]> => {
+    queryFn: async (): Promise<{ data: OptimizedListing[], count: number }> => {
       let query = supabase
         .from('room_search_cache')
-        .select('*');
+        .select('*', { count: 'exact' });
 
       // Apply all filters
       query = applyFilters(query, filters);
@@ -138,23 +120,24 @@ export const useOptimizedSearch = ({ filters, enabled = true }: UseOptimizedSear
       // Pagination
       query = query.range(from, to);
 
-      const { data, error } = await query;
+      const { data, error, count } = await query;
 
       if (error) {
         console.error('Search error:', error);
         throw error;
       }
 
-      return data || [];
+      return { data: data || [], count: count ?? 0 };
     },
     enabled,
-    staleTime: 30000,
-    gcTime: 300000,
+    staleTime: 5 * 60 * 1000,  // 5 minutes for aggressive caching
+    gcTime: 15 * 60 * 1000,    // 15 minutes to keep in memory
+    placeholderData: (previousData) => previousData,  // Keep old data while fetching
   });
 
   return {
-    data: data ?? [],
-    totalCount: countData ?? 0,
+    data: result?.data ?? [],
+    totalCount: result?.count ?? 0,
     page,
     pageSize,
     isLoading,

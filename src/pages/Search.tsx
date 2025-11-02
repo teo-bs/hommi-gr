@@ -227,7 +227,7 @@ const Search = () => {
   // Debounced handler for map bounds changes to prevent query spam
   const debouncedBoundsUpdate = useDebouncedCallback((bounds: any) => {
     setFilters(prev => ({ ...prev, bounds }));
-  }, 300);
+  }, 500);  // 500ms to reduce API calls during map exploration
 
   useEffect(() => {
     const handleMapBoundsChanged = (event: CustomEvent) => {
