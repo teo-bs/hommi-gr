@@ -32,8 +32,15 @@ export const useMessageFlow = () => {
   const [loading, setLoading] = useState(false);
 
   const createChatRequest = async (listingId: string) => {
-    if (!user || !profile || !listingId) {
-      console.log('Missing required data:', { user: !!user, profile: !!profile, listingId });
+    console.log('createChatRequest called with listingId:', listingId);
+    
+    if (!listingId) {
+      console.error('No listingId provided to createChatRequest');
+      return;
+    }
+    
+    if (!user || !profile) {
+      console.log('User not authenticated, opening auth modal');
       setAuthModalOpen(true);
       return;
     }

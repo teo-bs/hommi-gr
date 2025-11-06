@@ -262,9 +262,12 @@ const RoomPage = () => {
   }, [slug, id, navigate, authProfile?.id]);
 
   const handleRequestChat = async () => {
-    if (!roomData) return;
+    if (!roomData?.listing?.id) {
+      console.error('Cannot create chat request: missing listing data');
+      return;
+    }
     
-    // Use the new chat request flow
+    console.log('Initiating chat request for listing:', roomData.listing.id);
     await messageFlow.createChatRequest(roomData.listing.id);
   };
 
