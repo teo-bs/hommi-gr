@@ -88,7 +88,7 @@ const Index = () => {
       {/* Hero Section */}
       <section className="relative overflow-hidden">
         <div 
-          className="h-[75vh] sm:h-[85vh] bg-cover bg-center bg-no-repeat relative"
+          className="min-h-[600px] h-[80vh] sm:h-[85vh] bg-cover bg-center bg-no-repeat relative"
           style={{ backgroundImage: `url(${heroImage})` }}
         >
           {/* Modern gradient overlay */}
@@ -98,22 +98,22 @@ const Index = () => {
           <div className="absolute top-20 left-10 w-72 h-72 bg-primary/30 rounded-full blur-3xl animate-pulse" />
           <div className="absolute bottom-20 right-10 w-96 h-96 bg-accent/20 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }} />
           
-          <div className="absolute inset-0 flex items-center justify-center">
-            <div className="text-center text-white max-w-5xl mx-auto px-4 animate-fade-in">
-              <h1 className="text-4xl sm:text-5xl md:text-7xl font-bold mb-6 sm:mb-8 leading-tight tracking-tight" style={{ textShadow: '0 2px 20px rgba(0,0,0,0.3)' }}>
+          <div className="absolute inset-0 flex items-center justify-center px-4">
+            <div className="text-center text-white max-w-5xl mx-auto w-full animate-fade-in">
+              <h1 className="text-3xl sm:text-5xl md:text-7xl font-bold mb-4 sm:mb-6 md:mb-8 leading-tight tracking-tight" style={{ textShadow: '0 2px 20px rgba(0,0,0,0.3)' }}>
                 Βρες το ιδανικό <span className="text-primary-light">σπίτι</span>
-                <br />
-                και τους καλύτερους <span className="text-accent-light">συγκάτοικους</span>
+                <br className="hidden sm:block" />
+                <span className="sm:hidden"> </span>και τους καλύτερους <span className="text-accent-light">συγκάτοικους</span>
               </h1>
-              <p className="text-xl sm:text-2xl md:text-3xl mb-10 sm:mb-14 text-white/95 font-light" style={{ textShadow: '0 1px 10px rgba(0,0,0,0.2)' }}>
+              <p className="text-lg sm:text-2xl md:text-3xl mb-8 sm:mb-10 md:mb-14 text-white/95 font-light px-4" style={{ textShadow: '0 1px 10px rgba(0,0,0,0.2)' }}>
                 Η πλατφόρμα συγκατοίκησης που εμπιστεύονται χιλιάδες άνθρωποι
               </p>
 
               {/* Search Bar with Glass-morphism */}
-              <Card className="max-w-5xl mx-auto bg-white/90 backdrop-blur-2xl shadow-2xl rounded-3xl border-2 border-white/50 transition-all duration-300 hover:shadow-3xl hover:scale-[1.02] hover:-translate-y-1">
-                <CardContent className="p-4 sm:p-6">
-                  <div className="grid grid-cols-1 md:grid-cols-4 gap-0 bg-white/50 backdrop-blur-sm rounded-2xl shadow-inner">
-                    <div className="md:col-span-1 p-4 sm:p-5 md:border-r border-border/20">
+              <Card className="max-w-5xl mx-auto bg-white/90 backdrop-blur-2xl shadow-2xl rounded-2xl sm:rounded-3xl border-2 border-white/50 transition-all duration-300 hover:shadow-3xl hover:scale-[1.02] hover:-translate-y-1">
+                <CardContent className="p-5 sm:p-6">
+                  <div className="grid grid-cols-1 md:grid-cols-4 gap-0 bg-white/50 backdrop-blur-sm rounded-xl sm:rounded-2xl shadow-inner">
+                    <div className="md:col-span-1 p-5 md:border-r border-border/20">
                       <div className="relative">
                         <MapPin className="absolute left-0 top-7 h-5 w-5 text-muted-foreground" />
                         <div className="flex flex-col pl-7">
@@ -123,33 +123,33 @@ const Index = () => {
                           <LocationAutocomplete
                             value={searchQuery}
                             onChange={setSearchQuery}
-                            className="border-0 bg-transparent p-0 h-auto text-base font-medium focus-visible:ring-0"
+                            className="border-0 bg-transparent p-0 h-auto text-sm sm:text-base font-medium focus-visible:ring-0"
                           />
                         </div>
                       </div>
                     </div>
-                    <div className="md:col-span-1 p-4 sm:p-5 border-t md:border-t-0 md:border-r border-border/20">
+                    <div className="md:col-span-1 p-5 border-t md:border-t-0 md:border-r border-border/20">
                       <DatePicker
                         date={moveInDate}
                         onDateChange={setMoveInDate}
-                        placeholder="Ημ/νία μετακόμισης"
+                        placeholder="Ημερομηνία"
                       />
                     </div>
-                    <div className="md:col-span-1 p-4 sm:p-5 border-t md:border-t-0 md:border-r border-border/20">
+                    <div className="md:col-span-1 p-5 border-t md:border-t-0 md:border-r border-border/20">
                       <DurationSelector
                         value={duration}
                         onValueChange={setDuration}
                       />
                     </div>
-                    <div className="md:col-span-1 p-4 sm:p-5 border-t md:border-t-0 flex items-center justify-center">
+                    <div className="md:col-span-1 p-5 border-t md:border-t-0 flex items-center justify-center">
                       <Button 
                         onClick={handleSearch}
-                        className="w-full md:w-14 h-14 rounded-full bg-gradient-to-r from-primary to-primary-hover transition-all duration-300 hover:scale-110 hover:shadow-xl active:scale-95"
+                        className="w-full md:w-14 h-12 md:h-14 rounded-full bg-gradient-to-r from-primary to-primary-hover transition-all duration-300 hover:scale-110 hover:shadow-xl active:scale-95"
                         variant="hero"
                         size="lg"
                       >
-                        <Search className="h-6 w-6" />
-                        <span className="ml-2 md:hidden font-semibold">Αναζήτηση</span>
+                        <Search className="h-5 w-5 md:h-6 md:w-6" />
+                        <span className="ml-2 md:hidden font-semibold text-base">Αναζήτηση</span>
                       </Button>
                     </div>
                   </div>
@@ -161,13 +161,13 @@ const Index = () => {
       </section>
 
       {/* Category Cards Section */}
-      <section className="py-12 sm:py-16 md:py-20 bg-background">
+      <section className="py-16 sm:py-20 md:py-20 bg-background">
         <div className="container mx-auto px-4">
-          <div className="text-center mb-8 sm:mb-12 animate-fade-in">
-            <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold tracking-tight mb-3 sm:mb-4">
+          <div className="text-center mb-10 sm:mb-12 animate-fade-in">
+            <h2 className="text-xl sm:text-3xl md:text-4xl font-bold tracking-tight mb-3 sm:mb-4">
               Οι ανάγκες σου, οι κανόνες σου
             </h2>
-            <p className="text-base sm:text-lg text-muted-foreground max-w-2xl mx-auto px-4">
+            <p className="text-sm sm:text-lg text-muted-foreground max-w-2xl mx-auto px-4">
               Βρες το ιδανικό σπίτι που ταιριάζει στον τρόπο ζωής σου
             </p>
           </div>
@@ -270,13 +270,13 @@ const Index = () => {
       </section>
 
       {/* How It Works Section */}
-      <section className="py-12 sm:py-16 md:py-20 bg-surface-elevated">
+      <section className="py-16 sm:py-20 md:py-20 bg-surface-elevated">
         <div className="container mx-auto px-4">
-          <div className="text-center mb-12 sm:mb-16 animate-fade-in">
-            <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-3 sm:mb-4">
+          <div className="text-center mb-10 sm:mb-12 md:mb-16 animate-fade-in">
+            <h2 className="text-xl sm:text-3xl md:text-4xl font-bold mb-3 sm:mb-4">
               Πώς λειτουργεί το Hommi
             </h2>
-            <p className="text-base sm:text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto px-4">
+            <p className="text-sm sm:text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto px-4">
               Μια απλή διαδικασία για να βρεις το ιδανικό σπίτι και τους καλύτερους συγκάτοικους
             </p>
           </div>
@@ -333,11 +333,11 @@ const Index = () => {
       </section>
 
       {/* Why Hommi Section */}
-      <section className="py-12 sm:py-16 md:py-20 bg-background">
+      <section className="py-16 sm:py-20 md:py-20 bg-background">
         <div className="container mx-auto px-4">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 sm:gap-12 lg:gap-16 items-center">
             <div className="animate-fade-in">
-              <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-4 sm:mb-6">
+              <h2 className="text-xl sm:text-3xl md:text-4xl font-bold mb-4 sm:mb-6">
                 Γιατί να επιλέξεις το Hommi;
               </h2>
               <div className="space-y-6 sm:space-y-8">
@@ -383,7 +383,7 @@ const Index = () => {
                   variant="hero"
                   size="lg"
                   onClick={() => navigate('/search')}
-                  className="text-lg px-8 py-7 rounded-full bg-gradient-to-r from-primary to-primary-hover hover:scale-105 hover:shadow-2xl active:scale-95 transition-all duration-300 group"
+                  className="text-base sm:text-lg px-8 py-6 sm:py-7 min-h-[52px] rounded-full bg-gradient-to-r from-primary to-primary-hover hover:scale-105 hover:shadow-2xl active:scale-95 transition-all duration-300 group"
                 >
                   Ξεκίνα την αναζήτηση
                   <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
@@ -392,7 +392,7 @@ const Index = () => {
                   variant="outline"
                   size="lg"
                   onClick={handlePublishListing}
-                  className="text-lg px-8 py-7 rounded-full border-2 hover:bg-primary/10 hover:border-primary hover:scale-105 active:scale-95 transition-all duration-300"
+                  className="text-base sm:text-lg px-8 py-6 sm:py-7 min-h-[52px] rounded-full border-2 hover:bg-primary/10 hover:border-primary hover:scale-105 active:scale-95 transition-all duration-300"
                 >
                   Δημοσίευσε αγγελία
                   <Plus className="ml-2 h-5 w-5" />
