@@ -337,9 +337,32 @@
     -webkit-tap-highlight-color: transparent;
   }
 
-  /* Smooth scrolling */
+  /* Smooth scrolling with momentum on iOS */
   .scroll-smooth {
     scroll-behavior: smooth;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* Enhanced snap scrolling for mobile carousel */
+  .snap-x {
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .snap-center {
+    scroll-snap-align: center;
+    scroll-snap-stop: always;
+  }
+
+  /* Prevent overscroll on mobile carousel */
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+    overscroll-behavior-x: contain;
+  }
+  
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
   }
 
   /* Custom animations */

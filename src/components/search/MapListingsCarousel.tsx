@@ -35,25 +35,27 @@ export const MapListingsCarousel = ({
   const [localActiveId, setLocalActiveId] = useState<string | null>(null);
   const [debouncedActiveId] = useDebounce(localActiveId, 80);
 
-  // Detect active card via Intersection Observer
+  // Detect active card via Intersection Observer with higher precision
   useEffect(() => {
     if (!carouselRef.current) return;
     
     const observer = new IntersectionObserver(
       (entries) => {
-        // Only process the most intersecting entry
+        // Only process the most intersecting entry with higher threshold
         const mostVisible = entries.reduce((max, entry) => 
           entry.intersectionRatio > (max?.intersectionRatio || 0) ? entry : max
         , entries[0]);
         
-        if (mostVisible && mostVisible.isIntersecting && mostVisible.intersectionRatio >= 0.5) {
+        // Require at least 70% visibility for more precise detection
+        if (mostVisible && mostVisible.isIntersecting && mostVisible.intersectionRatio >= 0.7) {
           const listingId = mostVisible.target.getAttribute('data-listing-id');
           setLocalActiveId(listingId);
         }
       },
       {
         root: carouselRef.current,
-        threshold: [0.5, 0.6, 0.7, 0.8, 0.9, 1.0],
+        // More granular thresholds for precise detection
+        threshold: [0.5, 0.6, 0.7, 0.75, 0.8, 0.85, 0.9, 0.95, 1.0],
         rootMargin: '0px'
       }
     );
@@ -91,7 +93,7 @@ export const MapListingsCarousel = ({
 
   return (
     <div className="fixed bottom-0 left-0 right-0 z-30 lg:hidden pb-safe">
-      <div className="bg-gradient-to-t from-black/30 via-black/10 to-transparent backdrop-blur-md pt-4 pb-3 pointer-events-none">
+      <div className="bg-gradient-to-t from-black/40 via-black/20 to-transparent backdrop-blur-lg pt-6 pb-4 pointer-events-none">
         <div className="pointer-events-auto">
           <div 
             ref={carouselRef}
@@ -101,16 +103,30 @@ export const MapListingsCarousel = ({
               msOverflowStyle: 'none',
               WebkitOverflowScrolling: 'touch',
               transform: 'translateZ(0)',
-              willChange: 'scroll-position'
+              willChange: 'scroll-position',
+              // Precise snap alignment
+              scrollPaddingLeft: 'calc(50vw - 160px)', // Half viewport minus half card width
+              scrollPaddingRight: 'calc(50vw - 160px)',
             }}
           >
-            <div className="flex gap-3 px-4">
+            <div 
+              className="flex gap-4"
+              style={{
+                // Add padding to center first/last cards
+                paddingLeft: 'calc(50vw - 160px)',
+                paddingRight: 'calc(50vw - 160px)',
+              }}
+            >
               {listings.map((listing) => (
                 <div
                   key={listing.id}
                   ref={(el) => (cardRefs.current[listing.id] = el)}
                   data-listing-id={listing.id}
-                  className="snap-center"
+                  className="snap-center shrink-0"
+                  style={{
+                    scrollSnapAlign: 'center',
+                    scrollSnapStop: 'always'
+                  }}
                 >
                   <MapListingCard
                     listing={listing}
