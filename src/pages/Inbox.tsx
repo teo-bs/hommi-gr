@@ -1,8 +1,10 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { useThreads } from "@/hooks/useThreads";
+import { useRealtimeNotifications } from "@/hooks/useRealtimeNotifications";
 import { ConversationViewEnhanced } from "@/components/room/ConversationViewEnhanced";
 import { PendingRequests } from "@/components/messaging/PendingRequests";
+import { NotificationPrompt } from "@/components/messaging/NotificationPrompt";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -21,6 +23,12 @@ const Inbox = () => {
   const [requestsLoading, setRequestsLoading] = useState(true);
 
   const isLister = profile?.role === 'lister';
+
+  // Enable real-time notifications with refetch callback
+  useRealtimeNotifications({
+    activeThreadId: selectedThread?.id,
+    onNewMessage: () => refetch()
+  });
 
   // Use the new threads hook
   const { threads, totalCount, isLoading, refetch } = useThreads({
@@ -85,6 +93,11 @@ const Inbox = () => {
       <div className="flex items-center gap-3 sm:gap-4 mb-4 sm:mb-6">
         <MessageCircle className="h-5 w-5 sm:h-6 sm:w-6 text-primary" />
         <h1 className="text-xl sm:text-2xl font-bold">Μηνύματα</h1>
+      </div>
+
+      {/* Notification Permission Prompt */}
+      <div className="mb-4 sm:mb-6">
+        <NotificationPrompt />
       </div>
 
       {isLister ? (

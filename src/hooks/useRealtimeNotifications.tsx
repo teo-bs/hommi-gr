@@ -2,6 +2,7 @@ import { useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './useAuth';
 import { toast } from 'sonner';
+import { useNotifications } from './useNotifications';
 
 interface UseRealtimeNotificationsParams {
   activeThreadId?: string; // Don't show toast if message is in active thread
@@ -10,6 +11,7 @@ interface UseRealtimeNotificationsParams {
 
 export function useRealtimeNotifications(params: UseRealtimeNotificationsParams = {}) {
   const { profile } = useAuth();
+  const { showNotification, canShowNotifications } = useNotifications();
 
   useEffect(() => {
     if (!profile?.id) return;
@@ -47,15 +49,30 @@ export function useRealtimeNotifications(params: UseRealtimeNotificationsParams 
             ? thread.host_profile?.display_name 
             : thread.seeker_profile?.display_name;
 
-          toast.info(`Νέο μήνυμα από ${senderName}`, {
-            description: newMessage.body?.substring(0, 50) + (newMessage.body?.length > 50 ? '...' : ''),
-            action: {
-              label: 'Προβολή',
-              onClick: () => {
-                window.location.href = `/inbox?thread=${newMessage.thread_id}`;
-              }
+          const messagePreview = newMessage.body?.substring(0, 50) + (newMessage.body?.length > 50 ? '...' : '');
+
+          // Try browser notification first if user is not on the page
+          const notificationShown = canShowNotifications() && await showNotification(
+            `Νέο μήνυμα από ${senderName}`,
+            {
+              body: messagePreview,
+              threadId: newMessage.thread_id,
+              tag: `message-${newMessage.thread_id}`
             }
-          });
+          );
+
+          // Fallback to toast if browser notification not shown or failed
+          if (!notificationShown) {
+            toast.info(`Νέο μήνυμα από ${senderName}`, {
+              description: messagePreview,
+              action: {
+                label: 'Προβολή',
+                onClick: () => {
+                  window.location.href = `/inbox?thread=${newMessage.thread_id}`;
+                }
+              }
+            });
+          }
         }
 
         // Trigger refetch of unread count
