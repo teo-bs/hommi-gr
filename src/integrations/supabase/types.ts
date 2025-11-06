@@ -1031,6 +1031,52 @@ export type Database = {
           },
         ]
       }
+      message_reactions: {
+        Row: {
+          created_at: string
+          id: string
+          message_id: string
+          reaction: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          message_id: string
+          reaction: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          message_id?: string
+          reaction?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "message_reactions_message_id_fkey"
+            columns: ["message_id"]
+            isOneToOne: false
+            referencedRelation: "messages"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "message_reactions_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "message_reactions_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "room_search_cache"
+            referencedColumns: ["lister_profile_id"]
+          },
+        ]
+      }
       message_templates: {
         Row: {
           category: string | null
@@ -1178,6 +1224,7 @@ export type Database = {
           about_me: string | null
           account_status: Database["public"]["Enums"]["account_status_enum"]
           avatar_url: string | null
+          avg_response_time_minutes: number | null
           can_switch_roles: boolean | null
           country: string | null
           created_at: string | null
@@ -1216,6 +1263,7 @@ export type Database = {
           about_me?: string | null
           account_status?: Database["public"]["Enums"]["account_status_enum"]
           avatar_url?: string | null
+          avg_response_time_minutes?: number | null
           can_switch_roles?: boolean | null
           country?: string | null
           created_at?: string | null
@@ -1254,6 +1302,7 @@ export type Database = {
           about_me?: string | null
           account_status?: Database["public"]["Enums"]["account_status_enum"]
           avatar_url?: string | null
+          avg_response_time_minutes?: number | null
           can_switch_roles?: boolean | null
           country?: string | null
           created_at?: string | null
@@ -1765,6 +1814,7 @@ export type Database = {
           deleted_at: string | null
           host_id: string
           id: string
+          last_activity_at: string | null
           last_message_at: string | null
           listing_id: string
           room_id: string
@@ -1780,6 +1830,7 @@ export type Database = {
           deleted_at?: string | null
           host_id: string
           id?: string
+          last_activity_at?: string | null
           last_message_at?: string | null
           listing_id: string
           room_id: string
@@ -1795,6 +1846,7 @@ export type Database = {
           deleted_at?: string | null
           host_id?: string
           id?: string
+          last_activity_at?: string | null
           last_message_at?: string | null
           listing_id?: string
           room_id?: string
@@ -2493,6 +2545,10 @@ export type Database = {
       }
     }
     Functions: {
+      calculate_avg_response_time: {
+        Args: { p_user_id: string }
+        Returns: number
+      }
       current_profile_id: { Args: never; Returns: string }
       ensure_unique_listing_slug: {
         Args: { p_base: string; p_id: string }
