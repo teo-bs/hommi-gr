@@ -86,7 +86,7 @@ const Index = () => {
   return (
     <div className="min-h-screen bg-background">
       {/* Hero Section */}
-      <section className="relative overflow-hidden">
+      <section className="relative overflow-hidden mb-12 sm:mb-16">
         <div 
           className="min-h-[600px] h-[80vh] sm:h-[85vh] bg-cover bg-center bg-no-repeat relative"
           style={{ backgroundImage: `url(${heroImage})` }}
@@ -98,7 +98,7 @@ const Index = () => {
           <div className="absolute top-20 left-10 w-72 h-72 bg-primary/30 rounded-full blur-3xl animate-pulse" />
           <div className="absolute bottom-20 right-10 w-96 h-96 bg-accent/20 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }} />
           
-          <div className="absolute inset-0 flex items-center justify-center px-4">
+          <div className="absolute inset-0 flex items-center justify-center px-4 pt-20 sm:pt-24">
             <div className="text-center text-white max-w-5xl mx-auto w-full animate-fade-in">
               <h1 className="text-3xl sm:text-5xl md:text-7xl font-bold mb-4 sm:mb-6 md:mb-8 leading-tight tracking-tight" style={{ textShadow: '0 2px 20px rgba(0,0,0,0.3)' }}>
                 Βρες το ιδανικό <span className="text-primary-light">σπίτι</span>
