@@ -216,24 +216,24 @@ export default function Profile() {
             onValueChange={setActiveTab} 
             className="w-full"
           >
-            {/* Sticky Tab Bar */}
-            <div className="sticky top-16 z-10 bg-background/95 backdrop-blur-md border-b mb-6 -mx-4 px-4 sm:mx-0 sm:px-0 sm:rounded-lg sm:border animate-fade-in">
-              <TabsList className="w-full justify-start h-auto p-0 bg-transparent">
+            {/* Sticky Tab Bar - Enhanced */}
+            <div className="sticky top-16 z-10 bg-background/95 backdrop-blur-md border-b mb-6 sm:mb-8 -mx-4 px-4 sm:mx-0 sm:px-0 sm:rounded-lg sm:border animate-fade-in">
+              <TabsList className="w-full justify-start h-auto p-0 bg-transparent gap-0 sm:gap-1">
                 <TabsTrigger 
                   value="overview"
-                  className="flex-1 sm:flex-initial data-[state=active]:bg-background data-[state=active]:shadow-sm rounded-none sm:rounded-md border-b-2 border-transparent data-[state=active]:border-primary transition-all"
+                  className="flex-1 sm:flex-initial min-h-[48px] sm:min-h-[44px] px-4 sm:px-6 data-[state=active]:bg-primary/5 data-[state=active]:shadow-sm rounded-none sm:rounded-md border-b-3 sm:border-b-2 border-transparent data-[state=active]:border-primary transition-all duration-200 font-medium text-sm"
                 >
                   Επισκόπηση
                 </TabsTrigger>
                 <TabsTrigger 
                   value="verifications"
-                  className="flex-1 sm:flex-initial data-[state=active]:bg-background data-[state=active]:shadow-sm rounded-none sm:rounded-md border-b-2 border-transparent data-[state=active]:border-primary transition-all"
+                  className="flex-1 sm:flex-initial min-h-[48px] sm:min-h-[44px] px-4 sm:px-6 data-[state=active]:bg-primary/5 data-[state=active]:shadow-sm rounded-none sm:rounded-md border-b-3 sm:border-b-2 border-transparent data-[state=active]:border-primary transition-all duration-200 font-medium text-sm"
                 >
                   Επαληθεύσεις
                 </TabsTrigger>
                 <TabsTrigger 
                   value="settings"
-                  className="flex-1 sm:flex-initial data-[state=active]:bg-background data-[state=active]:shadow-sm rounded-none sm:rounded-md border-b-2 border-transparent data-[state=active]:border-primary transition-all"
+                  className="flex-1 sm:flex-initial min-h-[48px] sm:min-h-[44px] px-4 sm:px-6 data-[state=active]:bg-primary/5 data-[state=active]:shadow-sm rounded-none sm:rounded-md border-b-3 sm:border-b-2 border-transparent data-[state=active]:border-primary transition-all duration-200 font-medium text-sm"
                 >
                   Ρυθμίσεις
                 </TabsTrigger>

@@ -70,10 +70,18 @@ export const ProfileOverviewTab = ({ profile, onEdit }: ProfileOverviewTabProps)
   ].filter(social => profile[social.key]);
 
   return (
-    <div className="space-y-6 animate-fade-in">
+    <div className="space-y-6 sm:space-y-8 animate-fade-in">
+      {/* Preview Badge */}
+      <div className="flex items-center gap-2 px-4 py-3 rounded-lg bg-muted/50 border border-border/30 animate-fade-in">
+        <div className="h-2 w-2 rounded-full bg-primary animate-pulse" />
+        <p className="text-sm text-muted-foreground">
+          👁️ Έτσι φαίνεται το προφίλ σας σε άλλους χρήστες
+        </p>
+      </div>
+
       {/* Profile Completion Card */}
       {showCompletionCard && (
-        <Card className="border-primary/20 bg-primary/5 animate-fade-in">
+        <Card className="border-primary/20 bg-gradient-to-br from-primary/5 to-accent/5 animate-fade-in">
           <CardContent className="pt-6">
             <div className="flex items-start gap-4">
               <div className="flex-1">
@@ -92,37 +100,32 @@ export const ProfileOverviewTab = ({ profile, onEdit }: ProfileOverviewTabProps)
         </Card>
       )}
 
-      {/* About Me */}
-      <Card className="hover:shadow-md transition-shadow duration-300">
+      {/* About Me - Read Only */}
+      <Card className="border-border/30 hover:border-border/50 transition-all duration-300">
         <CardHeader>
-          <div className="flex items-center justify-between">
-            <CardTitle className="text-lg">Σχετικά με εμένα</CardTitle>
-            <Button variant="ghost" size="icon" onClick={onEdit}>
-              <Edit className="h-4 w-4" />
-            </Button>
-          </div>
+          <CardTitle className="text-lg font-semibold tracking-tight">Σχετικά με εμένα</CardTitle>
         </CardHeader>
-        <CardContent>
+        <CardContent className="p-6">
           {profile.about_me ? (
-            <p className="text-muted-foreground leading-relaxed whitespace-pre-wrap">
+            <p className="text-sm text-muted-foreground leading-relaxed whitespace-pre-wrap">
               {profile.about_me}
             </p>
           ) : (
-            <div className="text-center py-8 border-2 border-dashed rounded-lg">
-              <MessageSquare className="h-8 w-8 mx-auto mb-2 text-muted-foreground/50" />
-              <p className="text-sm text-muted-foreground mb-3">
-                Πείτε μας λίγα λόγια για εσάς
+            <div className="text-center py-8">
+              <MessageSquare className="h-8 w-8 mx-auto mb-3 text-muted-foreground/30" />
+              <p className="text-sm text-muted-foreground">
+                Δεν έχετε προσθέσει βιογραφικό ακόμα
               </p>
-              <Button variant="outline" size="sm" onClick={onEdit}>
-                Προσθήκη βιογραφικού
-              </Button>
+              <p className="text-xs text-muted-foreground/70 mt-1">
+                Προσθέστε το από τις Ρυθμίσεις
+              </p>
             </div>
           )}
         </CardContent>
       </Card>
 
       {/* Quick Info Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
         {profile.profession && (
           <QuickInfoCard
             icon={Briefcase}
@@ -184,10 +187,10 @@ export const ProfileOverviewTab = ({ profile, onEdit }: ProfileOverviewTabProps)
       {/* Interests & Lifestyle */}
       {profile.profile_extras && (
         <Collapsible open={interestsOpen} onOpenChange={setInterestsOpen}>
-          <Card className="hover:shadow-md transition-shadow duration-300">
+          <Card className="border-border/30 hover:border-border/50 hover:shadow-md transition-all duration-300">
             <CardHeader>
               <CollapsibleTrigger className="flex items-center justify-between w-full hover:opacity-80 transition-opacity">
-                <CardTitle className="text-lg">Ενδιαφέροντα & Στυλ Ζωής</CardTitle>
+                <CardTitle className="text-lg font-semibold tracking-tight">Ενδιαφέροντα & Στυλ Ζωής</CardTitle>
                 <div className={cn(
                   "transition-transform duration-200",
                   interestsOpen && "rotate-180"

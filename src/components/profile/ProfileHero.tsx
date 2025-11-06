@@ -34,62 +34,63 @@ export const ProfileHero = ({ profile, onEdit }: ProfileHeroProps) => {
   const trustLevel = getTrustLevel();
 
   return (
-    <div className="relative mb-8 sm:mb-12">
-      {/* Gradient Background Header */}
-      <div className="relative h-[120px] sm:h-[140px] md:h-[180px] overflow-hidden rounded-b-3xl bg-gradient-to-br from-primary/20 via-primary/10 to-accent/20 animate-fade-in">
-        {/* Animated gradient overlay */}
-        <div className="absolute inset-0 bg-gradient-to-r from-primary/30 via-transparent to-accent/30 animate-pulse" style={{ animationDuration: '4s' }} />
+    <div className="relative mb-6 sm:mb-10">
+      {/* Gradient Background Header - Reduced Height */}
+      <div className="relative h-[100px] sm:h-[140px] md:h-[160px] overflow-hidden rounded-b-3xl bg-gradient-to-br from-primary/10 via-background to-secondary/10 animate-fade-in">
+        {/* Animated gradient overlay - More subtle */}
+        <div className="absolute inset-0 bg-gradient-to-r from-primary/20 via-transparent to-accent/20 animate-pulse" style={{ animationDuration: '4s' }} />
         
-        {/* Decorative blobs */}
-        <div className="absolute top-0 right-0 w-40 h-40 bg-primary/20 rounded-full blur-3xl" />
-        <div className="absolute bottom-0 left-0 w-32 h-32 bg-accent/20 rounded-full blur-2xl" />
+        {/* Decorative blobs - More subtle */}
+        <div className="absolute top-0 right-0 w-32 h-32 bg-primary/10 rounded-full blur-3xl" />
+        <div className="absolute bottom-0 left-0 w-24 h-24 bg-accent/10 rounded-full blur-2xl" />
+        
+        {/* Edit Button - Top Right (Desktop) */}
+        <div className="absolute top-4 right-4 hidden sm:block">
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={onEdit}
+            className="bg-background/80 backdrop-blur-sm hover:bg-background hover:scale-105 transition-all duration-200 shadow-md"
+          >
+            <Edit className="h-4 w-4" />
+          </Button>
+        </div>
       </div>
 
       {/* Floating Avatar & Info */}
-      <div className="relative px-4 sm:px-6 -mt-12 sm:-mt-16 md:-mt-20 animate-scale-in" style={{ animationDelay: '100ms' }}>
+      <div className="relative px-4 sm:px-6 -mt-11 sm:-mt-14 md:-mt-16 animate-scale-in" style={{ animationDelay: '100ms' }}>
         <div className="max-w-4xl mx-auto">
-          <div className="flex flex-col items-center sm:flex-row sm:items-end gap-4 sm:gap-6">
-            {/* Avatar */}
+          <div className="flex flex-col items-center sm:flex-row sm:items-end gap-3 sm:gap-5">
+            {/* Avatar - Smaller Size */}
             <div className="relative group">
               <AvatarWithBadge
                 src={profile.avatar_url}
                 fallback={profile.display_name?.charAt(0)?.toUpperCase() || profile.first_name?.charAt(0)?.toUpperCase() || 'U'}
                 verificationsJson={profile.verifications_json}
-                className="h-24 w-24 sm:h-28 sm:w-28 md:h-32 md:w-32 ring-4 ring-background shadow-xl transition-transform duration-300 group-hover:scale-105"
-                badgeClassName="h-4 w-4 sm:h-5 sm:w-5"
+                className="h-20 w-20 sm:h-24 sm:w-24 md:h-28 md:w-28 ring-4 ring-background shadow-xl transition-transform duration-300 group-hover:scale-105"
+                badgeClassName="h-4 w-4 sm:h-4 sm:w-4"
               />
             </div>
 
             {/* Name & Info */}
-            <div className="flex-1 text-center sm:text-left mb-2 sm:mb-4 animate-fade-in" style={{ animationDelay: '200ms' }}>
-              <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3 mb-2">
-                <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold tracking-tight">
+            <div className="flex-1 text-center sm:text-left mb-2 sm:mb-3 animate-fade-in" style={{ animationDelay: '200ms' }}>
+              <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3 mb-1">
+                <h1 className="text-xl sm:text-2xl md:text-3xl font-bold tracking-tight">
                   {profile.display_name || `${profile.first_name || ''} ${profile.last_name || ''}`.trim() || 'Χρήστης'}
                   {getAge() && <span className="text-muted-foreground">, {getAge()}</span>}
                 </h1>
-                <Badge variant={trustLevel.variant} className="w-fit mx-auto sm:mx-0">
-                  Εμπιστοσύνη: {trustLevel.label}
+                <Badge variant={trustLevel.variant === 'outline' ? 'secondary' : trustLevel.variant} className="w-fit mx-auto sm:mx-0 text-xs">
+                  {trustLevel.label}
                 </Badge>
               </div>
               
               {formatMemberSince() && (
-                <div className="flex items-center justify-center sm:justify-start gap-2 text-sm text-muted-foreground">
-                  <Calendar className="h-4 w-4" />
+                <div className="flex items-center justify-center sm:justify-start gap-2 text-xs sm:text-sm text-muted-foreground">
+                  <Calendar className="h-3.5 w-3.5" />
                   <span>Μέλος από {formatMemberSince()}</span>
                 </div>
               )}
             </div>
-
-            {/* Edit Button - Desktop */}
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={onEdit}
-              className="hidden sm:flex items-center gap-2 mb-4 hover:scale-105 transition-transform duration-200"
-            >
-              <Edit className="h-4 w-4" />
-              Επεξεργασία
-            </Button>
           </div>
 
           {/* Edit Button - Mobile (Full Width) */}
@@ -97,7 +98,7 @@ export const ProfileHero = ({ profile, onEdit }: ProfileHeroProps) => {
             variant="outline"
             size="sm"
             onClick={onEdit}
-            className="sm:hidden w-full mt-4 flex items-center justify-center gap-2"
+            className="sm:hidden w-full mt-3 flex items-center justify-center gap-2 min-h-[44px]"
           >
             <Edit className="h-4 w-4" />
             Επεξεργασία Προφίλ
