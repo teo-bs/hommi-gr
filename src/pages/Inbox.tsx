@@ -18,7 +18,7 @@ const Inbox = () => {
   const { user, profile } = useAuth();
   const [pendingRequestsCount, setPendingRequestsCount] = useState(0);
   const [selectedThread, setSelectedThread] = useState<any | null>(null);
-  const [statusFilter, setStatusFilter] = useState<'all' | 'pending' | 'accepted' | 'declined'>('accepted');
+  const [statusFilter, setStatusFilter] = useState<'all' | 'pending' | 'accepted' | 'declined'>('all');
   const [currentPage, setCurrentPage] = useState(1);
   const [requestsLoading, setRequestsLoading] = useState(true);
 
@@ -146,7 +146,7 @@ const Inbox = () => {
                     className="cursor-pointer hover:shadow-md transition-shadow touch-manipulation active:scale-[0.98]"
                     onClick={() => setSelectedThread(thread)}
                   >
-                    <CardContent className="p-3 sm:p-4">
+                     <CardContent className="p-3 sm:p-4">
                       <div className="flex items-center justify-between">
                         <div className="flex items-center space-x-4">
                           <AvatarWithBadge
@@ -157,7 +157,19 @@ const Inbox = () => {
                             className="h-12 w-12"
                           />
                           <div className="flex-1">
-                            <h3 className="font-semibold">{thread.otherUserName}</h3>
+                            <div className="flex items-center gap-2 mb-1">
+                              <h3 className="font-semibold">{thread.otherUserName}</h3>
+                              {thread.status === 'pending' && (
+                                <Badge variant="outline" className="bg-yellow-500/10 text-yellow-700 dark:text-yellow-400 border-yellow-500/20">
+                                  Εκκρεμεί
+                                </Badge>
+                              )}
+                              {thread.status === 'declined' && (
+                                <Badge variant="outline" className="bg-red-500/10 text-red-700 dark:text-red-400 border-red-500/20">
+                                  Απορρίφθηκε
+                                </Badge>
+                              )}
+                            </div>
                             <p className="text-sm text-muted-foreground">{thread.listingTitle}</p>
                           </div>
                         </div>
@@ -205,8 +217,23 @@ const Inbox = () => {
           </TabsContent>
         </Tabs>
       ) : (
-        // Tenant view - only chats
+        // Tenant view - with status filter
         <div className="space-y-4">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-lg font-semibold">Οι Συνομιλίες μου</h2>
+            <Select value={statusFilter} onValueChange={(value: any) => setStatusFilter(value)}>
+              <SelectTrigger className="w-[180px]">
+                <Filter className="h-4 w-4 mr-2" />
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Όλες</SelectItem>
+                <SelectItem value="pending">Εκκρεμείς</SelectItem>
+                <SelectItem value="accepted">Αποδεκτές</SelectItem>
+                <SelectItem value="declined">Απορριφθείσες</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
           {isLoading ? (
             <div className="text-center py-8">Φόρτωση συνομιλιών...</div>
           ) : threads.length === 0 ? (
@@ -234,7 +261,19 @@ const Inbox = () => {
                         className="h-12 w-12"
                       />
                       <div className="flex-1">
-                        <h3 className="font-semibold">{thread.otherUserName}</h3>
+                        <div className="flex items-center gap-2 mb-1">
+                          <h3 className="font-semibold">{thread.otherUserName}</h3>
+                          {thread.status === 'pending' && (
+                            <Badge variant="outline" className="bg-yellow-500/10 text-yellow-700 dark:text-yellow-400 border-yellow-500/20">
+                              Εκκρεμεί
+                            </Badge>
+                          )}
+                          {thread.status === 'declined' && (
+                            <Badge variant="outline" className="bg-red-500/10 text-red-700 dark:text-red-400 border-red-500/20">
+                              Απορρίφθηκε
+                            </Badge>
+                          )}
+                        </div>
                         <p className="text-sm text-muted-foreground">{thread.listingTitle}</p>
                       </div>
                     </div>
