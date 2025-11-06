@@ -30,6 +30,7 @@ import { BlockReportMenu } from "@/components/messaging/BlockReportMenu";
 interface ConversationViewEnhancedProps {
   threadId: string;
   listingId: string;
+  listingSlug: string;
   listingTitle: string;
   listingCoverImage?: string;
   listingPrice: number;
@@ -48,6 +49,7 @@ interface ConversationViewEnhancedProps {
 export const ConversationViewEnhanced = ({
   threadId,
   listingId,
+  listingSlug,
   listingTitle,
   listingCoverImage,
   listingPrice,
@@ -180,6 +182,7 @@ export const ConversationViewEnhanced = ({
         <div className="sticky top-0 z-5 pb-3">
           <ListingCardMini
             listingId={listingId}
+            listingSlug={listingSlug}
             title={listingTitle}
             coverImage={listingCoverImage}
             price={listingPrice}

@@ -47,7 +47,7 @@ export function useThreads(params: ThreadsParams = {}) {
             availability_date,
             bills_included,
             cover_photo_id,
-            listing_photos(url, is_cover)
+            listing_photos!listing_photos_listing_id_fkey(url, is_cover)
           ),
           host_profile:profiles!threads_host_id_fkey(
             id, 

@@ -487,6 +487,7 @@ const RoomPage = () => {
             <ConversationViewEnhanced
               threadId={messageFlow.threadId}
               listingId={roomData.listing.id}
+              listingSlug={roomData.listing.slug || String(slug || id || '')}
               listingTitle={roomData.listing.title}
               listingCoverImage={roomData.photos[0]?.url}
               listingPrice={roomData.listing.price_month}

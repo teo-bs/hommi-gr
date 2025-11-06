@@ -5,6 +5,7 @@ import { useNavigate } from "react-router-dom";
 
 interface ListingCardMiniProps {
   listingId: string;
+  listingSlug: string;
   title: string;
   coverImage?: string;
   price: number;
@@ -15,6 +16,7 @@ interface ListingCardMiniProps {
 
 export const ListingCardMini = ({
   listingId,
+  listingSlug,
   title,
   coverImage,
   price,
@@ -33,7 +35,7 @@ export const ListingCardMini = ({
   return (
     <Card 
       className="p-3 sm:p-4 cursor-pointer hover:shadow-md border-2 hover:border-primary/50 transition-all duration-200 bg-card"
-      onClick={() => navigate(`/listing/${listingId}`)}
+      onClick={() => navigate(`/listing/${listingSlug}`)}
     >
       <div className="flex gap-3 sm:gap-4">
         {/* Cover Image */}

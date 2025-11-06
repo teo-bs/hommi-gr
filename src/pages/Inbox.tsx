@@ -68,6 +68,7 @@ const Inbox = () => {
         <ConversationViewEnhanced
           threadId={selectedThread.id}
           listingId={selectedThread.listingId}
+          listingSlug={selectedThread.listingSlug}
           listingTitle={selectedThread.listingTitle}
           listingCoverImage={selectedThread.listingCoverImage}
           listingPrice={selectedThread.listingPrice}
