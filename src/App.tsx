@@ -28,6 +28,7 @@ import PhotoHealth from "./pages/admin/PhotoHealth";
 import AdminDashboard from "./pages/admin/Dashboard";
 import ListingsManagement from "./pages/admin/ListingsManagement";
 import VerificationsManagement from "./pages/admin/VerificationsManagement";
+import ModerationPanel from "./pages/admin/ModerationPanel";
 import { AdminGuard } from "./components/admin/AdminGuard";
 import { ImpersonationBanner } from "./components/layout/ImpersonationBanner";
 import ActivityLog from "./pages/admin/ActivityLog";
@@ -68,6 +69,7 @@ const AppContent = () => {
             <Route path="/admin/verifications" element={<AdminGuard><VerificationsManagement /></AdminGuard>} />
             <Route path="/admin/photo-health" element={<AdminGuard><PhotoHealth /></AdminGuard>} />
             <Route path="/admin/activity-log" element={<AdminGuard><ActivityLog /></AdminGuard>} />
+            <Route path="/admin/moderation" element={<AdminGuard><ModerationPanel /></AdminGuard>} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </main>

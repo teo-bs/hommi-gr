@@ -21,6 +21,7 @@ import {
   ExternalLink
 } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
+import { BlockedUsersSection } from "@/components/settings/BlockedUsersSection";
 
 const Settings = () => {
   const { user, profile } = useAuth();
@@ -233,6 +234,9 @@ const Settings = () => {
             </div>
           </CardContent>
         </Card>
+
+        {/* Blocked Users Section */}
+        <BlockedUsersSection />
 
         {/* Support Section */}
         <Card>

@@ -494,6 +494,7 @@ const RoomPage = () => {
               listerAvatar={roomData.profile?.avatar_url}
               listerVerifications={roomData.profile?.verifications_json}
               listerResponseTime={roomData.profile?.avg_response_time_minutes}
+              listerUserId={roomData.profile?.id}
               onClose={messageFlow.closeConversation}
             />
           </div>

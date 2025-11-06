@@ -69,6 +69,7 @@ const Inbox = () => {
           listerAvatar={selectedThread.listing?.profiles?.avatar_url}
           listerVerifications={selectedThread.listing?.profiles?.verifications_json}
           listerResponseTime={selectedThread.listing?.profiles?.avg_response_time_minutes}
+          listerUserId={selectedThread.otherUserId}
           isHost={selectedThread.isHost}
           onClose={() => {
             setSelectedThread(null);

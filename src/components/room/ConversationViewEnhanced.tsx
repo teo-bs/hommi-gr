@@ -24,6 +24,8 @@ import { ReactionPicker } from "@/components/messaging/ReactionPicker";
 import { VoiceRecorder } from "@/components/messaging/VoiceRecorder";
 import { MessageWithReactions } from "@/components/messaging/MessageWithReactions";
 import { ResponseTimeBadge } from "@/components/messaging/ResponseTimeBadge";
+import { MessageSearch } from "@/components/messaging/MessageSearch";
+import { BlockReportMenu } from "@/components/messaging/BlockReportMenu";
 
 interface ConversationViewEnhancedProps {
   threadId: string;
@@ -38,6 +40,7 @@ interface ConversationViewEnhancedProps {
   listerAvatar?: string;
   listerVerifications?: any;
   listerResponseTime?: number | null;
+  listerUserId?: string;
   isHost?: boolean;
   onClose: () => void;
 }
@@ -55,6 +58,7 @@ export const ConversationViewEnhanced = ({
   listerAvatar,
   listerVerifications,
   listerResponseTime,
+  listerUserId,
   isHost = false,
   onClose
 }: ConversationViewEnhancedProps) => {
@@ -154,9 +158,20 @@ export const ConversationViewEnhanced = ({
             <ResponseTimeBadge avgResponseTimeMinutes={listerResponseTime} />
           </div>
         </div>
-        <Button variant="ghost" size="icon" onClick={onClose}>
-          <X className="h-5 w-5" />
-        </Button>
+        <div className="flex items-center gap-1">
+          <MessageSearch threadId={threadId} />
+          {listerUserId && (
+            <BlockReportMenu
+              userId={listerUserId}
+              userName={listerName}
+              threadId={threadId}
+              onBlock={onClose}
+            />
+          )}
+          <Button variant="ghost" size="icon" onClick={onClose}>
+            <X className="h-5 w-5" />
+          </Button>
+        </div>
       </div>
 
       {/* Messages */}
