@@ -21,7 +21,7 @@ interface MessageFlowState {
   returnAction: (() => void) | null;
 }
 
-export const useMessageFlow = (listingId?: string) => {
+export const useMessageFlow = () => {
   const { user, profile, acceptTerms } = useAuth();
   const [requestStatus, setRequestStatus] = useState<'none' | 'pending' | 'accepted' | 'declined'>('none');
   const [threadId, setThreadId] = useState<string | null>(null);
@@ -31,7 +31,7 @@ export const useMessageFlow = (listingId?: string) => {
   const [messageToSend, setMessageToSend] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
-  const createChatRequest = async () => {
+  const createChatRequest = async (listingId: string) => {
     if (!user || !profile || !listingId) {
       console.log('Missing required data:', { user: !!user, profile: !!profile, listingId });
       setAuthModalOpen(true);
@@ -135,43 +135,6 @@ export const useMessageFlow = (listingId?: string) => {
     }
   };
 
-  // Load existing thread status on mount
-  useEffect(() => {
-    const loadThreadStatus = async () => {
-      if (!user || !profile || !listingId) return;
-
-      try {
-        const { data: listing } = await supabase
-          .from('listings')
-          .select('owner_id')
-          .eq('id', listingId)
-          .single();
-
-        if (!listing) return;
-
-        const { data: thread } = await supabase
-          .from('threads')
-          .select('*')
-          .eq('listing_id', listingId)
-          .eq('seeker_id', profile.id)
-          .eq('host_id', listing.owner_id)
-          .single();
-
-        if (thread) {
-          setThreadId(thread.id);
-          setRequestStatus(thread.status === 'accepted' ? 'accepted' : 
-                          thread.status === 'declined' ? 'declined' : 'pending');
-          if (thread.status === 'accepted') {
-            setShowConversation(true);
-          }
-        }
-      } catch (error) {
-        console.error('Error loading thread status:', error);
-      }
-    };
-
-    loadThreadStatus();
-  }, [user, profile, listingId]);
 
   // Subscribe to thread status changes for real-time updates
   useEffect(() => {

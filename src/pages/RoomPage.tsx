@@ -52,9 +52,8 @@ const RoomPage = () => {
   const [loading, setLoading] = useState(true);
   const [isOwner, setIsOwner] = useState(false);
   
-  // Message flow management - use slug or id as identifier
-  const roomIdentifier = slug || id || '';
-  const messageFlow = useMessageFlow(roomIdentifier);
+  // Message flow management
+  const messageFlow = useMessageFlow();
 
   // Track referral from shared link
   useEffect(() => {
@@ -266,7 +265,7 @@ const RoomPage = () => {
     if (!roomData) return;
     
     // Use the new chat request flow
-    await messageFlow.createChatRequest();
+    await messageFlow.createChatRequest(roomData.listing.id);
   };
 
   const handleMessageSent = (message: string) => {
