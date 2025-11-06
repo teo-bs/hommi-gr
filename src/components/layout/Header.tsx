@@ -245,12 +245,12 @@ export const Header = () => {
   return (
     <>
       <header 
-        className={`sticky top-0 z-50 w-full border-b-2 border-border/20 bg-background/80 backdrop-blur-xl supports-[backdrop-filter]:bg-background/70 transition-all duration-300 ${
+        className={`sticky top-0 z-50 w-full border-b-2 border-border/20 bg-background/80 backdrop-blur-xl supports-[backdrop-filter]:bg-background/70 transition-all duration-300 px-safe ${
           isHeaderVisible ? 'translate-y-0' : '-translate-y-full'
         } ${lastScrollY > 10 ? 'shadow-lg' : 'shadow-none'}`}
       >
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex h-16 sm:h-20 items-center justify-between">
+          <div className="flex h-16 sm:h-20 items-center justify-between pt-safe">
             {/* Logo */}
             <Link to="/" className="flex items-center space-x-3">
               <img 
