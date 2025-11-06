@@ -17,6 +17,35 @@
     }
   }
 
+  /* Marker pulse animation */
+  @keyframes marker-pulse {
+    0% {
+      transform: scale(1);
+      box-shadow: 0 0 0 0 hsl(var(--primary) / 0.7);
+    }
+    50% {
+      transform: scale(1.08);
+      box-shadow: 0 0 0 6px hsl(var(--primary) / 0);
+    }
+    100% {
+      transform: scale(1);
+      box-shadow: 0 0 0 0 hsl(var(--primary) / 0);
+    }
+  }
+
+  /* Marker bounce animation */
+  @keyframes marker-bounce {
+    0%, 100% {
+      transform: translateY(0);
+    }
+    25% {
+      transform: translateY(-4px);
+    }
+    75% {
+      transform: translateY(-2px);
+    }
+  }
+
   /* Shimmer animation for skeleton loaders */
   @keyframes shimmer {
     0% {
@@ -346,6 +375,65 @@
 
 .mapboxgl-ctrl button {
   @apply touch-manipulation;
+}
+
+/* Map Marker Styles */
+.map-price-marker {
+  cursor: pointer;
+  z-index: 1;
+  transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1), z-index 0s;
+}
+
+.price-bubble {
+  padding: 6px 12px;
+  background: hsl(var(--card));
+  color: hsl(var(--card-foreground));
+  border: 2px solid hsl(var(--border));
+  border-radius: 20px;
+  font-size: 14px;
+  font-weight: 600;
+  white-space: nowrap;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  user-select: none;
+}
+
+/* Hover state - from list card hover */
+.price-bubble.hovered {
+  background: hsl(var(--primary));
+  color: hsl(var(--primary-foreground));
+  border-color: hsl(var(--primary));
+  transform: scale(1.15) translateY(-3px);
+  box-shadow: 0 4px 16px hsl(var(--primary) / 0.4);
+  z-index: 10;
+  animation: marker-bounce 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Selected state - from clicking map or carousel */
+.price-bubble.selected {
+  background: hsl(var(--primary));
+  color: hsl(var(--primary-foreground));
+  border-color: hsl(var(--primary));
+  transform: scale(1.12);
+  box-shadow: 0 4px 16px hsl(var(--primary) / 0.4);
+  z-index: 10;
+}
+
+/* Active state - temporary pulse effect */
+.price-bubble.active {
+  animation: marker-pulse 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Hover on marker itself */
+.map-price-marker:hover .price-bubble {
+  transform: scale(1.1);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.map-price-marker:hover .price-bubble:not(.hovered):not(.selected) {
+  background: hsl(var(--accent));
+  color: hsl(var(--accent-foreground));
+  border-color: hsl(var(--accent));
 }
 
 /* React Query DevTools (hide in production) */
