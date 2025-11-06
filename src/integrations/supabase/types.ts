@@ -995,7 +995,9 @@ export type Database = {
           body: string
           created_at: string | null
           deleted_at: string | null
+          delivered_at: string | null
           id: string
+          read_at: string | null
           sender_id: string
           thread_id: string
         }
@@ -1003,7 +1005,9 @@ export type Database = {
           body: string
           created_at?: string | null
           deleted_at?: string | null
+          delivered_at?: string | null
           id?: string
+          read_at?: string | null
           sender_id: string
           thread_id: string
         }
@@ -1011,7 +1015,9 @@ export type Database = {
           body?: string
           created_at?: string | null
           deleted_at?: string | null
+          delivered_at?: string | null
           id?: string
+          read_at?: string | null
           sender_id?: string
           thread_id?: string
         }

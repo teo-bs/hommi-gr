@@ -9,6 +9,10 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useThreadMessages } from "@/hooks/useThreadMessages";
 import { useToast } from "@/hooks/use-toast";
+import { useTypingIndicator } from "@/hooks/useTypingIndicator";
+import { QuickActions } from "@/components/messaging/QuickActions";
+import { TypingIndicator } from "@/components/messaging/TypingIndicator";
+import { ReadReceipt } from "@/components/messaging/ReadReceipt";
 
 interface ConversationViewEnhancedProps {
   threadId: string;
@@ -31,6 +35,7 @@ export const ConversationViewEnhanced = ({
   const { toast } = useToast();
   const [newMessage, setNewMessage] = useState("");
   const [sending, setSending] = useState(false);
+  const [showQuickActions, setShowQuickActions] = useState(true);
 
   const {
     messages,
@@ -42,6 +47,8 @@ export const ConversationViewEnhanced = ({
     setShowNewMessageBadge,
     scrollToBottom
   } = useThreadMessages({ threadId });
+
+  const { typingUsers, setTyping } = useTypingIndicator(threadId);
 
 
   const handleSend = async () => {
@@ -80,10 +87,24 @@ export const ConversationViewEnhanced = ({
     }
   };
 
-  const formatTime = (dateString: string) => {
-    const date = new Date(dateString);
-    return date.toLocaleTimeString('el-GR', { hour: '2-digit', minute: '2-digit' });
+  const handleQuickAction = (template: string) => {
+    setNewMessage(template);
+    setShowQuickActions(false);
   };
+
+  // Handle typing indicator
+  useEffect(() => {
+    if (newMessage.trim()) {
+      setTyping(true);
+      const timeout = setTimeout(() => setTyping(false), 3000);
+      return () => {
+        clearTimeout(timeout);
+        setTyping(false);
+      };
+    } else {
+      setTyping(false);
+    }
+  }, [newMessage]);
 
   return (
     <Card className="flex flex-col h-[600px] max-h-[80vh] w-full">
@@ -127,44 +148,59 @@ export const ConversationViewEnhanced = ({
         ) : messages.length === 0 ? (
           <div className="text-center text-muted-foreground">Δεν υπάρχουν μηνύματα ακόμα</div>
         ) : (
-          messages.map((message: any) => {
-            const isOwn = message.sender_id === profile?.id;
-            return (
-              <div
-                key={message.id}
-                className={`flex gap-2 ${isOwn ? 'justify-end' : 'justify-start'}`}
-              >
-                {!isOwn && (
-                  <AvatarWithBadge
-                    src={message.sender?.avatar_url}
-                    alt={message.sender?.display_name || 'User'}
-                    fallback={message.sender?.display_name?.[0] || 'U'}
-                    verificationsJson={message.sender?.verifications_json}
-                    className="h-8 w-8 mt-1"
-                  />
-                )}
-                <div className={`flex flex-col max-w-[70%] ${isOwn ? 'items-end' : 'items-start'}`}>
+          <>
+            {messages.map((message: any) => {
+              const isOwn = message.sender_id === profile?.id;
+              return (
+                <div
+                  key={message.id}
+                  className={`flex gap-2 ${isOwn ? 'justify-end' : 'justify-start'} animate-message-slide-in`}
+                >
                   {!isOwn && (
-                    <span className="text-xs text-muted-foreground mb-1">
-                      {message.sender?.display_name || 'User'}
-                    </span>
+                    <AvatarWithBadge
+                      src={message.sender?.avatar_url}
+                      alt={message.sender?.display_name || 'User'}
+                      fallback={message.sender?.display_name?.[0] || 'U'}
+                      verificationsJson={message.sender?.verifications_json}
+                      className="h-8 w-8 mt-1"
+                    />
                   )}
-                  <div
-                    className={`rounded-lg px-4 py-2 ${
-                      isOwn
-                        ? 'bg-primary text-primary-foreground'
-                        : 'bg-muted'
-                    }`}
-                  >
-                    <p className="text-sm whitespace-pre-wrap">{message.body}</p>
+                  <div className={`flex flex-col max-w-[70%] ${isOwn ? 'items-end' : 'items-start'}`}>
+                    {!isOwn && (
+                      <span className="text-xs text-muted-foreground mb-1">
+                        {message.sender?.display_name || 'User'}
+                      </span>
+                    )}
+                    <div
+                      className={`rounded-lg px-4 py-2 transition-all hover:scale-[1.02] ${
+                        isOwn
+                          ? 'bg-primary text-primary-foreground'
+                          : 'bg-muted'
+                      }`}
+                    >
+                      <p className="text-sm whitespace-pre-wrap">{message.body}</p>
+                    </div>
+                    {isOwn ? (
+                      <ReadReceipt 
+                        delivered={!!message.delivered_at}
+                        read={!!message.read_at}
+                        timestamp={message.created_at}
+                      />
+                    ) : (
+                      <span className="text-xs text-muted-foreground mt-1">
+                        {new Date(message.created_at).toLocaleTimeString('el-GR', { hour: '2-digit', minute: '2-digit' })}
+                      </span>
+                    )}
                   </div>
-                  <span className="text-xs text-muted-foreground mt-1">
-                    {formatTime(message.created_at)}
-                  </span>
                 </div>
-              </div>
-            );
-          })
+              );
+            })}
+            
+            {/* Typing indicator */}
+            {typingUsers.length > 0 && (
+              <TypingIndicator userName={typingUsers[0].userName} />
+            )}
+          </>
         )}
 
         {/* New message badge */}
@@ -195,6 +231,14 @@ export const ConversationViewEnhanced = ({
 
       {/* Input */}
       <div className="p-4 border-t">
+        {/* Quick Actions */}
+        {showQuickActions && messages.length === 0 && (
+          <QuickActions 
+            onActionClick={handleQuickAction}
+            listingTitle={listingTitle}
+          />
+        )}
+        
         <div className="flex gap-2">
           <Textarea
             value={newMessage}

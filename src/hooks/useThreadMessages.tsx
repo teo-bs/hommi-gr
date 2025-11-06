@@ -50,6 +50,8 @@ export function useThreadMessages(params: MessagesParams) {
           body,
           sender_id,
           created_at,
+          read_at,
+          delivered_at,
           sender:profiles!messages_sender_id_fkey(display_name, avatar_url, verifications_json)
         `)
         .eq('thread_id', threadId)
@@ -125,14 +127,34 @@ export function useThreadMessages(params: MessagesParams) {
         schema: 'public',
         table: 'messages',
         filter: `thread_id=eq.${threadId}`
-      }, (payload) => {
+      }, async (payload) => {
         const newMessage = payload.new;
+        
+        // Fetch sender details for the new message
+        const { data: senderData } = await supabase
+          .from('profiles')
+          .select('display_name, avatar_url, verifications_json')
+          .eq('id', newMessage.sender_id)
+          .single();
+
+        const enrichedMessage = {
+          ...newMessage,
+          sender: senderData
+        };
         
         setMessages(prev => {
           // Avoid duplicates
           if (prev.some(m => m.id === newMessage.id)) return prev;
-          return [...prev, newMessage];
+          return [...prev, enrichedMessage];
         });
+
+        // Mark as read if it's visible and from someone else
+        if (newMessage.sender_id !== profile?.id && isNearBottom()) {
+          await supabase
+            .from('messages')
+            .update({ read_at: new Date().toISOString() })
+            .eq('id', newMessage.id);
+        }
 
         // Smart scroll
         if (newMessage.sender_id === profile?.id || isNearBottom()) {
