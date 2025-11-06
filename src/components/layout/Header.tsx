@@ -180,8 +180,8 @@ export const Header = () => {
   // Check if we're on the search page
   const isSearchPage = location.pathname === '/search';
 
-  // Define navigation items based on role
-  const tenantNavItems = [
+  // Define navigation items based on role (hide Saved/Messages for non-logged users)
+  const tenantNavItems = user ? [
     { 
       href: "/search", 
       label: t('header.search'),
@@ -196,6 +196,17 @@ export const Header = () => {
       href: "/inbox", 
       label: `${t('header.messages')}${unreadCount > 0 ? ` (${unreadCount})` : ''}`,
       icon: MessageSquare
+    },
+    { 
+      href: "/help", 
+      label: t('common.help'),
+      icon: MessageSquare
+    }
+  ] : [
+    { 
+      href: "/search", 
+      label: t('header.search'),
+      icon: Search
     },
     { 
       href: "/help", 
@@ -234,20 +245,20 @@ export const Header = () => {
   return (
     <>
       <header 
-        className={`sticky top-0 z-50 w-full border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 transition-transform duration-300 ${
+        className={`sticky top-0 z-50 w-full border-b-2 border-border/20 bg-background/80 backdrop-blur-xl supports-[backdrop-filter]:bg-background/70 transition-all duration-300 ${
           isHeaderVisible ? 'translate-y-0' : '-translate-y-full'
-        }`}
+        } ${lastScrollY > 10 ? 'shadow-lg' : 'shadow-none'}`}
       >
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex h-12 sm:h-14 items-center justify-between">
+          <div className="flex h-16 sm:h-20 items-center justify-between">
             {/* Logo */}
-            <Link to="/" className="flex items-center space-x-2">
+            <Link to="/" className="flex items-center space-x-3">
               <img 
                 src={hommiLogo} 
                 alt="Hommi" 
-                className="h-8 w-8 sm:h-10 sm:w-10"
+                className="h-10 w-10 sm:h-12 sm:w-12 rounded-xl"
               />
-              <span className="text-xl font-bold text-foreground">
+              <span className="text-xl sm:text-2xl font-bold text-foreground tracking-tight">
                 Hommi
               </span>
             </Link>
@@ -289,7 +300,7 @@ export const Header = () => {
                   <Button 
                     variant="outline" 
                     size="sm" 
-                    className="border-foreground/20"
+                    className="border-foreground/20 rounded-full hover:scale-105 active:scale-95 transition-transform duration-200"
                     onClick={handlePublishListing}
                     data-testid="publish-listing-btn"
                   >
@@ -304,7 +315,7 @@ export const Header = () => {
                 <Button 
                   variant="outline" 
                   size="sm" 
-                  className="border-foreground/20"
+                  className="border-foreground/20 rounded-full hover:scale-105 active:scale-95 transition-transform duration-200"
                   onClick={handlePublishListing}
                 >
                   {t('header.publishListing')}

@@ -86,64 +86,70 @@ const Index = () => {
   return (
     <div className="min-h-screen bg-background">
       {/* Hero Section */}
-      <section className="relative">
+      <section className="relative overflow-hidden">
         <div 
-          className="h-[70vh] sm:h-[80vh] bg-cover bg-center bg-no-repeat relative"
+          className="h-[75vh] sm:h-[85vh] bg-cover bg-center bg-no-repeat relative"
           style={{ backgroundImage: `url(${heroImage})` }}
         >
-          <div className="absolute inset-0 bg-black/40" />
+          {/* Modern gradient overlay */}
+          <div className="absolute inset-0 bg-gradient-to-br from-black/50 via-black/30 to-primary/20" />
+          
+          {/* Animated blur circles for depth */}
+          <div className="absolute top-20 left-10 w-72 h-72 bg-primary/30 rounded-full blur-3xl animate-pulse" />
+          <div className="absolute bottom-20 right-10 w-96 h-96 bg-accent/20 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }} />
+          
           <div className="absolute inset-0 flex items-center justify-center">
-            <div className="text-center text-white max-w-4xl mx-auto px-4 animate-fade-in">
-              <h1 className="text-3xl sm:text-4xl md:text-6xl font-bold mb-4 sm:mb-6 leading-tight">
+            <div className="text-center text-white max-w-5xl mx-auto px-4 animate-fade-in">
+              <h1 className="text-4xl sm:text-5xl md:text-7xl font-bold mb-6 sm:mb-8 leading-tight tracking-tight" style={{ textShadow: '0 2px 20px rgba(0,0,0,0.3)' }}>
                 Βρες το ιδανικό <span className="text-primary-light">σπίτι</span>
                 <br />
                 και τους καλύτερους <span className="text-accent-light">συγκάτοικους</span>
               </h1>
-              <p className="text-lg sm:text-xl md:text-2xl mb-8 sm:mb-12 text-white/90">
-                Η πλατφόρμα συγκατοίκησης που εμπιστεύονται χιλιάδες άνθρωποι σε όλη την Ελλάδα
+              <p className="text-xl sm:text-2xl md:text-3xl mb-10 sm:mb-14 text-white/95 font-light" style={{ textShadow: '0 1px 10px rgba(0,0,0,0.2)' }}>
+                Η πλατφόρμα συγκατοίκησης που εμπιστεύονται χιλιάδες άνθρωποι
               </p>
 
-              {/* Search Bar */}
-              <Card className="max-w-4xl mx-auto bg-white/95 backdrop-blur shadow-elevated rounded-2xl transition-all duration-300 hover:shadow-xl">
-                <CardContent className="p-2 sm:p-3">
-                  <div className="grid grid-cols-1 md:grid-cols-4 gap-0 bg-white rounded-xl shadow-sm">
-                    <div className="md:col-span-1 p-3 sm:p-4 md:border-r border-border/10">
+              {/* Search Bar with Glass-morphism */}
+              <Card className="max-w-5xl mx-auto bg-white/90 backdrop-blur-2xl shadow-2xl rounded-3xl border-2 border-white/50 transition-all duration-300 hover:shadow-3xl hover:scale-[1.02] hover:-translate-y-1">
+                <CardContent className="p-4 sm:p-6">
+                  <div className="grid grid-cols-1 md:grid-cols-4 gap-0 bg-white/50 backdrop-blur-sm rounded-2xl shadow-inner">
+                    <div className="md:col-span-1 p-4 sm:p-5 md:border-r border-border/20">
                       <div className="relative">
-                        <MapPin className="absolute left-0 top-6 h-4 w-4 text-muted-foreground" />
-                        <div className="flex flex-col pl-6">
-                          <span className="text-xs font-medium text-foreground mb-1">
+                        <MapPin className="absolute left-0 top-7 h-5 w-5 text-muted-foreground" />
+                        <div className="flex flex-col pl-7">
+                          <span className="text-xs font-semibold text-foreground mb-2 uppercase tracking-wide">
                             Τοποθεσία
                           </span>
                           <LocationAutocomplete
                             value={searchQuery}
                             onChange={setSearchQuery}
-                            className="border-0 bg-transparent p-0 h-auto text-sm focus-visible:ring-0"
+                            className="border-0 bg-transparent p-0 h-auto text-base font-medium focus-visible:ring-0"
                           />
                         </div>
                       </div>
                     </div>
-                    <div className="md:col-span-1 p-3 sm:p-4 border-t md:border-t-0 md:border-r border-border/10">
+                    <div className="md:col-span-1 p-4 sm:p-5 border-t md:border-t-0 md:border-r border-border/20">
                       <DatePicker
                         date={moveInDate}
                         onDateChange={setMoveInDate}
                         placeholder="Ημ/νία μετακόμισης"
                       />
                     </div>
-                    <div className="md:col-span-1 p-3 sm:p-4 border-t md:border-t-0 md:border-r border-border/10">
+                    <div className="md:col-span-1 p-4 sm:p-5 border-t md:border-t-0 md:border-r border-border/20">
                       <DurationSelector
                         value={duration}
                         onValueChange={setDuration}
                       />
                     </div>
-                    <div className="md:col-span-1 p-3 sm:p-4 border-t md:border-t-0 flex items-center justify-center">
+                    <div className="md:col-span-1 p-4 sm:p-5 border-t md:border-t-0 flex items-center justify-center">
                       <Button 
                         onClick={handleSearch}
-                        className="w-full md:w-12 h-12 rounded-full transition-all duration-200 hover:scale-105 active:scale-95"
+                        className="w-full md:w-14 h-14 rounded-full bg-gradient-to-r from-primary to-primary-hover transition-all duration-300 hover:scale-110 hover:shadow-xl active:scale-95"
                         variant="hero"
                         size="lg"
                       >
-                        <Search className="h-5 w-5" />
-                        <span className="ml-2 md:hidden">Αναζήτηση</span>
+                        <Search className="h-6 w-6" />
+                        <span className="ml-2 md:hidden font-semibold">Αναζήτηση</span>
                       </Button>
                     </div>
                   </div>
@@ -166,26 +172,34 @@ const Index = () => {
             </p>
           </div>
           
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
             {/* Shared Homes Card */}
             <Card 
-              className="group cursor-pointer overflow-hidden rounded-3xl hover:scale-[1.02] active:scale-[0.98] hover:shadow-elevated transition-all duration-300 animate-scale-in touch-manipulation"
+              className="group cursor-pointer overflow-hidden rounded-3xl hover:scale-[1.03] hover:rotate-1 active:scale-[0.98] hover:shadow-2xl transition-all duration-500 animate-fade-in touch-manipulation"
+              style={{ animationDelay: '100ms' }}
               onClick={() => handleShortcut("Shared homes")}
               role="button"
               tabIndex={0}
               aria-label="Φίλτρο: Κοινόχρηστα σπίτια"
               onKeyDown={(e) => e.key === 'Enter' && handleShortcut("Shared homes")}
             >
-              <div className="relative h-[250px] sm:h-[300px] overflow-hidden">
-                <div className="w-full h-full bg-gradient-to-br from-primary/20 via-accent/10 to-primary/30 flex items-center justify-center">
-                  <Users className="h-24 w-24 text-primary opacity-40" />
+              <div className="relative h-[320px] sm:h-[360px] overflow-hidden">
+                {/* Gradient background with animated shimmer */}
+                <div className="w-full h-full bg-gradient-to-br from-primary/30 via-accent/20 to-primary/40 flex items-center justify-center relative">
+                  <Users className="h-28 w-28 text-primary opacity-50 group-hover:scale-110 transition-transform duration-500" />
+                  
+                  {/* Shimmer effect on hover */}
+                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />
                 </div>
-                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />
-                <div className="absolute bottom-0 left-0 right-0 p-6 text-white">
-                  <h3 className="text-xl font-semibold mb-2 leading-tight">
+                
+                {/* Enhanced gradient overlay */}
+                <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent" />
+                
+                <div className="absolute bottom-0 left-0 right-0 p-8 text-white">
+                  <h3 className="text-2xl font-bold mb-3 leading-tight group-hover:translate-x-2 transition-transform duration-300">
                     Κοινόχρηστα σπίτια
                   </h3>
-                  <p className="text-small text-white/90 leading-relaxed">
+                  <p className="text-base text-white/95 leading-relaxed font-light">
                     Το δικό σου δωμάτιο σε κοινόχρηστο διαμέρισμα
                   </p>
                 </div>
@@ -194,23 +208,28 @@ const Index = () => {
 
             {/* Couples Accepted Card */}
             <Card 
-              className="group cursor-pointer overflow-hidden rounded-3xl hover:scale-[1.02] active:scale-[0.98] hover:shadow-elevated transition-all duration-300 animate-scale-in touch-manipulation"
+              className="group cursor-pointer overflow-hidden rounded-3xl hover:scale-[1.03] hover:rotate-1 active:scale-[0.98] hover:shadow-2xl transition-all duration-500 animate-fade-in touch-manipulation"
+              style={{ animationDelay: '200ms' }}
               onClick={() => handleShortcut("Couples accepted")}
               role="button"
               tabIndex={0}
               aria-label="Φίλτρο: Ζευγάρια καλοδεχούμενα"
               onKeyDown={(e) => e.key === 'Enter' && handleShortcut("Couples accepted")}
             >
-              <div className="relative h-[300px] overflow-hidden">
-                <div className="w-full h-full bg-gradient-to-br from-accent/20 via-primary/10 to-accent/30 flex items-center justify-center">
-                  <Heart className="h-24 w-24 text-accent opacity-40" />
+              <div className="relative h-[320px] sm:h-[360px] overflow-hidden">
+                <div className="w-full h-full bg-gradient-to-br from-accent/30 via-primary/20 to-accent/40 flex items-center justify-center relative">
+                  <Heart className="h-28 w-28 text-accent opacity-50 group-hover:scale-110 transition-transform duration-500" />
+                  
+                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />
                 </div>
-                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />
-                <div className="absolute bottom-0 left-0 right-0 p-6 text-white">
-                  <h3 className="text-xl font-semibold mb-2 leading-tight">
+                
+                <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent" />
+                
+                <div className="absolute bottom-0 left-0 right-0 p-8 text-white">
+                  <h3 className="text-2xl font-bold mb-3 leading-tight group-hover:translate-x-2 transition-transform duration-300">
                     Ζευγάρια καλοδεχούμενα
                   </h3>
-                  <p className="text-small text-white/90 leading-relaxed">
+                  <p className="text-base text-white/95 leading-relaxed font-light">
                     Δύο οδοντόβουρτσες; Κανένα πρόβλημα.
                   </p>
                 </div>
@@ -219,23 +238,28 @@ const Index = () => {
 
             {/* Pets Accepted Card */}
             <Card 
-              className="group cursor-pointer overflow-hidden rounded-3xl hover:scale-[1.02] active:scale-[0.98] hover:shadow-elevated transition-all duration-300 animate-scale-in touch-manipulation"
+              className="group cursor-pointer overflow-hidden rounded-3xl hover:scale-[1.03] hover:rotate-1 active:scale-[0.98] hover:shadow-2xl transition-all duration-500 animate-fade-in touch-manipulation"
+              style={{ animationDelay: '300ms' }}
               onClick={() => handleShortcut("Pets accepted")}
               role="button"
               tabIndex={0}
               aria-label="Φίλτρο: Κατοικίδια καλοδεχούμενα"
               onKeyDown={(e) => e.key === 'Enter' && handleShortcut("Pets accepted")}
             >
-              <div className="relative h-[300px] overflow-hidden">
-                <div className="w-full h-full bg-gradient-to-br from-success/20 via-primary/10 to-success/30 flex items-center justify-center">
-                  <Home className="h-24 w-24 text-success opacity-40" />
+              <div className="relative h-[320px] sm:h-[360px] overflow-hidden">
+                <div className="w-full h-full bg-gradient-to-br from-success/30 via-primary/20 to-success/40 flex items-center justify-center relative">
+                  <Home className="h-28 w-28 text-success opacity-50 group-hover:scale-110 transition-transform duration-500" />
+                  
+                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />
                 </div>
-                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />
-                <div className="absolute bottom-0 left-0 right-0 p-6 text-white">
-                  <h3 className="text-xl font-semibold mb-2 leading-tight">
+                
+                <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent" />
+                
+                <div className="absolute bottom-0 left-0 right-0 p-8 text-white">
+                  <h3 className="text-2xl font-bold mb-3 leading-tight group-hover:translate-x-2 transition-transform duration-300">
                     Κατοικίδια καλοδεχούμενα
                   </h3>
-                  <p className="text-small text-white/90 leading-relaxed">
+                  <p className="text-base text-white/95 leading-relaxed font-light">
                     Γιατί το σπίτι είναι εκεί που είναι το κατοικίδιό σου
                   </p>
                 </div>
@@ -257,39 +281,50 @@ const Index = () => {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-8">
-            <Card className="text-center hover:shadow-moderate transition-all duration-300 hover:-translate-y-1 active:scale-95">
-              <CardContent className="p-6 sm:p-8">
-                <div className="w-14 h-14 sm:w-16 sm:h-16 bg-primary-lighter rounded-full flex items-center justify-center mx-auto mb-4 sm:mb-6 transition-transform duration-300 group-hover:scale-110">
-                  <Search className="h-8 w-8 text-primary" />
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 sm:gap-10">
+            <Card className="group text-center bg-white/60 backdrop-blur-sm border-2 border-white/50 hover:shadow-2xl hover:border-primary/30 transition-all duration-500 hover:-translate-y-3 active:scale-95 rounded-3xl overflow-hidden">
+              <CardContent className="p-8 sm:p-10">
+                {/* Animated icon container */}
+                <div className="relative w-20 h-20 sm:w-24 sm:h-24 bg-gradient-to-br from-primary to-primary-hover rounded-3xl flex items-center justify-center mx-auto mb-6 sm:mb-8 transition-all duration-500 group-hover:scale-110 group-hover:rotate-6 shadow-lg">
+                  <Search className="h-10 w-10 sm:h-12 sm:w-12 text-white" />
+                  
+                  {/* Pulse ring on hover */}
+                  <div className="absolute inset-0 rounded-3xl border-4 border-primary/50 scale-100 group-hover:scale-125 opacity-0 group-hover:opacity-100 transition-all duration-500" />
                 </div>
-                <h3 className="text-xl font-semibold mb-4">Browse verified</h3>
-                <p className="text-muted-foreground">
+                
+                <h3 className="text-2xl font-bold mb-4 tracking-tight">Δες επαληθευμένες αγγελίες</h3>
+                <p className="text-base text-muted-foreground leading-relaxed font-light">
                   Περιηγηθείτε σε επαληθευμένες καταχωρήσεις από αξιόπιστους hosts με πλήρεις πληροφορίες και φωτογραφίες
                 </p>
               </CardContent>
             </Card>
 
-            <Card className="text-center hover:shadow-moderate transition-all duration-300 hover:-translate-y-1 active:scale-95">
-              <CardContent className="p-6 sm:p-8">
-                <div className="w-14 h-14 sm:w-16 sm:h-16 bg-accent-light rounded-full flex items-center justify-center mx-auto mb-4 sm:mb-6 transition-transform duration-300 group-hover:scale-110">
-                  <Star className="h-7 w-7 sm:h-8 sm:w-8 text-accent" />
+            <Card className="group text-center bg-white/60 backdrop-blur-sm border-2 border-white/50 hover:shadow-2xl hover:border-accent/30 transition-all duration-500 hover:-translate-y-3 active:scale-95 rounded-3xl overflow-hidden">
+              <CardContent className="p-8 sm:p-10">
+                <div className="relative w-20 h-20 sm:w-24 sm:h-24 bg-gradient-to-br from-accent to-accent-light rounded-3xl flex items-center justify-center mx-auto mb-6 sm:mb-8 transition-all duration-500 group-hover:scale-110 group-hover:rotate-6 shadow-lg">
+                  <Star className="h-10 w-10 sm:h-12 sm:w-12 text-white" />
+                  
+                  <div className="absolute inset-0 rounded-3xl border-4 border-accent/50 scale-100 group-hover:scale-125 opacity-0 group-hover:opacity-100 transition-all duration-500" />
                 </div>
-                <h3 className="text-lg sm:text-xl font-semibold mb-3 sm:mb-4">AI match</h3>
-                <p className="text-sm sm:text-base text-muted-foreground">
-                  Το AI μας σας ταιριάζει με τους ιδανικούς συγκάτοικους βάσει των προτιμήσεων και του lifestyle σας
+                
+                <h3 className="text-2xl font-bold mb-4 tracking-tight">Ταιριάζεις</h3>
+                <p className="text-base text-muted-foreground leading-relaxed font-light">
+                  Το σύστημά μας σας ταιριάζει με τους ιδανικούς συγκάτοικους βάσει των προτιμήσεων και του lifestyle σας
                 </p>
               </CardContent>
             </Card>
 
-            <Card className="text-center hover:shadow-moderate transition-all duration-300 hover:-translate-y-1 active:scale-95">
-              <CardContent className="p-6 sm:p-8">
-                <div className="w-14 h-14 sm:w-16 sm:h-16 bg-success-light rounded-full flex items-center justify-center mx-auto mb-4 sm:mb-6 transition-transform duration-300 group-hover:scale-110">
-                  <Shield className="h-7 w-7 sm:h-8 sm:w-8 text-success" />
+            <Card className="group text-center bg-white/60 backdrop-blur-sm border-2 border-white/50 hover:shadow-2xl hover:border-success/30 transition-all duration-500 hover:-translate-y-3 active:scale-95 rounded-3xl overflow-hidden">
+              <CardContent className="p-8 sm:p-10">
+                <div className="relative w-20 h-20 sm:w-24 sm:h-24 bg-gradient-to-br from-success to-success-light rounded-3xl flex items-center justify-center mx-auto mb-6 sm:mb-8 transition-all duration-500 group-hover:scale-110 group-hover:rotate-6 shadow-lg">
+                  <Shield className="h-10 w-10 sm:h-12 sm:w-12 text-white" />
+                  
+                  <div className="absolute inset-0 rounded-3xl border-4 border-success/50 scale-100 group-hover:scale-125 opacity-0 group-hover:opacity-100 transition-all duration-500" />
                 </div>
-                <h3 className="text-xl font-semibold mb-4">Book safely</h3>
-                <p className="text-muted-foreground">
-                  Κλείστε με ασφάλεια με το σύστημα held funds και προστασία έως την επιβεβαίωση της μετακόμισης
+                
+                <h3 className="text-2xl font-bold mb-4 tracking-tight">Κράτηση με ασφάλεια</h3>
+                <p className="text-base text-muted-foreground leading-relaxed font-light">
+                  Κλείστε με ασφάλεια με προστασία και υποστήριξη έως την επιβεβαίωση της μετακόμισης
                 </p>
               </CardContent>
             </Card>
@@ -305,63 +340,62 @@ const Index = () => {
               <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-4 sm:mb-6">
                 Γιατί να επιλέξεις το Hommi;
               </h2>
-              <div className="space-y-4 sm:space-y-6">
-                <div className="flex items-start space-x-3 sm:space-x-4 animate-scale-in">
-                  <div className="w-7 h-7 sm:w-8 sm:h-8 bg-primary-lighter rounded-full flex items-center justify-center flex-shrink-0 mt-1">
-                    <CheckCircle className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
+              <div className="space-y-6 sm:space-y-8">
+                <div className="flex items-start space-x-4 sm:space-x-5 animate-fade-in group hover:translate-x-2 transition-transform duration-300" style={{ animationDelay: '0ms' }}>
+                  <div className="w-12 h-12 sm:w-14 sm:h-14 bg-gradient-to-br from-primary to-primary-hover rounded-2xl flex items-center justify-center flex-shrink-0 mt-1 shadow-md group-hover:scale-110 transition-transform duration-300">
+                    <CheckCircle className="h-6 w-6 sm:h-7 sm:w-7 text-white" />
                   </div>
                   <div>
-                    <h3 className="text-base sm:text-lg font-semibold mb-2">Trust-first approach</h3>
-                    <p className="text-sm sm:text-base text-muted-foreground">
+                    <h3 className="text-xl sm:text-2xl font-bold mb-3 tracking-tight">Trust-first approach</h3>
+                    <p className="text-base sm:text-lg text-muted-foreground leading-relaxed font-light">
                       Όλοι οι χρήστες επαληθεύονται με Gov.gr και έχουν verified profiles για μέγιστη ασφάλεια
                     </p>
                   </div>
                 </div>
 
-                <div className="flex items-start space-x-3 sm:space-x-4 animate-scale-in" style={{ animationDelay: "100ms" }}>
-                  <div className="w-7 h-7 sm:w-8 sm:h-8 bg-accent-light rounded-full flex items-center justify-center flex-shrink-0 mt-1">
-                    <Users className="h-4 w-4 sm:h-5 sm:w-5 text-accent" />
+                <div className="flex items-start space-x-4 sm:space-x-5 animate-fade-in group hover:translate-x-2 transition-transform duration-300" style={{ animationDelay: "150ms" }}>
+                  <div className="w-12 h-12 sm:w-14 sm:h-14 bg-gradient-to-br from-accent to-accent-light rounded-2xl flex items-center justify-center flex-shrink-0 mt-1 shadow-md group-hover:scale-110 transition-transform duration-300">
+                    <Users className="h-6 w-6 sm:h-7 sm:w-7 text-white" />
                   </div>
                   <div>
-                    <h3 className="text-base sm:text-lg font-semibold mb-2">Community-focused</h3>
-                    <p className="text-sm sm:text-base text-muted-foreground">
+                    <h3 className="text-xl sm:text-2xl font-bold mb-3 tracking-tight">Community-focused</h3>
+                    <p className="text-base sm:text-lg text-muted-foreground leading-relaxed font-light">
                       Χτίζουμε μια κοινότητα όπου όλοι νιώθουν ασφαλείς και υποστηριζόμενοι στην αναζήτησή τους
                     </p>
                   </div>
                 </div>
 
-                <div className="flex items-start space-x-3 sm:space-x-4 animate-scale-in" style={{ animationDelay: "200ms" }}>
-                  <div className="w-7 h-7 sm:w-8 sm:h-8 bg-success-light rounded-full flex items-center justify-center flex-shrink-0 mt-1">
-                    <Shield className="h-4 w-4 sm:h-5 sm:w-5 text-success" />
+                <div className="flex items-start space-x-4 sm:space-x-5 animate-fade-in group hover:translate-x-2 transition-transform duration-300" style={{ animationDelay: "300ms" }}>
+                  <div className="w-12 h-12 sm:w-14 sm:h-14 bg-gradient-to-br from-success to-success-light rounded-2xl flex items-center justify-center flex-shrink-0 mt-1 shadow-md group-hover:scale-110 transition-transform duration-300">
+                    <Shield className="h-6 w-6 sm:h-7 sm:w-7 text-white" />
                   </div>
                   <div>
-                    <h3 className="text-base sm:text-lg font-semibold mb-2">Secure payments</h3>
-                    <p className="text-sm sm:text-base text-muted-foreground">
-                      Held funds system που προστατεύει και τις δύο πλευρές έως την ολοκλήρωση της μετακόμισης
+                    <h3 className="text-xl sm:text-2xl font-bold mb-3 tracking-tight">Secure payments</h3>
+                    <p className="text-base sm:text-lg text-muted-foreground leading-relaxed font-light">
+                      Προστασία που προστατεύει και τις δύο πλευρές έως την ολοκλήρωση της μετακόμισης
                     </p>
                   </div>
                 </div>
               </div>
 
-              <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 mt-6 sm:mt-8">
+              <div className="flex flex-col sm:flex-row gap-4 sm:gap-5 mt-8 sm:mt-10">
                 <Button
                   variant="hero"
                   size="lg"
-                  className="w-full sm:w-auto min-h-[48px] touch-manipulation active:scale-95 transition-transform"
                   onClick={() => navigate('/search')}
+                  className="text-lg px-8 py-7 rounded-full bg-gradient-to-r from-primary to-primary-hover hover:scale-105 hover:shadow-2xl active:scale-95 transition-all duration-300 group"
                 >
                   Ξεκίνα την αναζήτηση
-                  <ArrowRight className="h-4 w-4 ml-2" />
+                  <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
                 </Button>
-                
                 <Button
                   variant="outline"
                   size="lg"
-                  className="w-full sm:w-auto min-h-[48px] touch-manipulation active:scale-95 transition-transform"
                   onClick={handlePublishListing}
+                  className="text-lg px-8 py-7 rounded-full border-2 hover:bg-primary/10 hover:border-primary hover:scale-105 active:scale-95 transition-all duration-300"
                 >
-                  <Plus className="h-4 w-4 mr-2" />
                   Δημοσίευσε αγγελία
+                  <Plus className="ml-2 h-5 w-5" />
                 </Button>
               </div>
             </div>

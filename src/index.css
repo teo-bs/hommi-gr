@@ -27,6 +27,38 @@
     }
   }
 
+  /* Float animation for elements */
+  @keyframes float {
+    0%, 100% {
+      transform: translateY(0px);
+    }
+    50% {
+      transform: translateY(-10px);
+    }
+  }
+
+  /* Slow shimmer for hover effects */
+  @keyframes shimmer-slow {
+    0% {
+      transform: translateX(-100%);
+    }
+    100% {
+      transform: translateX(100%);
+    }
+  }
+
+  /* Scale in with delay */
+  @keyframes scale-in-delayed {
+    0% {
+      transform: scale(0.95);
+      opacity: 0;
+    }
+    100% {
+      transform: scale(1);
+      opacity: 1;
+    }
+  }
+
   .mapboxgl-popup-content {
     padding: 0 !important;
     border-radius: 12px !important;
@@ -248,6 +280,18 @@
       transparent 100%
     );
     background-size: 200% 100%;
+  }
+
+  .animate-float {
+    animation: float 3s ease-in-out infinite;
+  }
+
+  .animate-shimmer-slow {
+    animation: shimmer-slow 2s ease-in-out;
+  }
+
+  .animate-scale-in-delayed {
+    animation: scale-in-delayed 0.5s ease-out forwards;
   }
 }
 
