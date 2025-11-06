@@ -20,6 +20,10 @@ import { MessageAttachment } from "@/components/messaging/MessageAttachment";
 import { TemplateSelector } from "@/components/messaging/TemplateSelector";
 import { TourScheduler } from "@/components/messaging/TourScheduler";
 import { TourRequestCard } from "@/components/messaging/TourRequestCard";
+import { ReactionPicker } from "@/components/messaging/ReactionPicker";
+import { VoiceRecorder } from "@/components/messaging/VoiceRecorder";
+import { MessageWithReactions } from "@/components/messaging/MessageWithReactions";
+import { ResponseTimeBadge } from "@/components/messaging/ResponseTimeBadge";
 
 interface ConversationViewEnhancedProps {
   threadId: string;
@@ -33,6 +37,7 @@ interface ConversationViewEnhancedProps {
   listerName: string;
   listerAvatar?: string;
   listerVerifications?: any;
+  listerResponseTime?: number | null;
   isHost?: boolean;
   onClose: () => void;
 }
@@ -49,6 +54,7 @@ export const ConversationViewEnhanced = ({
   listerName,
   listerAvatar,
   listerVerifications,
+  listerResponseTime,
   isHost = false,
   onClose
 }: ConversationViewEnhancedProps) => {
@@ -73,8 +79,9 @@ export const ConversationViewEnhanced = ({
   const { tours } = useTourRequests(threadId);
 
 
-  const handleSend = async () => {
-    if (!newMessage.trim() || !profile || sending) return;
+  const handleSend = async (messageContent?: string) => {
+    const content = messageContent || newMessage.trim();
+    if (!content || !profile || sending) return;
     
     setSending(true);
     try {
@@ -83,12 +90,14 @@ export const ConversationViewEnhanced = ({
         .insert({
           thread_id: threadId,
           sender_id: profile.id,
-          body: newMessage.trim()
+          body: content
         });
       
       if (error) throw error;
       
-      setNewMessage('');
+      if (!messageContent) {
+        setNewMessage('');
+      }
       
     } catch (error) {
       console.error('Failed to send message:', error);
@@ -140,9 +149,9 @@ export const ConversationViewEnhanced = ({
             verificationsJson={listerVerifications}
             className="h-10 w-10"
           />
-          <div>
+          <div className="flex-1 min-w-0">
             <p className="font-semibold">{listerName}</p>
-            <p className="text-sm text-muted-foreground">{listingTitle}</p>
+            <ResponseTimeBadge avgResponseTimeMinutes={listerResponseTime} />
           </div>
         </div>
         <Button variant="ghost" size="icon" onClick={onClose}>
@@ -183,48 +192,16 @@ export const ConversationViewEnhanced = ({
           <>
             {messages.map((message: any) => {
               const isOwn = message.sender_id === profile?.id;
+              const isVoiceMessage = message.body?.startsWith('voice:');
+              const voiceUrl = isVoiceMessage ? message.body.replace('voice:', '') : null;
+              
               return (
-                <div
+                <MessageWithReactions
                   key={message.id}
-                  className={`flex gap-2 ${isOwn ? 'justify-end' : 'justify-start'} animate-message-slide-in`}
-                >
-                  {!isOwn && (
-                    <AvatarWithBadge
-                      src={message.sender?.avatar_url}
-                      alt={message.sender?.display_name || 'User'}
-                      fallback={message.sender?.display_name?.[0] || 'U'}
-                      verificationsJson={message.sender?.verifications_json}
-                      className="h-8 w-8 mt-1"
-                    />
-                  )}
-                  <div className={`flex flex-col max-w-[70%] ${isOwn ? 'items-end' : 'items-start'}`}>
-                    {!isOwn && (
-                      <span className="text-xs text-muted-foreground mb-1">
-                        {message.sender?.display_name || 'User'}
-                      </span>
-                    )}
-                    <div
-                      className={`rounded-lg px-4 py-2 transition-all hover:scale-[1.02] ${
-                        isOwn
-                          ? 'bg-primary text-primary-foreground'
-                          : 'bg-muted'
-                      }`}
-                    >
-                      <p className="text-sm whitespace-pre-wrap">{message.body}</p>
-                    </div>
-                    {isOwn ? (
-                      <ReadReceipt 
-                        delivered={!!message.delivered_at}
-                        read={!!message.read_at}
-                        timestamp={message.created_at}
-                      />
-                    ) : (
-                      <span className="text-xs text-muted-foreground mt-1">
-                        {new Date(message.created_at).toLocaleTimeString('el-GR', { hour: '2-digit', minute: '2-digit' })}
-                      </span>
-                    )}
-                  </div>
-                </div>
+                  message={message}
+                  isOwn={isOwn}
+                  voiceUrl={voiceUrl}
+                />
               );
             })}
             
@@ -315,7 +292,7 @@ export const ConversationViewEnhanced = ({
               disabled={sending}
             />
             <Button
-              onClick={handleSend}
+              onClick={() => handleSend()}
               disabled={!newMessage.trim() || sending}
               size="icon"
               className="h-[60px] w-[60px]"

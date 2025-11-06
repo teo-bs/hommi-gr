@@ -157,7 +157,7 @@ const RoomPage = () => {
         // Fetch lister profile data with verifications
         const { data: lister, error: listerError } = await supabase
           .from('profiles')
-          .select('*, verifications_json')
+          .select('*, verifications_json, avg_response_time_minutes')
           .eq('id', listing.owner_id)
           .maybeSingle();
 
@@ -493,6 +493,7 @@ const RoomPage = () => {
               listerName={roomData.profile?.display_name || 'Ιδιοκτήτης'}
               listerAvatar={roomData.profile?.avatar_url}
               listerVerifications={roomData.profile?.verifications_json}
+              listerResponseTime={roomData.profile?.avg_response_time_minutes}
               onClose={messageFlow.closeConversation}
             />
           </div>

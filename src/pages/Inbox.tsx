@@ -65,9 +65,10 @@ const Inbox = () => {
           listingPrice={0}
           listingCity=""
           listingNeighborhood=""
-          listerName={selectedThread.otherUserName}
-          listerAvatar={selectedThread.otherUserAvatar}
-          listerVerifications={selectedThread.otherUserVerifications}
+          listerName={selectedThread.listing?.profiles?.display_name || 'Lister'}
+          listerAvatar={selectedThread.listing?.profiles?.avatar_url}
+          listerVerifications={selectedThread.listing?.profiles?.verifications_json}
+          listerResponseTime={selectedThread.listing?.profiles?.avg_response_time_minutes}
           isHost={selectedThread.isHost}
           onClose={() => {
             setSelectedThread(null);
