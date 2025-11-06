@@ -142,23 +142,23 @@ export const ConversationViewEnhanced = ({
   }, [newMessage]);
 
   return (
-    <Card className="flex flex-col h-[600px] max-h-[80vh] w-full">
+    <div className="flex flex-col h-screen max-h-screen w-full bg-background">
       {/* Header */}
-      <div className="flex items-center justify-between p-4 border-b">
-        <div className="flex items-center gap-3">
+      <div className="flex items-center justify-between p-3 sm:p-4 border-b bg-card sticky top-0 z-10">
+        <div className="flex items-center gap-3 flex-1 min-w-0">
           <AvatarWithBadge
             src={listerAvatar}
             alt={listerName}
-            fallback={listerName[0]}
+            fallback={listerName[0]?.toUpperCase() || 'U'}
             verificationsJson={listerVerifications}
-            className="h-10 w-10"
+            className="h-10 w-10 sm:h-12 sm:w-12 flex-shrink-0"
           />
           <div className="flex-1 min-w-0">
-            <p className="font-semibold">{listerName}</p>
+            <p className="font-semibold text-sm sm:text-base truncate">{listerName}</p>
             <ResponseTimeBadge avgResponseTimeMinutes={listerResponseTime} />
           </div>
         </div>
-        <div className="flex items-center gap-1">
+        <div className="flex items-center gap-1 flex-shrink-0">
           <MessageSearch threadId={threadId} />
           {listerUserId && (
             <BlockReportMenu
@@ -168,24 +168,26 @@ export const ConversationViewEnhanced = ({
               onBlock={onClose}
             />
           )}
-          <Button variant="ghost" size="icon" onClick={onClose}>
+          <Button variant="ghost" size="icon" onClick={onClose} className="h-9 w-9">
             <X className="h-5 w-5" />
           </Button>
         </div>
       </div>
 
       {/* Messages */}
-      <div ref={scrollRef} className="flex-1 overflow-y-auto p-4 space-y-4 relative">
-        {/* Listing Card */}
-        <ListingCardMini
-          listingId={listingId}
-          title={listingTitle}
-          coverImage={listingCoverImage}
-          price={listingPrice}
-          city={listingCity}
-          neighborhood={listingNeighborhood}
-          availableFrom={listingAvailableFrom}
-        />
+      <div ref={scrollRef} className="flex-1 overflow-y-auto p-3 sm:p-4 space-y-3 sm:space-y-4 relative bg-muted/20">
+        {/* Listing Card - Sticky at top */}
+        <div className="sticky top-0 z-5 pb-3">
+          <ListingCardMini
+            listingId={listingId}
+            title={listingTitle}
+            coverImage={listingCoverImage}
+            price={listingPrice}
+            city={listingCity}
+            neighborhood={listingNeighborhood}
+            availableFrom={listingAvailableFrom}
+          />
+        </div>
         {hasMore && (
           <div className="text-center mb-4">
             <Button
@@ -256,16 +258,16 @@ export const ConversationViewEnhanced = ({
       </div>
 
       {/* Safety Banner */}
-      <div className="px-4 py-2 bg-warning/10 border-t border-warning/20">
+      <div className="px-3 sm:px-4 py-2 bg-warning/10 border-t border-warning/20 flex-shrink-0">
         <p className="text-xs text-warning-foreground">
           ⚠️ Μείνε στην εφαρμογή. Μην στέλνεις χρήματα εκτός Hommi.
         </p>
       </div>
 
-      {/* Input */}
-      <div className="border-t">
+      {/* Input Area */}
+      <div className="border-t bg-card flex-shrink-0">
         {/* Quick Actions & Tools */}
-        <div className="p-3 border-b flex items-center justify-between">
+        <div className="p-2 sm:p-3 border-b flex items-center justify-between">
           <div className="flex items-center gap-1">
             <PhotoUploader
               onPhotoSent={(url) => {
@@ -288,7 +290,7 @@ export const ConversationViewEnhanced = ({
         </div>
 
         {showQuickActions && messages.length === 0 && (
-          <div className="px-4 pt-3">
+          <div className="px-3 sm:px-4 pt-3">
             <QuickActions 
               onActionClick={handleQuickAction}
               listingTitle={listingTitle}
@@ -296,27 +298,27 @@ export const ConversationViewEnhanced = ({
           </div>
         )}
         
-        <div className="p-4">
+        <div className="p-3 sm:p-4">
           <div className="flex gap-2">
             <Textarea
               value={newMessage}
               onChange={(e) => setNewMessage(e.target.value)}
               onKeyDown={handleKeyPress}
               placeholder="Γράψε ένα μήνυμα..."
-              className="min-h-[60px] resize-none"
+              className="min-h-[44px] sm:min-h-[60px] resize-none"
               disabled={sending}
             />
             <Button
               onClick={() => handleSend()}
               disabled={!newMessage.trim() || sending}
               size="icon"
-              className="h-[60px] w-[60px]"
+              className="h-[44px] w-[44px] sm:h-[60px] sm:w-[60px] flex-shrink-0"
             >
-              <Send className="h-5 w-5" />
+              <Send className="h-4 w-4 sm:h-5 sm:w-5" />
             </Button>
           </div>
         </div>
       </div>
-    </Card>
+    </div>
   );
 };

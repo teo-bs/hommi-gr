@@ -69,14 +69,15 @@ const Inbox = () => {
           threadId={selectedThread.id}
           listingId={selectedThread.listingId}
           listingTitle={selectedThread.listingTitle}
-          listingCoverImage=""
-          listingPrice={0}
-          listingCity=""
-          listingNeighborhood=""
-          listerName={selectedThread.listing?.profiles?.display_name || 'Lister'}
-          listerAvatar={selectedThread.listing?.profiles?.avatar_url}
-          listerVerifications={selectedThread.listing?.profiles?.verifications_json}
-          listerResponseTime={selectedThread.listing?.profiles?.avg_response_time_minutes}
+          listingCoverImage={selectedThread.listingCoverImage}
+          listingPrice={selectedThread.listingPrice}
+          listingCity={selectedThread.listingCity}
+          listingNeighborhood={selectedThread.listingNeighborhood}
+          listingAvailableFrom={selectedThread.listingAvailableFrom}
+          listerName={selectedThread.otherUserName}
+          listerAvatar={selectedThread.otherUserAvatar}
+          listerVerifications={selectedThread.otherUserVerifications}
+          listerResponseTime={selectedThread.otherUserResponseTime}
           listerUserId={selectedThread.otherUserId}
           isHost={selectedThread.isHost}
           onClose={() => {

@@ -37,9 +37,32 @@ export function useThreads(params: ThreadsParams = {}) {
         .from('threads')
         .select(`
           *,
-          listing:listings!inner(id, title),
-          host_profile:profiles!threads_host_id_fkey(id, display_name, avatar_url, verifications_json),
-          seeker_profile:profiles!threads_seeker_id_fkey(id, display_name, avatar_url, verifications_json)
+          listing:listings!inner(
+            id, 
+            title, 
+            slug,
+            price_month,
+            city,
+            neighborhood,
+            availability_date,
+            bills_included,
+            cover_photo_id,
+            listing_photos(url, is_cover)
+          ),
+          host_profile:profiles!threads_host_id_fkey(
+            id, 
+            display_name, 
+            avatar_url, 
+            verifications_json,
+            avg_response_time_minutes
+          ),
+          seeker_profile:profiles!threads_seeker_id_fkey(
+            id, 
+            display_name, 
+            avatar_url, 
+            verifications_json,
+            avg_response_time_minutes
+          )
         `, { count: 'exact' })
         .is('deleted_at', null)
         .order('last_message_at', { ascending: false, nullsFirst: false });
