@@ -86,9 +86,9 @@ const Index = () => {
   return (
     <div className="min-h-screen bg-background">
       {/* Hero Section */}
-      <section className="relative overflow-hidden mb-16 sm:mb-20 md:mb-24">
+      <section className="relative overflow-visible md:overflow-hidden mb-20 sm:mb-24 md:mb-28">
         <div 
-          className="min-h-[600px] h-[80vh] sm:h-[85vh] bg-cover bg-center bg-no-repeat relative pt-safe"
+          className="min-h-[680px] md:min-h-[600px] h-auto md:h-[85vh] bg-cover bg-center bg-no-repeat relative pt-safe"
           style={{ backgroundImage: `url(${heroImage})` }}
         >
           {/* Modern gradient overlay */}
@@ -98,7 +98,7 @@ const Index = () => {
           <div className="absolute top-20 left-10 w-72 h-72 bg-primary/30 rounded-full blur-3xl animate-pulse" />
           <div className="absolute bottom-20 right-10 w-96 h-96 bg-accent/20 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }} />
           
-          <div className="absolute inset-0 flex items-center justify-center px-4 sm:px-6 pt-24 sm:pt-28 md:pt-20 pb-safe">
+          <div className="absolute inset-0 z-10 flex items-start justify-center px-4 sm:px-6 pt-28 sm:pt-32 md:pt-24 pb-12 sm:pb-16 pb-safe">
             <div className="text-center text-white max-w-5xl mx-auto w-full animate-fade-in">
               <h1 className="text-3xl sm:text-5xl md:text-7xl font-bold mb-4 sm:mb-6 md:mb-8 leading-tight tracking-tight" style={{ textShadow: '0 2px 20px rgba(0,0,0,0.3)' }}>
                 Βρες το ιδανικό <span className="text-primary-light">σπίτι</span>
@@ -110,7 +110,7 @@ const Index = () => {
               </p>
 
               {/* Search Bar with Glass-morphism */}
-              <Card className="max-w-5xl mx-auto bg-white/90 backdrop-blur-2xl shadow-2xl rounded-2xl sm:rounded-3xl border-2 border-white/50 transition-all duration-300 hover:shadow-3xl hover:scale-[1.02] hover:-translate-y-1">
+              <Card className="max-w-5xl mx-auto bg-white/90 backdrop-blur-2xl shadow-2xl rounded-2xl sm:rounded-3xl border-2 border-white/50 transition-all duration-300 hover:shadow-3xl hover:scale-[1.02] hover:-translate-y-0.5 md:hover:-translate-y-1 relative z-10">
                 <CardContent className="p-5 sm:p-6">
                   <div className="grid grid-cols-1 md:grid-cols-4 gap-0 bg-white/50 backdrop-blur-sm rounded-xl sm:rounded-2xl shadow-inner">
                     <div className="md:col-span-1 p-5 md:border-r border-border/20">
@@ -161,7 +161,7 @@ const Index = () => {
       </section>
 
       {/* Category Cards Section */}
-      <section className="py-16 sm:py-20 md:py-24 bg-background px-safe">
+      <section className="pt-20 sm:pt-24 md:pt-28 pb-16 sm:pb-20 md:pb-24 bg-background px-safe relative z-0">
         <div className="container mx-auto px-4 sm:px-6">
           <div className="text-center mb-10 sm:mb-12 animate-fade-in">
             <h2 className="text-xl sm:text-3xl md:text-4xl font-bold tracking-tight mb-3 sm:mb-4">
