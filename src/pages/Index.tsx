@@ -86,7 +86,7 @@ const Index = () => {
   return (
     <div className="min-h-screen bg-background">
       {/* Hero Section */}
-      <section className="relative overflow-hidden mb-16 sm:mb-20 md:mb-24">
+      <section className="relative overflow-hidden mb-24 sm:mb-28 md:mb-32">
         <div 
           className="min-h-[600px] h-[80vh] sm:h-[85vh] bg-cover bg-center bg-no-repeat relative pt-safe"
           style={{ backgroundImage: `url(${heroImage})` }}
@@ -98,7 +98,7 @@ const Index = () => {
           <div className="absolute top-20 left-10 w-72 h-72 bg-primary/30 rounded-full blur-3xl animate-pulse" />
           <div className="absolute bottom-20 right-10 w-96 h-96 bg-accent/20 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }} />
           
-          <div className="absolute inset-0 flex items-center justify-center px-4 sm:px-6 pt-24 sm:pt-28 md:pt-20 pb-safe">
+          <div className="absolute inset-0 flex items-center justify-center px-4 sm:px-6 pt-28 sm:pt-32 md:pt-24 pb-safe">
             <div className="text-center text-white max-w-5xl mx-auto w-full animate-fade-in">
               <h1 className="text-3xl sm:text-5xl md:text-7xl font-bold mb-4 sm:mb-6 md:mb-8 leading-tight tracking-tight" style={{ textShadow: '0 2px 20px rgba(0,0,0,0.3)' }}>
                 Βρες το ιδανικό <span className="text-primary-light">σπίτι</span>
@@ -161,7 +161,7 @@ const Index = () => {
       </section>
 
       {/* Category Cards Section */}
-      <section className="py-16 sm:py-20 md:py-24 bg-background px-safe">
+      <section className="pt-28 sm:pt-32 md:pt-36 pb-16 sm:pb-20 md:pb-24 bg-background px-safe">
         <div className="container mx-auto px-4 sm:px-6">
           <div className="text-center mb-10 sm:mb-12 animate-fade-in">
             <h2 className="text-xl sm:text-3xl md:text-4xl font-bold tracking-tight mb-3 sm:mb-4">
