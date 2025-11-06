@@ -990,6 +990,83 @@ export type Database = {
           },
         ]
       }
+      message_attachments: {
+        Row: {
+          created_at: string
+          file_size_bytes: number | null
+          id: string
+          message_id: string
+          mime_type: string | null
+          thumbnail_url: string | null
+          type: string | null
+          url: string
+        }
+        Insert: {
+          created_at?: string
+          file_size_bytes?: number | null
+          id?: string
+          message_id: string
+          mime_type?: string | null
+          thumbnail_url?: string | null
+          type?: string | null
+          url: string
+        }
+        Update: {
+          created_at?: string
+          file_size_bytes?: number | null
+          id?: string
+          message_id?: string
+          mime_type?: string | null
+          thumbnail_url?: string | null
+          type?: string | null
+          url?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "message_attachments_message_id_fkey"
+            columns: ["message_id"]
+            isOneToOne: false
+            referencedRelation: "messages"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      message_templates: {
+        Row: {
+          category: string | null
+          content: string
+          created_at: string
+          id: string
+          is_default: boolean | null
+          title: string
+          updated_at: string
+          usage_count: number | null
+          user_id: string
+        }
+        Insert: {
+          category?: string | null
+          content: string
+          created_at?: string
+          id?: string
+          is_default?: boolean | null
+          title: string
+          updated_at?: string
+          usage_count?: number | null
+          user_id: string
+        }
+        Update: {
+          category?: string | null
+          content?: string
+          created_at?: string
+          id?: string
+          is_default?: boolean | null
+          title?: string
+          updated_at?: string
+          usage_count?: number | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       messages: {
         Row: {
           body: string
@@ -1831,6 +1908,102 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "room_search_cache"
             referencedColumns: ["lister_profile_id"]
+          },
+        ]
+      }
+      tour_requests: {
+        Row: {
+          completed_at: string | null
+          confirmed_at: string | null
+          created_at: string
+          id: string
+          listing_id: string
+          notes: string | null
+          requested_by: string
+          requested_time: string
+          status: string | null
+          thread_id: string
+        }
+        Insert: {
+          completed_at?: string | null
+          confirmed_at?: string | null
+          created_at?: string
+          id?: string
+          listing_id: string
+          notes?: string | null
+          requested_by: string
+          requested_time: string
+          status?: string | null
+          thread_id: string
+        }
+        Update: {
+          completed_at?: string | null
+          confirmed_at?: string | null
+          created_at?: string
+          id?: string
+          listing_id?: string
+          notes?: string | null
+          requested_by?: string
+          requested_time?: string
+          status?: string | null
+          thread_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tour_requests_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "listing_card_view"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tour_requests_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "listings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tour_requests_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "room_search_cache"
+            referencedColumns: ["listing_id"]
+          },
+          {
+            foreignKeyName: "tour_requests_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "v_listing_cards"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tour_requests_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "v_room_detail_by_slug"
+            referencedColumns: ["listing_id"]
+          },
+          {
+            foreignKeyName: "tour_requests_requested_by_fkey"
+            columns: ["requested_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tour_requests_requested_by_fkey"
+            columns: ["requested_by"]
+            isOneToOne: false
+            referencedRelation: "room_search_cache"
+            referencedColumns: ["lister_profile_id"]
+          },
+          {
+            foreignKeyName: "tour_requests_thread_id_fkey"
+            columns: ["thread_id"]
+            isOneToOne: false
+            referencedRelation: "threads"
+            referencedColumns: ["id"]
           },
         ]
       }

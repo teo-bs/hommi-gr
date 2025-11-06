@@ -10,25 +10,46 @@ import { useAuth } from "@/hooks/useAuth";
 import { useThreadMessages } from "@/hooks/useThreadMessages";
 import { useToast } from "@/hooks/use-toast";
 import { useTypingIndicator } from "@/hooks/useTypingIndicator";
+import { useTourRequests } from "@/hooks/useTourRequests";
 import { QuickActions } from "@/components/messaging/QuickActions";
 import { TypingIndicator } from "@/components/messaging/TypingIndicator";
 import { ReadReceipt } from "@/components/messaging/ReadReceipt";
+import { ListingCardMini } from "@/components/messaging/ListingCardMini";
+import { PhotoUploader } from "@/components/messaging/PhotoUploader";
+import { MessageAttachment } from "@/components/messaging/MessageAttachment";
+import { TemplateSelector } from "@/components/messaging/TemplateSelector";
+import { TourScheduler } from "@/components/messaging/TourScheduler";
+import { TourRequestCard } from "@/components/messaging/TourRequestCard";
 
 interface ConversationViewEnhancedProps {
   threadId: string;
+  listingId: string;
   listingTitle: string;
+  listingCoverImage?: string;
+  listingPrice: number;
+  listingCity?: string;
+  listingNeighborhood?: string;
+  listingAvailableFrom?: string;
   listerName: string;
   listerAvatar?: string;
   listerVerifications?: any;
+  isHost?: boolean;
   onClose: () => void;
 }
 
 export const ConversationViewEnhanced = ({
   threadId,
+  listingId,
   listingTitle,
+  listingCoverImage,
+  listingPrice,
+  listingCity,
+  listingNeighborhood,
+  listingAvailableFrom,
   listerName,
   listerAvatar,
   listerVerifications,
+  isHost = false,
   onClose
 }: ConversationViewEnhancedProps) => {
   const { profile } = useAuth();
@@ -49,6 +70,7 @@ export const ConversationViewEnhanced = ({
   } = useThreadMessages({ threadId });
 
   const { typingUsers, setTyping } = useTypingIndicator(threadId);
+  const { tours } = useTourRequests(threadId);
 
 
   const handleSend = async () => {
@@ -130,6 +152,16 @@ export const ConversationViewEnhanced = ({
 
       {/* Messages */}
       <div ref={scrollRef} className="flex-1 overflow-y-auto p-4 space-y-4 relative">
+        {/* Listing Card */}
+        <ListingCardMini
+          listingId={listingId}
+          title={listingTitle}
+          coverImage={listingCoverImage}
+          price={listingPrice}
+          city={listingCity}
+          neighborhood={listingNeighborhood}
+          availableFrom={listingAvailableFrom}
+        />
         {hasMore && (
           <div className="text-center mb-4">
             <Button
@@ -196,6 +228,15 @@ export const ConversationViewEnhanced = ({
               );
             })}
             
+            {/* Tour requests */}
+            {tours.filter(t => t.status === 'pending' || t.status === 'confirmed').map((tour) => (
+              <TourRequestCard
+                key={tour.id}
+                tour={tour}
+                isHost={isHost}
+              />
+            ))}
+
             {/* Typing indicator */}
             {typingUsers.length > 0 && (
               <TypingIndicator userName={typingUsers[0].userName} />
@@ -230,32 +271,58 @@ export const ConversationViewEnhanced = ({
       </div>
 
       {/* Input */}
-      <div className="p-4 border-t">
-        {/* Quick Actions */}
-        {showQuickActions && messages.length === 0 && (
-          <QuickActions 
-            onActionClick={handleQuickAction}
-            listingTitle={listingTitle}
-          />
-        )}
-        
-        <div className="flex gap-2">
-          <Textarea
-            value={newMessage}
-            onChange={(e) => setNewMessage(e.target.value)}
-            onKeyDown={handleKeyPress}
-            placeholder="Γράψε ένα μήνυμα..."
-            className="min-h-[60px] resize-none"
+      <div className="border-t">
+        {/* Quick Actions & Tools */}
+        <div className="p-3 border-b flex items-center justify-between">
+          <div className="flex items-center gap-1">
+            <PhotoUploader
+              onPhotoSent={(url) => {
+                // Send message with photo attachment
+                setNewMessage(`📷 [Φωτογραφία]`);
+              }}
+              disabled={sending}
+            />
+            <TemplateSelector
+              onSelect={(content) => setNewMessage(content)}
+              disabled={sending}
+            />
+          </div>
+          
+          <TourScheduler
+            threadId={threadId}
+            listingId={listingId}
             disabled={sending}
           />
-          <Button
-            onClick={handleSend}
-            disabled={!newMessage.trim() || sending}
-            size="icon"
-            className="h-[60px] w-[60px]"
-          >
-            <Send className="h-5 w-5" />
-          </Button>
+        </div>
+
+        {showQuickActions && messages.length === 0 && (
+          <div className="px-4 pt-3">
+            <QuickActions 
+              onActionClick={handleQuickAction}
+              listingTitle={listingTitle}
+            />
+          </div>
+        )}
+        
+        <div className="p-4">
+          <div className="flex gap-2">
+            <Textarea
+              value={newMessage}
+              onChange={(e) => setNewMessage(e.target.value)}
+              onKeyDown={handleKeyPress}
+              placeholder="Γράψε ένα μήνυμα..."
+              className="min-h-[60px] resize-none"
+              disabled={sending}
+            />
+            <Button
+              onClick={handleSend}
+              disabled={!newMessage.trim() || sending}
+              size="icon"
+              className="h-[60px] w-[60px]"
+            >
+              <Send className="h-5 w-5" />
+            </Button>
+          </div>
         </div>
       </div>
     </Card>

@@ -484,7 +484,12 @@ const RoomPage = () => {
           <div className="w-full max-w-md">
             <ConversationViewEnhanced
               threadId={messageFlow.threadId}
+              listingId={roomData.listing.id}
               listingTitle={roomData.listing.title}
+              listingCoverImage={roomData.photos[0]?.url}
+              listingPrice={roomData.listing.price_month}
+              listingCity={roomData.listing.city}
+              listingNeighborhood={roomData.listing.neighborhood}
               listerName={roomData.profile?.display_name || 'Ιδιοκτήτης'}
               listerAvatar={roomData.profile?.avatar_url}
               listerVerifications={roomData.profile?.verifications_json}

@@ -59,10 +59,16 @@ const Inbox = () => {
       <div className="min-h-screen bg-background pb-safe">
         <ConversationViewEnhanced
           threadId={selectedThread.id}
+          listingId={selectedThread.listingId}
           listingTitle={selectedThread.listingTitle}
+          listingCoverImage=""
+          listingPrice={0}
+          listingCity=""
+          listingNeighborhood=""
           listerName={selectedThread.otherUserName}
           listerAvatar={selectedThread.otherUserAvatar}
           listerVerifications={selectedThread.otherUserVerifications}
+          isHost={selectedThread.isHost}
           onClose={() => {
             setSelectedThread(null);
             refetch();
