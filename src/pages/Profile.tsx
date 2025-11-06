@@ -11,6 +11,7 @@ import { ProfileHero } from "@/components/profile/ProfileHero";
 import { ProfileOverviewTab } from "@/components/profile/ProfileOverviewTab";
 import { ProfileVerificationsTab } from "@/components/profile/ProfileVerificationsTab";
 import { ProfileSettingsTab } from "@/components/profile/ProfileSettingsTab";
+import { WelcomeTooltip } from "@/components/profile/WelcomeTooltip";
 import { useVerifications } from '@/hooks/useVerifications';
 import { supabase } from "@/integrations/supabase/client";
 
@@ -194,6 +195,9 @@ export default function Profile() {
 
   return (
     <>
+      {/* Welcome Tooltip - Shows on first visit */}
+      <WelcomeTooltip profileCompletionPct={profile?.profile_completion_pct || 0} />
+      
       <div className="min-h-screen bg-muted/30 pb-safe">
         {/* Hero Section */}
         <ProfileHero profile={profile} onEdit={() => setShowEditModal(true)} />
