@@ -12,12 +12,14 @@ interface PublishProgressStepperProps {
   steps: Step[];
   currentStep: number;
   completedSteps?: number[];
+  onStepClick?: (stepId: number) => void;
 }
 
 export default function PublishProgressStepper({ 
   steps, 
   currentStep,
-  completedSteps = []
+  completedSteps = [],
+  onStepClick
 }: PublishProgressStepperProps) {
   return (
     <div className="w-full py-6">
@@ -26,17 +28,21 @@ export default function PublishProgressStepper({
           const isCompleted = completedSteps.includes(step.id) || step.id < currentStep;
           const isCurrent = step.id === currentStep;
           const isFuture = step.id > currentStep;
+          const isClickable = isCompleted || isCurrent;
 
           return (
             <React.Fragment key={step.id}>
               {/* Step Circle */}
               <div className="flex flex-col items-center gap-2">
                 <div
+                  onClick={() => isClickable && onStepClick?.(step.id)}
                   className={cn(
                     "w-10 h-10 rounded-full flex items-center justify-center font-semibold transition-all",
                     isCompleted && "bg-primary text-primary-foreground",
                     isCurrent && "bg-primary/20 text-primary border-2 border-primary",
-                    isFuture && "bg-muted text-muted-foreground"
+                    isFuture && "bg-muted text-muted-foreground",
+                    isClickable && "cursor-pointer hover:scale-110 active:scale-95",
+                    !isClickable && "cursor-not-allowed opacity-50"
                   )}
                 >
                   {isCompleted ? (

@@ -5,6 +5,7 @@ import { Heart, Share2, Camera } from "lucide-react";
 import { OwnerGalleryActions } from "@/components/owner/OwnerGalleryActions";
 import { SaveRoomButton } from "@/components/room/SaveRoomButton";
 import { ShareButton } from "@/components/room/ShareButton";
+import { PhotoLightbox } from "@/components/room/PhotoLightbox";
 
 interface GalleryProps {
   photos: Array<{
@@ -52,6 +53,8 @@ export const Gallery = ({
   };
   const [currentImage, setCurrentImage] = useState(0);
   const [failedImages, setFailedImages] = useState<Set<string>>(new Set());
+  const [lightboxOpen, setLightboxOpen] = useState(false);
+  const [lightboxIndex, setLightboxIndex] = useState(0);
   
   // Filter out broken images
   const displayPhotos = photos.filter(photo => !failedImages.has(photo.url));
@@ -116,7 +119,10 @@ export const Gallery = ({
         {/* Main image - full width carousel on mobile */}
         <div 
           className="lg:col-span-2 lg:row-span-2 cursor-pointer relative group overflow-hidden rounded-xl lg:rounded-2xl aspect-[4/3] lg:aspect-auto lg:h-full"
-          onClick={() => setCurrentImage(0)}
+          onClick={() => {
+            setLightboxIndex(0);
+            setLightboxOpen(true);
+          }}
         >
           <img
             src={displayPhotos[0]?.large_url || displayPhotos[0]?.medium_url || displayPhotos[0]?.url}
@@ -133,7 +139,8 @@ export const Gallery = ({
             className="hidden lg:block cursor-pointer relative group overflow-hidden rounded-xl"
             onClick={(e) => {
               if ((e.target as HTMLElement).closest('button')) return;
-              setCurrentImage(index + 1);
+              setLightboxIndex(index + 1);
+              setLightboxOpen(true);
             }}
           >
             <img
@@ -178,6 +185,14 @@ export const Gallery = ({
       <div className="hidden lg:block">
         <h1 className="text-3xl font-bold mb-2">{title}</h1>
       </div>
+
+      {/* Photo Lightbox */}
+      <PhotoLightbox
+        photos={displayPhotos}
+        initialIndex={lightboxIndex}
+        isOpen={lightboxOpen}
+        onClose={() => setLightboxOpen(false)}
+      />
     </div>
   );
 };

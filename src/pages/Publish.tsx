@@ -175,6 +175,11 @@ export default function Publish() {
     }
   }, [shouldShowStepZero, currentStep, searchParams, setSearchParams]);
 
+  // Scroll to top when step changes
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, [currentStep]);
+
   const loadDraft = async () => {
     if (!user || !profile) return;
 
@@ -586,6 +591,23 @@ export default function Publish() {
     
     if (prev >= 1) {
       setSearchParams({ step: prev.toString() });
+    }
+  };
+
+  const jumpToStep = (targetStep: number) => {
+    // Allow jumping to completed steps or next immediate step
+    if (completedSteps.includes(targetStep) || targetStep <= currentStep + 1) {
+      // Skip room details step for apartments
+      if (targetStep === 5 && draft.property_type === 'apartment') {
+        return;
+      }
+      setSearchParams({ step: targetStep.toString() });
+    } else {
+      toast({
+        title: "Μη διαθέσιμο βήμα",
+        description: "Ολοκληρώστε τα προηγούμενα βήματα πρώτα.",
+        variant: "destructive"
+      });
     }
   };
 
@@ -1088,6 +1110,7 @@ export default function Publish() {
                 })}
                 currentStep={currentStep}
                 completedSteps={completedSteps}
+                onStepClick={jumpToStep}
               />
             </div>
           )}

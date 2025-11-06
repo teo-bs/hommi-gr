@@ -199,10 +199,32 @@ const PublishStepEight = ({ onNext, onBack }: PublishStepEightProps) => {
 
       setUploaded(publicUrl);
       await refetch();
+      
+      // Enhanced user feedback
       toast({
         title: "Επιτυχία",
-        description: `Η ${side === 'front' ? 'μπροστινή' : 'πίσω'} όψη της ταυτότητας ανέβηκε επιτυχώς.`,
+        description: `Η ${side === 'front' ? 'μπροστινή' : 'πίσω'} όψη ανέβηκε. Θα ελέγξουμε την ταυτότητά σας εντός 24 ωρών.`,
+        duration: 5000
       });
+
+      // Trigger admin notification if both sides uploaded
+      const bothSidesNow = (side === 'front' && (idVerificationBack || uploadedIDBack)) || 
+                          (side === 'back' && (idVerificationFront || uploadedIDFront));
+      
+      if (bothSidesNow) {
+        try {
+          await supabase.functions.invoke('notify-admin-verification', {
+            body: { 
+              user_id: user!.id,
+              verification_type: 'govgr',
+              user_email: profile?.email
+            }
+          });
+        } catch (err) {
+          console.error('Failed to notify admin:', err);
+          // Don't show error to user - notification failure shouldn't block upload
+        }
+      }
     } catch (error: any) {
       toast({
         title: "Σφάλμα",
