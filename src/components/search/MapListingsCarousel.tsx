@@ -8,12 +8,15 @@ interface Listing {
   title: string;
   price_month: number;
   city?: string;
+  neighborhood?: string;
   photos?: string[];
   lister_verified?: boolean;
   reviews_count?: number;
   references_count?: number;
   lat: number;
   lng: number;
+  formatted_address?: string;
+  lister_first_name?: string;
 }
 
 interface MapListingsCarouselProps {

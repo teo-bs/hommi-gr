@@ -190,7 +190,7 @@ const Search = () => {
   // Convert ALL listings to map format (not paginated)
   const mapListings = useMemo(() => {
     return allListingsForMap
-      .filter(listing => listing.lat && listing.lng) // Only include listings with valid coordinates
+      .filter(listing => listing.lat && listing.lng && listing.price_month) // Ensure complete data
       .map(listing => ({
         id: listing.room_id,
         slug: listing.slug,
@@ -203,8 +203,11 @@ const Search = () => {
         photos: listing.cover_photo_url ? [listing.cover_photo_url] : ['/placeholder.svg'],
         lat: listing.lat,
         lng: listing.lng,
-        formatted_address: (listing as any).formatted_address,
-        lister_first_name: listing.lister_first_name
+        formatted_address: (listing as any).formatted_address || `${listing.neighborhood || listing.city}, Greece`,
+        lister_first_name: listing.lister_first_name,
+        lister_verified: listing.kyc_status === 'approved',
+        reviews_count: 0,
+        references_count: 0
       }));
   }, [allListingsForMap]);
 

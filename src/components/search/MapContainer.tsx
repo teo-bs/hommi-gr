@@ -75,7 +75,7 @@ export const MapContainer = ({
     
     // Make entire container clickable
     container.onclick = () => {
-      navigate(`/rooms/${slug}`);
+      navigate(`/listing/${slug}`);
     };
     
     // Create carousel wrapper
@@ -228,7 +228,7 @@ export const MapContainer = ({
   priceDiv.style.cssText = 'font-size: 14px; color: hsl(var(--foreground));';
   const priceStrong = document.createElement('span');
   priceStrong.style.fontWeight = '600';
-  priceStrong.textContent = `€${props.price}`;
+  priceStrong.textContent = props.price ? `€${props.price}` : 'N/A';
   const priceLabel = document.createElement('span');
   priceLabel.style.cssText = 'color: hsl(var(--muted-foreground)); font-size: 13px;';
   priceLabel.textContent = ' /μήνα';
@@ -264,18 +264,19 @@ export const MapContainer = ({
   // Convert listings to GeoJSON
   const createGeoJSONData = useCallback(() => {
     const features = listings
-      .filter(listing => listing.lat && listing.lng)
+      .filter(listing => listing.lat && listing.lng && listing.price_month) // Ensure complete data
       .map(listing => ({
         type: 'Feature' as const,
       properties: {
         id: listing.id,
+        slug: listing.slug, // Add slug for navigation
         title: listing.title,
         price: listing.price_month,
         lister_name: listing.lister_first_name || 'Host',
         city: listing.city,
         neighborhood: listing.neighborhood,
-        photo: listing.photos?.[0] || null,
-        photos: JSON.stringify(listing.photos || [listing.photos?.[0]].filter(Boolean)),
+        photo: listing.photos?.[0] || '/placeholder.svg',
+        photos: JSON.stringify(listing.photos || [listing.photos?.[0] || '/placeholder.svg'].filter(Boolean)),
         formatted_address: listing.formatted_address || `${listing.neighborhood || listing.city}, Greece`
       },
         geometry: {
@@ -553,9 +554,8 @@ export const MapContainer = ({
                 photoUrls = photos.length > 0 ? photos : ['/placeholder.svg'];
               }
               
-              // Extract slug from listing
-              const listing = listings.find(l => l.id === id);
-              const slug = (listing as any)?.slug || id;
+              // Extract slug from props or fallback to listing
+              const slug = props.slug || (listings.find(l => l.id === id) as any)?.slug || id;
               
               hoverPopup.current = new mapboxgl.Popup({
                 closeButton: false,
