@@ -153,18 +153,16 @@ export const LocationMiniMap = ({
         <div className="space-y-4">
           <div className="text-sm space-y-1">
             <p className="font-medium">
-              {formatted_address || street_address || `${neighborhood || city}, Greece`}
+              {neighborhood || city}, Ελλάδα
             </p>
-            {is_location_approx && (
-              <Badge variant="outline" className="text-xs">
-                📍 Προσεγγιστική τοποθεσία (ακτίνα 500μ)
-              </Badge>
-            )}
+            <Badge variant="outline" className="text-xs">
+              📍 Προσεγγιστική τοποθεσία (ακτίνα 500μ)
+            </Badge>
           </div>
           
           <div 
             ref={mapRef}
-            className="w-full h-48 rounded-lg bg-muted overflow-hidden"
+            className="w-full h-60 rounded-lg bg-muted overflow-hidden"
           >
             {!shouldLoadMap && (
               <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-blue-50 to-blue-100">
@@ -177,9 +175,7 @@ export const LocationMiniMap = ({
           </div>
           
           <p className="text-xs text-muted-foreground">
-            {is_location_approx 
-              ? 'Η ακριβής διεύθυνση θα εμφανιστεί μετά την επιβεβαίωση κράτησης'
-              : 'Τοποθεσία ακινήτου'}
+            Η ακριβής διεύθυνση θα εμφανιστεί μετά την επιβεβαίωση κράτησης
           </p>
         </div>
       </CardContent>

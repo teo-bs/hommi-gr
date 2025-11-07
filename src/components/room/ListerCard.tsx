@@ -1,6 +1,7 @@
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { AvatarWithBadge } from "@/components/ui/avatar-with-badge";
+import { ResponseTimeBadge } from "@/components/messaging/ResponseTimeBadge";
 import { Star, Calendar, Clock, Globe } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { useProfileVerification } from "@/hooks/useProfileVerification";
@@ -17,6 +18,7 @@ interface ListerCardProps {
     languages?: string[];
     profile_completion_pct?: number;
     verifications_json?: Record<string, any>;
+    avg_response_time_minutes?: number;
   };
   verificationBadge?: boolean;
   languages?: string[];
@@ -90,14 +92,15 @@ export const ListerCard = ({
       
       <CardContent className="space-y-4">
         {/* Status Badges */}
-        {verificationBadge && (
-          <div className="flex flex-wrap gap-2">
-            <Badge variant="secondary" className="text-xs">
+        <div className="flex flex-col gap-2">
+          {verificationBadge && (
+            <Badge variant="secondary" className="text-xs w-fit">
               <Star className="h-3 w-3 mr-1" />
               Επαληθευμένο Gov.gr
             </Badge>
-          </div>
-        )}
+          )}
+          <ResponseTimeBadge avgResponseTimeMinutes={lister.avg_response_time_minutes} />
+        </div>
 
         {/* Member info */}
         <div className="space-y-2 text-sm">

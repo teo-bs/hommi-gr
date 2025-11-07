@@ -9,38 +9,32 @@ interface DescriptionProps {
 }
 
 export const Description = ({ title, description }: DescriptionProps) => {
-  const [isTranslated, setIsTranslated] = useState(false);
-
-  const handleTranslate = () => {
-    // No-op handler as requested
-    setIsTranslated(!isTranslated);
-    console.log('translate_clicked', { isTranslated: !isTranslated });
-  };
+  const [isExpanded, setIsExpanded] = useState(false);
+  const text = description || "Δεν έχει καθοριστεί";
+  const shouldTruncate = text.length > 300;
+  const displayText = shouldTruncate && !isExpanded ? text.slice(0, 300) + '...' : text;
 
   return (
     <Card>
       <CardHeader>
-        <div className="flex items-center justify-between">
-          <CardTitle>Description</CardTitle>
-          <Button 
-            variant="outline" 
-            size="sm"
-            onClick={handleTranslate}
-          >
-            <Languages className="h-4 w-4 mr-2" />
-            {isTranslated ? 'Show Greek' : 'Translate to English'}
-          </Button>
-        </div>
+        <CardTitle>Περιγραφή</CardTitle>
       </CardHeader>
       
       <CardContent>
         <div className="prose prose-sm max-w-none">
           <p className="text-foreground leading-relaxed whitespace-pre-wrap">
-            {isTranslated 
-              ? "Η λειτουργία μετάφρασης έρχεται σύντομα..."
-              : (description || "Δεν έχει καθοριστεί")
-            }
+            {displayText}
           </p>
+          {shouldTruncate && (
+            <Button 
+              variant="ghost" 
+              size="sm"
+              onClick={() => setIsExpanded(!isExpanded)}
+              className="mt-2 text-primary hover:text-primary/80"
+            >
+              {isExpanded ? 'Λιγότερα' : 'Περισσότερα'}
+            </Button>
+          )}
         </div>
       </CardContent>
     </Card>

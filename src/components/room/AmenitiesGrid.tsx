@@ -107,13 +107,13 @@ const iconMap: Record<string, any> = {
 
 export const AmenitiesGrid = ({ propertyAmenities, roomAmenities }: AmenitiesGridProps) => {
   const renderAmenityGrid = (amenities: typeof propertyAmenities) => (
-    <div className="grid grid-cols-2 gap-4">
+    <div className="grid grid-cols-3 gap-3">
       {amenities.map((amenity, index) => {
         const IconComponent = iconMap[amenity.icon] || Home;
         return (
-          <div key={index} className="flex items-center space-x-3 p-3 rounded-lg bg-muted/50">
-            <IconComponent className="h-5 w-5 text-primary" />
-            <span className="text-sm font-medium">{amenity.name}</span>
+          <div key={index} className="flex flex-col items-center justify-center p-3 rounded-lg bg-muted/50 text-center gap-2 min-h-[80px]">
+            <IconComponent className="h-6 w-6 text-primary" />
+            <span className="text-xs font-medium leading-tight">{amenity.name}</span>
           </div>
         );
       })}

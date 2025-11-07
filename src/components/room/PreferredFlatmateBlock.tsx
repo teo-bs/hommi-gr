@@ -15,37 +15,37 @@ interface PreferredFlatmateBlockProps {
 
 export const PreferredFlatmateBlock = ({ listing }: PreferredFlatmateBlockProps) => {
   const ageRange = listing.preferred_age_min && listing.preferred_age_max
-    ? `${listing.preferred_age_min}-${listing.preferred_age_max} years`
-    : 'Any age';
+    ? `${listing.preferred_age_min}-${listing.preferred_age_max} ετών`
+    : 'Όλες οι ηλικίες';
 
   const genderPreference = listing.preferred_gender && listing.preferred_gender.length > 0
-    ? listing.preferred_gender.join(', ')
-    : 'Any gender welcome';
+    ? listing.preferred_gender.map(g => g === 'male' ? 'Άνδρας' : g === 'female' ? 'Γυναίκα' : g).join(', ')
+    : 'Όλα τα φύλα';
 
   const preferences = [
     {
-      label: 'Age range',
+      label: 'Ηλικία',
       value: ageRange,
       type: 'info'
     },
     {
-      label: 'Gender',
+      label: 'Φύλο',
       value: genderPreference,
       type: 'success'
     },
     {
-      label: 'Couples',
-      value: listing.couples_accepted ? 'Couples welcome' : 'Singles only',
+      label: 'Ζευγάρια',
+      value: listing.couples_accepted ? 'Δέχεται ζευγάρια' : 'Μόνο μονήρεις',
       type: listing.couples_accepted ? 'success' : 'secondary'
     },
     {
-      label: 'Smoking',
-      value: listing.smoking_allowed ? 'Smoking allowed' : 'No smoking',
+      label: 'Κάπνισμα',
+      value: listing.smoking_allowed ? 'Επιτρέπεται' : 'Δεν επιτρέπεται',
       type: listing.smoking_allowed ? 'warning' : 'success'
     },
     {
-      label: 'Pets',
-      value: listing.pets_allowed ? 'Pets allowed' : 'No pets',
+      label: 'Κατοικίδια',
+      value: listing.pets_allowed ? 'Επιτρέπονται' : 'Δεν επιτρέπονται',
       type: listing.pets_allowed ? 'success' : 'secondary'
     }
   ];
@@ -55,7 +55,7 @@ export const PreferredFlatmateBlock = ({ listing }: PreferredFlatmateBlockProps)
       <CardHeader>
         <CardTitle className="flex items-center">
           <UserCheck className="h-5 w-5 mr-2" />
-          Preferred flatmate
+          Προτιμώμενος συγκάτοικος
         </CardTitle>
       </CardHeader>
       
