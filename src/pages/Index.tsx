@@ -587,7 +587,7 @@ const Index = () => {
                 </span>
               </AccordionTrigger>
               <AccordionContent className="text-muted-foreground pb-5">
-                Η αναζήτηση και η επικοινωνία είναι εντελώς δωρεάν. Χρεώνουμε μόνο μια μικρή προμήθεια κατά την ολοκλήρωση της κράτησης για να διασφαλίσουμε την ποιότητα της υπηρεσίας.
+                Η αναζήτηση και η επικοινωνία είναι εντελώς δωρεάν.
               </AccordionContent>
             </AccordionItem>
 
