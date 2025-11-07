@@ -19,6 +19,12 @@ import {
   ArrowRight,
   Plus
 } from "lucide-react";
+import { 
+  Accordion, 
+  AccordionItem, 
+  AccordionTrigger, 
+  AccordionContent 
+} from "@/components/ui/accordion";
 import heroImage from "@/assets/hero-image.jpg";
 
 const Index = () => {
@@ -109,6 +115,22 @@ const Index = () => {
                 Η πλατφόρμα συγκατοίκησης που εμπιστεύονται χιλιάδες άνθρωποι
               </p>
 
+              {/* Social Proof Badges */}
+              <div className="flex flex-wrap items-center justify-center gap-4 sm:gap-6 mb-6 sm:mb-8">
+                <Badge variant="secondary" className="px-4 py-2 text-sm bg-white/20 backdrop-blur">
+                  <CheckCircle className="h-4 w-4 mr-2" />
+                  1,500+ επαληθευμένοι χρήστες
+                </Badge>
+                <Badge variant="secondary" className="px-4 py-2 text-sm bg-white/20 backdrop-blur">
+                  <Star className="h-4 w-4 mr-2 fill-yellow-400 text-yellow-400" />
+                  4.8/5 μέση βαθμολογία
+                </Badge>
+                <Badge variant="secondary" className="px-4 py-2 text-sm bg-white/20 backdrop-blur">
+                  <Home className="h-4 w-4 mr-2" />
+                  300+ διαθέσιμα σπίτια
+                </Badge>
+              </div>
+
               {/* Search Bar with Glass-morphism */}
               <Card className="max-w-5xl mx-auto bg-white/90 backdrop-blur-2xl shadow-2xl rounded-2xl sm:rounded-3xl border-2 border-white/50 transition-all duration-300 hover:shadow-3xl hover:scale-[1.02] hover:-translate-y-0.5 md:hover:-translate-y-1 relative z-10">
                 <CardContent className="p-5 sm:p-6">
@@ -155,6 +177,39 @@ const Index = () => {
                   </div>
                 </CardContent>
               </Card>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Trust Indicators */}
+      <section className="py-12 sm:py-16 bg-surface-elevated border-y border-border px-safe">
+        <div className="container mx-auto px-4 sm:px-6">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 sm:gap-12">
+            {/* Stat 1: Users */}
+            <div className="text-center">
+              <div className="text-3xl sm:text-4xl font-bold text-primary mb-2">1,500+</div>
+              <p className="text-sm text-muted-foreground">Επαληθευμένοι χρήστες</p>
+            </div>
+            
+            {/* Stat 2: Listings */}
+            <div className="text-center">
+              <div className="text-3xl sm:text-4xl font-bold text-primary mb-2">300+</div>
+              <p className="text-sm text-muted-foreground">Ενεργές αγγελίες</p>
+            </div>
+            
+            {/* Stat 3: Successful matches */}
+            <div className="text-center">
+              <div className="text-3xl sm:text-4xl font-bold text-primary mb-2">850+</div>
+              <p className="text-sm text-muted-foreground">Επιτυχημένα ταιριάσματα</p>
+            </div>
+            
+            {/* Stat 4: Gov.gr verified */}
+            <div className="text-center">
+              <div className="flex items-center justify-center mb-2">
+                <Shield className="h-10 w-10 text-success" />
+              </div>
+              <p className="text-sm text-muted-foreground">Gov.gr επαλήθευση</p>
             </div>
           </div>
         </div>
@@ -415,6 +470,288 @@ const Index = () => {
           </div>
         </div>
       </section>
+
+      {/* Testimonials */}
+      <section className="py-16 sm:py-20 md:py-24 bg-surface-elevated px-safe">
+        <div className="container mx-auto px-4 sm:px-6">
+          <div className="text-center mb-10 sm:mb-12 md:mb-16 animate-fade-in">
+            <h2 className="text-xl sm:text-3xl md:text-4xl font-bold mb-3 sm:mb-4">
+              Τι λένε οι χρήστες μας
+            </h2>
+            <p className="text-sm sm:text-lg text-muted-foreground max-w-2xl mx-auto">
+              Πραγματικές ιστορίες από ανθρώπους που βρήκαν το ιδανικό σπίτι και συγκατοίκους
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-8">
+            {/* Testimonial 1 */}
+            <Card className="bg-white hover:shadow-2xl transition-all duration-300 border-2 border-transparent hover:border-primary/20">
+              <CardContent className="p-6 sm:p-8">
+                <div className="flex items-center gap-1 mb-4">
+                  {[...Array(5)].map((_, i) => (
+                    <Star key={i} className="h-4 w-4 fill-yellow-400 text-yellow-400" />
+                  ))}
+                </div>
+                <p className="text-base text-foreground mb-6 leading-relaxed italic">
+                  "Βρήκα το τέλειο διαμέρισμα στο Κολωνάκι σε μόνο 2 εβδομάδες! Η επαλήθευση με Gov.gr με έκανε να νιώθω ασφαλής από την αρχή."
+                </p>
+                <div className="flex items-center gap-3">
+                  <div className="w-12 h-12 rounded-full bg-gradient-to-br from-primary to-accent flex items-center justify-center text-white font-bold text-lg">
+                    ΜΚ
+                  </div>
+                  <div>
+                    <div className="font-semibold">Μαρία Κ.</div>
+                    <div className="text-sm text-muted-foreground">Φοιτήτρια, Αθήνα</div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Testimonial 2 */}
+            <Card className="bg-white hover:shadow-2xl transition-all duration-300 border-2 border-transparent hover:border-primary/20">
+              <CardContent className="p-6 sm:p-8">
+                <div className="flex items-center gap-1 mb-4">
+                  {[...Array(5)].map((_, i) => (
+                    <Star key={i} className="h-4 w-4 fill-yellow-400 text-yellow-400" />
+                  ))}
+                </div>
+                <p className="text-base text-foreground mb-6 leading-relaxed italic">
+                  "Ως ιδιοκτήτης, το Hommi με βοήθησε να βρω αξιόπιστους ενοικιαστές γρήγορα. Η επικοινωνία ήταν άψογη!"
+                </p>
+                <div className="flex items-center gap-3">
+                  <div className="w-12 h-12 rounded-full bg-gradient-to-br from-accent to-success flex items-center justify-center text-white font-bold text-lg">
+                    ΓΠ
+                  </div>
+                  <div>
+                    <div className="font-semibold">Γιώργος Π.</div>
+                    <div className="text-sm text-muted-foreground">Ιδιοκτήτης, Θεσσαλονίκη</div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Testimonial 3 */}
+            <Card className="bg-white hover:shadow-2xl transition-all duration-300 border-2 border-transparent hover:border-primary/20">
+              <CardContent className="p-6 sm:p-8">
+                <div className="flex items-center gap-1 mb-4">
+                  {[...Array(5)].map((_, i) => (
+                    <Star key={i} className="h-4 w-4 fill-yellow-400 text-yellow-400" />
+                  ))}
+                </div>
+                <p className="text-base text-foreground mb-6 leading-relaxed italic">
+                  "Τέλεια εμπειρία! Βρήκαμε συγκάτοικο που ταιριάζει απόλυτα στον τρόπο ζωής μας. Highly recommended!"
+                </p>
+                <div className="flex items-center gap-3">
+                  <div className="w-12 h-12 rounded-full bg-gradient-to-br from-success to-primary flex items-center justify-center text-white font-bold text-lg">
+                    ΑΜ
+                  </div>
+                  <div>
+                    <div className="font-semibold">Άννα Μ.</div>
+                    <div className="text-sm text-muted-foreground">Digital Nomad, Αθήνα</div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      </section>
+
+      {/* FAQ Section */}
+      <section className="py-16 sm:py-20 md:py-24 bg-background px-safe">
+        <div className="container mx-auto px-4 sm:px-6 max-w-4xl">
+          <div className="text-center mb-10 sm:mb-12 md:mb-16 animate-fade-in">
+            <h2 className="text-xl sm:text-3xl md:text-4xl font-bold mb-3 sm:mb-4">
+              Συχνές ερωτήσεις
+            </h2>
+            <p className="text-sm sm:text-lg text-muted-foreground">
+              Απαντήσεις στις πιο συχνές απορίες σας
+            </p>
+          </div>
+
+          <Accordion type="single" collapsible className="w-full space-y-4">
+            <AccordionItem value="item-1" className="border rounded-xl px-6 bg-white">
+              <AccordionTrigger className="text-left hover:no-underline py-5">
+                <span className="font-semibold text-base sm:text-lg">
+                  Πώς επαληθεύονται οι χρήστες;
+                </span>
+              </AccordionTrigger>
+              <AccordionContent className="text-muted-foreground pb-5">
+                Όλοι οι χρήστες επαληθεύονται μέσω Gov.gr Wallet με επίσημη ταυτότητα. Επιπλέον, απαιτούνται references από εργασία ή πανεπιστήμιο για επιπλέον ασφάλεια.
+              </AccordionContent>
+            </AccordionItem>
+
+            <AccordionItem value="item-2" className="border rounded-xl px-6 bg-white">
+              <AccordionTrigger className="text-left hover:no-underline py-5">
+                <span className="font-semibold text-base sm:text-lg">
+                  Υπάρχει κόστος χρήσης;
+                </span>
+              </AccordionTrigger>
+              <AccordionContent className="text-muted-foreground pb-5">
+                Η αναζήτηση και η επικοινωνία είναι εντελώς δωρεάν. Χρεώνουμε μόνο μια μικρή προμήθεια κατά την ολοκλήρωση της κράτησης για να διασφαλίσουμε την ποιότητα της υπηρεσίας.
+              </AccordionContent>
+            </AccordionItem>
+
+            <AccordionItem value="item-3" className="border rounded-xl px-6 bg-white">
+              <AccordionTrigger className="text-left hover:no-underline py-5">
+                <span className="font-semibold text-base sm:text-lg">
+                  Τι γίνεται αν δεν μου αρέσει ο συγκάτοικος;
+                </span>
+              </AccordionTrigger>
+              <AccordionContent className="text-muted-foreground pb-5">
+                Ενθαρρύνουμε τις προσωπικές συναντήσεις πριν την οριστικοποίηση. Επίσης, το σύστημα reviews και references βοηθά να κάνεις τη σωστή επιλογή από την αρχή.
+              </AccordionContent>
+            </AccordionItem>
+
+            <AccordionItem value="item-4" className="border rounded-xl px-6 bg-white">
+              <AccordionTrigger className="text-left hover:no-underline py-5">
+                <span className="font-semibold text-base sm:text-lg">
+                  Πώς προστατεύονται τα χρήματά μου;
+                </span>
+              </AccordionTrigger>
+              <AccordionContent className="text-muted-foreground pb-5">
+                Όλες οι συναλλαγές γίνονται μέσω ασφαλούς συστήματος πληρωμών. Τα χρήματα κρατούνται σε escrow και απελευθερώνονται μόνο μετά την επιβεβαίωση της μετακόμισης.
+              </AccordionContent>
+            </AccordionItem>
+
+            <AccordionItem value="item-5" className="border rounded-xl px-6 bg-white">
+              <AccordionTrigger className="text-left hover:no-underline py-5">
+                <span className="font-semibold text-base sm:text-lg">
+                  Μπορώ να δω το σπίτι πριν κάνω κράτηση;
+                </span>
+              </AccordionTrigger>
+              <AccordionContent className="text-muted-foreground pb-5">
+                Απολύτως! Μπορείς να κανονίσεις viewing μέσω του συστήματος μηνυμάτων. Συνιστούμε πάντα να επισκέπτεσαι το σπίτι και να γνωρίζεις τους συγκατοίκους πριν την τελική απόφαση.
+              </AccordionContent>
+            </AccordionItem>
+          </Accordion>
+        </div>
+      </section>
+
+      {/* Final CTA */}
+      <section className="py-16 sm:py-20 md:py-24 bg-gradient-to-br from-primary via-primary-hover to-accent px-safe relative overflow-hidden">
+        {/* Decorative elements */}
+        <div className="absolute top-10 left-10 w-64 h-64 bg-white/10 rounded-full blur-3xl" />
+        <div className="absolute bottom-10 right-10 w-80 h-80 bg-accent/20 rounded-full blur-3xl" />
+        
+        <div className="container mx-auto px-4 sm:px-6 text-center relative z-10">
+          <div className="max-w-3xl mx-auto animate-fade-in">
+            <h2 className="text-2xl sm:text-4xl md:text-5xl font-bold text-white mb-4 sm:mb-6">
+              Έτοιμος να βρεις το ιδανικό σπίτι;
+            </h2>
+            <p className="text-lg sm:text-xl md:text-2xl text-white/95 mb-8 sm:mb-10 font-light">
+              Ξεκίνα την αναζήτησή σου σήμερα και βρες verified χώρους και συγκατοίκους που ταιριάζουν στον τρόπο ζωής σου
+            </p>
+            
+            <div className="flex flex-col sm:flex-row gap-4 sm:gap-5 justify-center items-center">
+              <Button
+                size="lg"
+                onClick={() => navigate('/search')}
+                className="text-base sm:text-lg px-10 py-7 min-h-[56px] rounded-full bg-white text-primary hover:bg-white/90 hover:scale-110 active:scale-95 transition-all duration-300 shadow-2xl group font-semibold"
+              >
+                Βρες σπίτι τώρα
+                <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-2 transition-transform" />
+              </Button>
+              
+              <Button
+                variant="outline"
+                size="lg"
+                onClick={handlePublishListing}
+                className="text-base sm:text-lg px-10 py-7 min-h-[56px] rounded-full border-2 border-white text-white hover:bg-white hover:text-primary hover:scale-110 active:scale-95 transition-all duration-300 font-semibold"
+              >
+                Δημοσίευσε αγγελία
+                <Plus className="ml-2 h-5 w-5" />
+              </Button>
+            </div>
+            
+            <div className="flex items-center justify-center gap-6 mt-8 sm:mt-10 text-white/80 text-sm">
+              <div className="flex items-center gap-2">
+                <CheckCircle className="h-5 w-5" />
+                <span>Δωρεάν εγγραφή</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <Shield className="h-5 w-5" />
+                <span>100% ασφαλές</span>
+              </div>
+              <div className="flex items-center gap-2 hidden sm:flex">
+                <Star className="h-5 w-5" />
+                <span>4.8/5 αξιολόγηση</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Footer */}
+      <footer className="bg-surface-elevated border-t border-border py-12 sm:py-16 px-safe pb-safe">
+        <div className="container mx-auto px-4 sm:px-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 sm:gap-10 mb-10">
+            {/* Logo & Description */}
+            <div className="col-span-1 sm:col-span-2 lg:col-span-1">
+              <div className="flex items-center gap-3 mb-4">
+                <Home className="h-8 w-8 text-primary" />
+                <span className="text-2xl font-bold">Hommi</span>
+              </div>
+              <p className="text-sm text-muted-foreground mb-4 max-w-xs">
+                Η πλατφόρμα συγκατοίκησης που εμπιστεύονται χιλιάδες άνθρωποι στην Ελλάδα.
+              </p>
+              <div className="flex items-center gap-2">
+                <Shield className="h-5 w-5 text-success" />
+                <span className="text-xs text-muted-foreground">Gov.gr verified</span>
+              </div>
+            </div>
+
+            {/* Quick Links */}
+            <div>
+              <h3 className="font-semibold text-sm uppercase tracking-wider mb-4">Πλοήγηση</h3>
+              <ul className="space-y-3 text-sm">
+                <li><a href="/search" className="text-muted-foreground hover:text-primary transition-colors">Αναζήτηση</a></li>
+                <li><a href="/publish" className="text-muted-foreground hover:text-primary transition-colors">Δημοσίευση αγγελίας</a></li>
+                <li><a href="/overview" className="text-muted-foreground hover:text-primary transition-colors">Το προφίλ μου</a></li>
+                <li><a href="/inbox" className="text-muted-foreground hover:text-primary transition-colors">Μηνύματα</a></li>
+              </ul>
+            </div>
+
+            {/* Support */}
+            <div>
+              <h3 className="font-semibold text-sm uppercase tracking-wider mb-4">Υποστήριξη</h3>
+              <ul className="space-y-3 text-sm">
+                <li><a href="/help" className="text-muted-foreground hover:text-primary transition-colors">Κέντρο βοήθειας</a></li>
+                <li><a href="/safety" className="text-muted-foreground hover:text-primary transition-colors">Ασφάλεια</a></li>
+                <li><a href="/agencies" className="text-muted-foreground hover:text-primary transition-colors">Για agencies</a></li>
+                <li><a href="mailto:support@hommi.gr" className="text-muted-foreground hover:text-primary transition-colors">Επικοινωνία</a></li>
+              </ul>
+            </div>
+
+            {/* Newsletter */}
+            <div>
+              <h3 className="font-semibold text-sm uppercase tracking-wider mb-4">Newsletter</h3>
+              <p className="text-sm text-muted-foreground mb-4">
+                Νέες αγγελίες και tips για συγκατοίκηση
+              </p>
+              <div className="flex gap-2">
+                <input
+                  type="email"
+                  placeholder="Email σου"
+                  className="flex-1 px-3 py-2 text-sm border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+                />
+                <Button size="sm" className="px-4">
+                  <ArrowRight className="h-4 w-4" />
+                </Button>
+              </div>
+            </div>
+          </div>
+
+          {/* Bottom Bar */}
+          <div className="pt-8 border-t border-border flex flex-col sm:flex-row justify-between items-center gap-4 text-sm text-muted-foreground">
+            <p>© 2025 Hommi. Με την επιφύλαξη παντός δικαιώματος.</p>
+            <div className="flex gap-6">
+              <a href="/legal/terms" className="hover:text-primary transition-colors">Όροι χρήσης</a>
+              <a href="/legal/privacy" className="hover:text-primary transition-colors">Απόρρητο</a>
+              <a href="/legal/cookies" className="hover:text-primary transition-colors">Cookies</a>
+            </div>
+          </div>
+        </div>
+      </footer>
     </div>
   );
 };
