@@ -576,7 +576,7 @@ const Index = () => {
                 </span>
               </AccordionTrigger>
               <AccordionContent className="text-muted-foreground pb-5">
-                Όλοι οι χρήστες επαληθεύονται μέσω Gov.gr Wallet με επίσημη ταυτότητα. Επιπλέον, απαιτούνται references από εργασία ή πανεπιστήμιο για επιπλέον ασφάλεια.
+                Όλοι οι χρήστες έχουν τη δυνατότητα επαλήθευσης με επίσημη ταυτότητα. Οι επαληθευμένοι χρήστες, φέρουν verified badge στο profile τους και έχουν προτεραιότητα στα αποτελέσματα αναζήτησης.
               </AccordionContent>
             </AccordionItem>
 
