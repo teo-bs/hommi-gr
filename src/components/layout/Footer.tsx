@@ -1,5 +1,6 @@
-import { Home, Shield, ArrowRight } from "lucide-react";
+import { Shield, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import hommiLogo from "@/assets/hommi-logo-new.png";
 
 export const Footer = () => {
   return (
@@ -9,7 +10,7 @@ export const Footer = () => {
           {/* Logo & Description */}
           <div className="col-span-1 sm:col-span-2 lg:col-span-1">
             <div className="flex items-center gap-3 mb-4">
-              <Home className="h-8 w-8 text-primary" />
+              <img src={hommiLogo} alt="Hommi" className="h-8 w-8" />
               <span className="text-2xl font-bold">Hommi</span>
             </div>
             <p className="text-sm text-muted-foreground mb-4 max-w-xs">

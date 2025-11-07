@@ -14,7 +14,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useAdminCheck } from "@/hooks/useAdminCheck";
 import { AvatarWithBadge } from "@/components/ui/avatar-with-badge";
 import { useTranslation } from "@/hooks/useTranslation";
-import hommiLogo from "@/assets/hommi-logo.png";
+import hommiLogo from "@/assets/hommi-logo-new.png";
 
 export const Header = () => {
   const { user, profile, signOut, updateProfile } = useAuth();
