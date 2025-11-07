@@ -147,6 +147,9 @@ export const useOptimizedSearch = ({ filters, enabled = true }: UseOptimizedSear
 
 // Helper function to apply filters to a query
 function applyFilters(query: any, filters: SearchFilters) {
+  // CRITICAL: Only show listings with published_at set
+  query = query.not('published_at', 'is', null);
+  
   // Budget
   if (filters.budget?.min != null) {
     query = query.gte('price_month', filters.budget.min);

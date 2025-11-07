@@ -8,3 +8,6 @@ verify_jwt = false
 
 [functions.send-broken-photos-digest]
 verify_jwt = false
+
+[functions.refresh-search-cache]
+verify_jwt = false
