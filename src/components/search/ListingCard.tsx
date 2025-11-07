@@ -253,25 +253,26 @@ export const ListingCard = ({
 
         {/* Content */}
         <div className="space-y-1 px-1">
-          {/* Room Type & Flatmates */}
-          <p className="text-xs text-muted-foreground uppercase tracking-wide">
-            {roomTypeLabel} · {flatmatesLabel}
-          </p>
-          
           {/* Title */}
-          <h3 className="font-semibold text-base sm:text-lg line-clamp-2 leading-tight group-hover:underline">
+          <h3 className="font-semibold text-base sm:text-lg line-clamp-1 leading-tight group-hover:underline mb-1">
             {listing.title}
           </h3>
           
-          {/* Price & Bills */}
-          <div className="flex items-baseline justify-between pt-1">
+          {/* City */}
+          <p className="text-sm text-muted-foreground mb-2">
+            {listing.city}
+          </p>
+          
+          {/* Price & Bills - Inline */}
+          <div className="flex items-center gap-2 flex-wrap">
             <div className="flex items-baseline gap-1">
               <span className="font-bold text-lg sm:text-xl tabular-nums">€{listing.price_month}</span>
               <span className="text-sm text-muted-foreground">/μήνα</span>
             </div>
-            <div className="text-xs sm:text-sm text-muted-foreground">
-              {listing.bills_included ? '✓ Με λογαριασμούς' : 'Χωρίς λογαριασμούς'}
-            </div>
+            <span className="text-xs text-muted-foreground">·</span>
+            <span className="text-xs sm:text-sm text-muted-foreground">
+              {listing.bills_included ? 'Με λογαριασμούς' : 'Χωρίς λογαριασμούς'}
+            </span>
           </div>
         </div>
       </div>

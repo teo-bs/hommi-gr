@@ -83,7 +83,13 @@ export default function PublishStepRoomDetails({
                   type="number"
                   placeholder="15"
                   defaultValue={draft.room_size_m2 || ''}
-                  onBlur={(e) => onUpdate({ room_size_m2: parseInt(e.target.value) || undefined })}
+                  onBlur={(e) => {
+                    const size = parseInt(e.target.value) || undefined;
+                    onUpdate({ 
+                      room_size_m2: size,
+                      title: size ? `Room, ${size} m²` : undefined
+                    });
+                  }}
                 />
               </div>
 
