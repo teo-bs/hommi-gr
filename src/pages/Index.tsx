@@ -7,7 +7,7 @@ import { DatePicker } from "@/components/search/DatePicker";
 import { DurationSelector } from "@/components/search/DurationSelector";
 import { LocationAutocomplete } from "@/components/search/LocationAutocomplete";
 import { useListingFlow } from "@/hooks/useListingFlow";
-import { Search, Users, Shield, Heart, Home, MapPin, CheckCircle, Star, ArrowRight, Plus } from "lucide-react";
+import { Search, Users, Shield, Heart, Home, MapPin, CheckCircle, Star, ArrowRight, Plus, CreditCard } from "lucide-react";
 import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from "@/components/ui/accordion";
 import heroImage from "@/assets/hero-image.jpg";
 const Index = () => {
@@ -329,10 +329,13 @@ const Index = () => {
                 animationDelay: "300ms"
               }}>
                   <div className="w-12 h-12 sm:w-14 sm:h-14 bg-gradient-to-br from-success to-success-light rounded-2xl flex items-center justify-center flex-shrink-0 mt-1 shadow-md group-hover:scale-110 transition-transform duration-300">
-                    <Shield className="h-6 w-6 sm:h-7 sm:w-7 text-white" />
+                    <CreditCard className="h-6 w-6 sm:h-7 sm:w-7 text-white" />
                   </div>
                   <div>
-                    <h3 className="text-xl sm:text-2xl font-bold mb-3 tracking-tight">Secure payments</h3>
+                    <div className="flex items-center gap-3 mb-3">
+                      <h3 className="text-xl sm:text-2xl font-bold tracking-tight">Secure payments</h3>
+                      <Badge variant="secondary" className="text-xs px-2 py-1">Coming Soon</Badge>
+                    </div>
                     <p className="text-base sm:text-lg text-muted-foreground leading-relaxed font-light">
                       Προστασία που προστατεύει και τις δύο πλευρές έως την ολοκλήρωση της μετακόμισης
                     </p>
