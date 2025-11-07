@@ -601,7 +601,7 @@ export const MapContainer = ({
                   hoverPopup.current.remove();
                   hoverPopup.current = null;
                 }
-              }, 150); // 150ms delay
+              }, 300); // Increased delay for smoother interaction
             });
             
             markersRef.current.set(id, marker);
@@ -616,15 +616,26 @@ export const MapContainer = ({
         });
       };
 
-      // Initial marker creation
+      // Initial marker creation - only run once after data loads
+      let hasInitialized = false;
       map.current.on('sourcedata', (e) => {
-        if (e.sourceId === 'listings' && e.isSourceLoaded) {
+        if (e.sourceId === 'listings' && e.isSourceLoaded && !hasInitialized) {
           updateMarkers();
+          hasInitialized = true;
         }
       });
 
-      map.current.on('moveend', updateMarkers);
-      map.current.on('zoom', updateMarkers);
+      // Throttle marker updates to max 1x per 300ms
+      let markerUpdateTimeout: NodeJS.Timeout | null = null;
+      const throttledUpdateMarkers = () => {
+        if (markerUpdateTimeout) return;
+        markerUpdateTimeout = setTimeout(() => {
+          updateMarkers();
+          markerUpdateTimeout = null;
+        }, 300);
+      };
+
+      map.current.on('moveend', throttledUpdateMarkers);
 
       // Click handlers
       map.current.on('click', 'clusters', (e) => {
@@ -687,22 +698,10 @@ export const MapContainer = ({
     });
   }, [hoveredListingId, selectedListingId]);
 
-  // Smooth flyTo when selectedListingId changes (mobile carousel sync)
+  // Highlight selected marker (no auto-movement)
   useEffect(() => {
-    if (!selectedListingId || !map.current) return;
+    if (!selectedListingId) return;
     
-    const listing = listings.find(l => l.id === selectedListingId);
-    if (!listing) return;
-    
-    // Only center, don't change zoom - respect user's preference
-    map.current.easeTo({
-      center: [listing.lng, listing.lat],
-      duration: 400,
-      essential: true,
-      easing: (t) => 1 - Math.pow(1 - t, 3) // Ease-out cubic
-    });
-    
-    // Subtle highlight (no pulse animation)
     const marker = markersRef.current.get(selectedListingId);
     if (marker) {
       const bubble = marker.getElement().querySelector('.price-bubble');
@@ -711,7 +710,7 @@ export const MapContainer = ({
         setTimeout(() => bubble.classList.remove('active'), 300);
       }
     }
-  }, [selectedListingId, listings]);
+  }, [selectedListingId]);
 
   const handleUpdateResults = () => {
     console.log('Updating results for current map bounds');
