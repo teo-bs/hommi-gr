@@ -74,7 +74,7 @@ const Index = () => {
         backgroundImage: `url(${heroImage})`
       }}>
           {/* Modern gradient overlay */}
-          <div className="absolute inset-0 bg-gradient-to-br from-black/50 via-black/30 to-primary/20" />
+          
           
           {/* Animated blur circles for depth */}
           <div className="absolute top-20 left-10 w-72 h-72 bg-primary/30 rounded-full blur-3xl animate-pulse" />
