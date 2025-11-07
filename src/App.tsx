@@ -7,6 +7,7 @@ import { AuthProvider } from "@/hooks/useAuth";
 import { useRealtimeNotifications } from "@/hooks/useRealtimeNotifications";
 import { useUnreadCount } from "@/hooks/useUnreadCount";
 import { Header } from "@/components/layout/Header";
+import { Footer } from "@/components/layout/Footer";
 import { GlobalTermsHandler } from "@/components/auth/GlobalTermsHandler";
 import { LanguageProvider } from "@/contexts/LanguageContext";
 
@@ -73,6 +74,7 @@ const AppContent = () => {
             <Route path="*" element={<NotFound />} />
           </Routes>
         </main>
+        <Footer />
       </div>
     </BrowserRouter>
   );
