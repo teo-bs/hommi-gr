@@ -7,33 +7,15 @@ import { DatePicker } from "@/components/search/DatePicker";
 import { DurationSelector } from "@/components/search/DurationSelector";
 import { LocationAutocomplete } from "@/components/search/LocationAutocomplete";
 import { useListingFlow } from "@/hooks/useListingFlow";
-import { 
-  Search, 
-  Users, 
-  Shield, 
-  Heart, 
-  Home, 
-  MapPin,
-  CheckCircle,
-  Star,
-  ArrowRight,
-  Plus
-} from "lucide-react";
-import { 
-  Accordion, 
-  AccordionItem, 
-  AccordionTrigger, 
-  AccordionContent 
-} from "@/components/ui/accordion";
+import { Search, Users, Shield, Heart, Home, MapPin, CheckCircle, Star, ArrowRight, Plus } from "lucide-react";
+import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from "@/components/ui/accordion";
 import heroImage from "@/assets/hero-image.jpg";
-
 const Index = () => {
   const navigate = useNavigate();
   const listingFlow = useListingFlow();
   const [searchQuery, setSearchQuery] = useState("");
   const [moveInDate, setMoveInDate] = useState<Date | undefined>();
   const [duration, setDuration] = useState("");
-
   const handleSearch = () => {
     // Save to recent searches
     if (searchQuery.trim()) {
@@ -42,10 +24,7 @@ const Index = () => {
         const MAX_RECENT_SEARCHES = 5;
         const stored = localStorage.getItem(RECENT_SEARCHES_KEY);
         const recentSearches = stored ? JSON.parse(stored) : [];
-        const updated = [
-          searchQuery,
-          ...recentSearches.filter((s: string) => s !== searchQuery),
-        ].slice(0, MAX_RECENT_SEARCHES);
+        const updated = [searchQuery, ...recentSearches.filter((s: string) => s !== searchQuery)].slice(0, MAX_RECENT_SEARCHES);
         localStorage.setItem(RECENT_SEARCHES_KEY, JSON.stringify(updated));
       } catch (error) {
         console.error("Failed to save recent search:", error);
@@ -65,53 +44,56 @@ const Index = () => {
     if (searchQuery) params.set('city', searchQuery);
     if (moveInDate) params.set('moveIn', moveInDate.toISOString());
     if (duration) params.set('duration', duration);
-    
     navigate(`/search?${params.toString()}`);
   };
-
-  const smartShortcuts = [
-    { label: "Shared homes", icon: Users },
-    { label: "Couples accepted", icon: Heart },
-    { label: "Pets accepted", icon: Home },
-  ];
-
+  const smartShortcuts = [{
+    label: "Shared homes",
+    icon: Users
+  }, {
+    label: "Couples accepted",
+    icon: Heart
+  }, {
+    label: "Pets accepted",
+    icon: Home
+  }];
   const handleShortcut = (shortcut: string) => {
     // Track analytics
     console.log('smart_shortcut_clicked', {
       shortcut,
       timestamp: Date.now()
     });
-
     navigate(`/search?filters=${encodeURIComponent(shortcut)}`);
   };
-
   const handlePublishListing = () => {
     listingFlow.initiateListingFlow();
   };
-
-  return (
-    <div className="min-h-screen bg-background">
+  return <div className="min-h-screen bg-background">
       {/* Hero Section */}
       <section className="relative overflow-visible md:overflow-hidden mb-20 sm:mb-24 md:mb-28">
-        <div 
-          className="min-h-[680px] md:min-h-[600px] h-auto md:h-[85vh] bg-cover bg-center bg-no-repeat relative pt-safe"
-          style={{ backgroundImage: `url(${heroImage})` }}
-        >
+        <div className="min-h-[680px] md:min-h-[600px] h-auto md:h-[85vh] bg-cover bg-center bg-no-repeat relative pt-safe" style={{
+        backgroundImage: `url(${heroImage})`
+      }}>
           {/* Modern gradient overlay */}
           <div className="absolute inset-0 bg-gradient-to-br from-black/50 via-black/30 to-primary/20" />
           
           {/* Animated blur circles for depth */}
           <div className="absolute top-20 left-10 w-72 h-72 bg-primary/30 rounded-full blur-3xl animate-pulse" />
-          <div className="absolute bottom-20 right-10 w-96 h-96 bg-accent/20 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }} />
+          <div className="absolute bottom-20 right-10 w-96 h-96 bg-accent/20 rounded-full blur-3xl animate-pulse" style={{
+          animationDelay: '1s'
+        }} />
           
           <div className="absolute inset-0 z-10 flex items-start justify-center px-4 sm:px-6 pt-28 sm:pt-32 md:pt-24 pb-12 sm:pb-16 pb-safe">
             <div className="text-center text-white max-w-5xl mx-auto w-full animate-fade-in">
-              <h1 className="text-3xl sm:text-5xl md:text-7xl font-bold mb-4 sm:mb-6 md:mb-8 leading-tight tracking-tight" style={{ textShadow: '0 2px 20px rgba(0,0,0,0.3)' }}>
+              <h1 className="text-3xl sm:text-5xl md:text-7xl font-bold mb-4 sm:mb-6 md:mb-8 leading-tight tracking-tight" style={{
+              textShadow: '0 2px 20px rgba(0,0,0,0.3)'
+            }}>
                 Βρες το ιδανικό <span className="text-primary-light">σπίτι</span>
                 <br className="hidden sm:block" />
                 <span className="sm:hidden"> </span>και τους καλύτερους <span className="text-accent-light">συγκάτοικους</span>
               </h1>
-              <p className="text-lg sm:text-2xl md:text-3xl mb-8 sm:mb-10 md:mb-14 text-white/95 font-light px-4" style={{ textShadow: '0 1px 10px rgba(0,0,0,0.2)' }}>
+              <p className="text-lg sm:text-2xl md:text-3xl mb-8 sm:mb-10 md:mb-14 text-white/95 font-light px-4" style={{
+              textShadow: '0 1px 10px rgba(0,0,0,0.2)'
+            }}>
                 Η πλατφόρμα συγκατοίκησης που εμπιστεύονται χιλιάδες άνθρωποι
               </p>
 
@@ -142,34 +124,18 @@ const Index = () => {
                           <span className="text-xs font-semibold text-foreground mb-2 uppercase tracking-wide">
                             Τοποθεσία
                           </span>
-                          <LocationAutocomplete
-                            value={searchQuery}
-                            onChange={setSearchQuery}
-                            className="border-0 bg-transparent p-0 h-auto text-sm sm:text-base font-medium focus-visible:ring-0"
-                          />
+                          <LocationAutocomplete value={searchQuery} onChange={setSearchQuery} className="border-0 bg-transparent p-0 h-auto text-sm sm:text-base font-medium focus-visible:ring-0" />
                         </div>
                       </div>
                     </div>
                     <div className="md:col-span-1 p-5 border-t md:border-t-0 md:border-r border-border/20">
-                      <DatePicker
-                        date={moveInDate}
-                        onDateChange={setMoveInDate}
-                        placeholder="Ημερομηνία"
-                      />
+                      <DatePicker date={moveInDate} onDateChange={setMoveInDate} placeholder="Ημερομηνία" />
                     </div>
                     <div className="md:col-span-1 p-5 border-t md:border-t-0 md:border-r border-border/20">
-                      <DurationSelector
-                        value={duration}
-                        onValueChange={setDuration}
-                      />
+                      <DurationSelector value={duration} onValueChange={setDuration} />
                     </div>
                     <div className="md:col-span-1 p-5 border-t md:border-t-0 flex items-center justify-center">
-                      <Button 
-                        onClick={handleSearch}
-                        className="w-full md:w-14 h-12 md:h-14 rounded-full bg-gradient-to-r from-primary to-primary-hover transition-all duration-300 hover:scale-110 hover:shadow-xl active:scale-95"
-                        variant="hero"
-                        size="lg"
-                      >
+                      <Button onClick={handleSearch} className="w-full md:w-14 h-12 md:h-14 rounded-full bg-gradient-to-r from-primary to-primary-hover transition-all duration-300 hover:scale-110 hover:shadow-xl active:scale-95" variant="hero" size="lg">
                         <Search className="h-5 w-5 md:h-6 md:w-6" />
                         <span className="ml-2 md:hidden font-semibold text-base">Αναζήτηση</span>
                       </Button>
@@ -229,15 +195,9 @@ const Index = () => {
           
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
             {/* Shared Homes Card */}
-            <Card 
-              className="group cursor-pointer overflow-hidden rounded-3xl hover:scale-[1.03] hover:rotate-1 active:scale-[0.98] hover:shadow-2xl transition-all duration-500 animate-fade-in touch-manipulation"
-              style={{ animationDelay: '100ms' }}
-              onClick={() => handleShortcut("Shared homes")}
-              role="button"
-              tabIndex={0}
-              aria-label="Φίλτρο: Κοινόχρηστα σπίτια"
-              onKeyDown={(e) => e.key === 'Enter' && handleShortcut("Shared homes")}
-            >
+            <Card className="group cursor-pointer overflow-hidden rounded-3xl hover:scale-[1.03] hover:rotate-1 active:scale-[0.98] hover:shadow-2xl transition-all duration-500 animate-fade-in touch-manipulation" style={{
+            animationDelay: '100ms'
+          }} onClick={() => handleShortcut("Shared homes")} role="button" tabIndex={0} aria-label="Φίλτρο: Κοινόχρηστα σπίτια" onKeyDown={e => e.key === 'Enter' && handleShortcut("Shared homes")}>
               <div className="relative h-[320px] sm:h-[360px] overflow-hidden">
                 {/* Gradient background with animated shimmer */}
                 <div className="w-full h-full bg-gradient-to-br from-primary/30 via-accent/20 to-primary/40 flex items-center justify-center relative">
@@ -262,15 +222,9 @@ const Index = () => {
             </Card>
 
             {/* Couples Accepted Card */}
-            <Card 
-              className="group cursor-pointer overflow-hidden rounded-3xl hover:scale-[1.03] hover:rotate-1 active:scale-[0.98] hover:shadow-2xl transition-all duration-500 animate-fade-in touch-manipulation"
-              style={{ animationDelay: '200ms' }}
-              onClick={() => handleShortcut("Couples accepted")}
-              role="button"
-              tabIndex={0}
-              aria-label="Φίλτρο: Ζευγάρια καλοδεχούμενα"
-              onKeyDown={(e) => e.key === 'Enter' && handleShortcut("Couples accepted")}
-            >
+            <Card className="group cursor-pointer overflow-hidden rounded-3xl hover:scale-[1.03] hover:rotate-1 active:scale-[0.98] hover:shadow-2xl transition-all duration-500 animate-fade-in touch-manipulation" style={{
+            animationDelay: '200ms'
+          }} onClick={() => handleShortcut("Couples accepted")} role="button" tabIndex={0} aria-label="Φίλτρο: Ζευγάρια καλοδεχούμενα" onKeyDown={e => e.key === 'Enter' && handleShortcut("Couples accepted")}>
               <div className="relative h-[320px] sm:h-[360px] overflow-hidden">
                 <div className="w-full h-full bg-gradient-to-br from-accent/30 via-primary/20 to-accent/40 flex items-center justify-center relative">
                   <Heart className="h-28 w-28 text-accent opacity-50 group-hover:scale-110 transition-transform duration-500" />
@@ -292,15 +246,9 @@ const Index = () => {
             </Card>
 
             {/* Pets Accepted Card */}
-            <Card 
-              className="group cursor-pointer overflow-hidden rounded-3xl hover:scale-[1.03] hover:rotate-1 active:scale-[0.98] hover:shadow-2xl transition-all duration-500 animate-fade-in touch-manipulation"
-              style={{ animationDelay: '300ms' }}
-              onClick={() => handleShortcut("Pets accepted")}
-              role="button"
-              tabIndex={0}
-              aria-label="Φίλτρο: Κατοικίδια καλοδεχούμενα"
-              onKeyDown={(e) => e.key === 'Enter' && handleShortcut("Pets accepted")}
-            >
+            <Card className="group cursor-pointer overflow-hidden rounded-3xl hover:scale-[1.03] hover:rotate-1 active:scale-[0.98] hover:shadow-2xl transition-all duration-500 animate-fade-in touch-manipulation" style={{
+            animationDelay: '300ms'
+          }} onClick={() => handleShortcut("Pets accepted")} role="button" tabIndex={0} aria-label="Φίλτρο: Κατοικίδια καλοδεχούμενα" onKeyDown={e => e.key === 'Enter' && handleShortcut("Pets accepted")}>
               <div className="relative h-[320px] sm:h-[360px] overflow-hidden">
                 <div className="w-full h-full bg-gradient-to-br from-success/30 via-primary/20 to-success/40 flex items-center justify-center relative">
                   <Home className="h-28 w-28 text-success opacity-50 group-hover:scale-110 transition-transform duration-500" />
@@ -396,7 +344,9 @@ const Index = () => {
                 Γιατί να επιλέξεις το Hommi;
               </h2>
               <div className="space-y-6 sm:space-y-8">
-                <div className="flex items-start space-x-4 sm:space-x-5 animate-fade-in group hover:translate-x-2 transition-transform duration-300" style={{ animationDelay: '0ms' }}>
+                <div className="flex items-start space-x-4 sm:space-x-5 animate-fade-in group hover:translate-x-2 transition-transform duration-300" style={{
+                animationDelay: '0ms'
+              }}>
                   <div className="w-12 h-12 sm:w-14 sm:h-14 bg-gradient-to-br from-primary to-primary-hover rounded-2xl flex items-center justify-center flex-shrink-0 mt-1 shadow-md group-hover:scale-110 transition-transform duration-300">
                     <CheckCircle className="h-6 w-6 sm:h-7 sm:w-7 text-white" />
                   </div>
@@ -408,7 +358,9 @@ const Index = () => {
                   </div>
                 </div>
 
-                <div className="flex items-start space-x-4 sm:space-x-5 animate-fade-in group hover:translate-x-2 transition-transform duration-300" style={{ animationDelay: "150ms" }}>
+                <div className="flex items-start space-x-4 sm:space-x-5 animate-fade-in group hover:translate-x-2 transition-transform duration-300" style={{
+                animationDelay: "150ms"
+              }}>
                   <div className="w-12 h-12 sm:w-14 sm:h-14 bg-gradient-to-br from-accent to-accent-light rounded-2xl flex items-center justify-center flex-shrink-0 mt-1 shadow-md group-hover:scale-110 transition-transform duration-300">
                     <Users className="h-6 w-6 sm:h-7 sm:w-7 text-white" />
                   </div>
@@ -420,7 +372,9 @@ const Index = () => {
                   </div>
                 </div>
 
-                <div className="flex items-start space-x-4 sm:space-x-5 animate-fade-in group hover:translate-x-2 transition-transform duration-300" style={{ animationDelay: "300ms" }}>
+                <div className="flex items-start space-x-4 sm:space-x-5 animate-fade-in group hover:translate-x-2 transition-transform duration-300" style={{
+                animationDelay: "300ms"
+              }}>
                   <div className="w-12 h-12 sm:w-14 sm:h-14 bg-gradient-to-br from-success to-success-light rounded-2xl flex items-center justify-center flex-shrink-0 mt-1 shadow-md group-hover:scale-110 transition-transform duration-300">
                     <Shield className="h-6 w-6 sm:h-7 sm:w-7 text-white" />
                   </div>
@@ -434,21 +388,11 @@ const Index = () => {
               </div>
 
               <div className="flex flex-col sm:flex-row gap-4 sm:gap-5 mt-8 sm:mt-10">
-                <Button
-                  variant="hero"
-                  size="lg"
-                  onClick={() => navigate('/search')}
-                  className="text-base sm:text-lg px-8 py-6 sm:py-7 min-h-[52px] rounded-full bg-gradient-to-r from-primary to-primary-hover hover:scale-105 hover:shadow-2xl active:scale-95 transition-all duration-300 group"
-                >
+                <Button variant="hero" size="lg" onClick={() => navigate('/search')} className="text-base sm:text-lg px-8 py-6 sm:py-7 min-h-[52px] rounded-full bg-gradient-to-r from-primary to-primary-hover hover:scale-105 hover:shadow-2xl active:scale-95 transition-all duration-300 group">
                   Ξεκίνα την αναζήτηση
                   <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
                 </Button>
-                <Button
-                  variant="outline"
-                  size="lg"
-                  onClick={handlePublishListing}
-                  className="text-base sm:text-lg px-8 py-6 sm:py-7 min-h-[52px] rounded-full border-2 hover:bg-primary/10 hover:border-primary hover:scale-105 active:scale-95 transition-all duration-300"
-                >
+                <Button variant="outline" size="lg" onClick={handlePublishListing} className="text-base sm:text-lg px-8 py-6 sm:py-7 min-h-[52px] rounded-full border-2 hover:bg-primary/10 hover:border-primary hover:scale-105 active:scale-95 transition-all duration-300">
                   Δημοσίευσε αγγελία
                   <Plus className="ml-2 h-5 w-5" />
                 </Button>
@@ -458,12 +402,7 @@ const Index = () => {
             <div className="relative animate-fade-in order-first lg:order-last">
               <Card className="shadow-elevated overflow-hidden rounded-2xl">
                 <CardContent className="p-0">
-                  <img
-                    src={heroImage}
-                    alt="Happy flatmates"
-                    className="w-full h-64 sm:h-80 md:h-96 object-cover"
-                    loading="lazy"
-                  />
+                  <img src={heroImage} alt="Happy flatmates" className="w-full h-64 sm:h-80 md:h-96 object-cover" loading="lazy" />
                 </CardContent>
               </Card>
             </div>
@@ -488,13 +427,9 @@ const Index = () => {
             <Card className="bg-white hover:shadow-2xl transition-all duration-300 border-2 border-transparent hover:border-primary/20">
               <CardContent className="p-6 sm:p-8">
                 <div className="flex items-center gap-1 mb-4">
-                  {[...Array(5)].map((_, i) => (
-                    <Star key={i} className="h-4 w-4 fill-yellow-400 text-yellow-400" />
-                  ))}
+                  {[...Array(5)].map((_, i) => <Star key={i} className="h-4 w-4 fill-yellow-400 text-yellow-400" />)}
                 </div>
-                <p className="text-base text-foreground mb-6 leading-relaxed italic">
-                  "Βρήκα το τέλειο διαμέρισμα στο Κολωνάκι σε μόνο 2 εβδομάδες! Η επαλήθευση με Gov.gr με έκανε να νιώθω ασφαλής από την αρχή."
-                </p>
+                <p className="text-base text-foreground mb-6 leading-relaxed italic">"Βρήκα το τέλειο διαμέρισμα στο Κολωνάκι σε μόνο 2 εβδομάδες! Η επαλήθευση ταυτότητας με έκανε να νιώθω ασφαλής από την αρχή."</p>
                 <div className="flex items-center gap-3">
                   <div className="w-12 h-12 rounded-full bg-gradient-to-br from-primary to-accent flex items-center justify-center text-white font-bold text-lg">
                     ΜΚ
@@ -511,9 +446,7 @@ const Index = () => {
             <Card className="bg-white hover:shadow-2xl transition-all duration-300 border-2 border-transparent hover:border-primary/20">
               <CardContent className="p-6 sm:p-8">
                 <div className="flex items-center gap-1 mb-4">
-                  {[...Array(5)].map((_, i) => (
-                    <Star key={i} className="h-4 w-4 fill-yellow-400 text-yellow-400" />
-                  ))}
+                  {[...Array(5)].map((_, i) => <Star key={i} className="h-4 w-4 fill-yellow-400 text-yellow-400" />)}
                 </div>
                 <p className="text-base text-foreground mb-6 leading-relaxed italic">
                   "Ως ιδιοκτήτης, το Hommi με βοήθησε να βρω αξιόπιστους ενοικιαστές γρήγορα. Η επικοινωνία ήταν άψογη!"
@@ -534,9 +467,7 @@ const Index = () => {
             <Card className="bg-white hover:shadow-2xl transition-all duration-300 border-2 border-transparent hover:border-primary/20">
               <CardContent className="p-6 sm:p-8">
                 <div className="flex items-center gap-1 mb-4">
-                  {[...Array(5)].map((_, i) => (
-                    <Star key={i} className="h-4 w-4 fill-yellow-400 text-yellow-400" />
-                  ))}
+                  {[...Array(5)].map((_, i) => <Star key={i} className="h-4 w-4 fill-yellow-400 text-yellow-400" />)}
                 </div>
                 <p className="text-base text-foreground mb-6 leading-relaxed italic">
                   "Τέλεια εμπειρία! Βρήκαμε συγκάτοικο που ταιριάζει απόλυτα στον τρόπο ζωής μας. Highly recommended!"
@@ -576,7 +507,7 @@ const Index = () => {
                 </span>
               </AccordionTrigger>
               <AccordionContent className="text-muted-foreground pb-5">
-                Όλοι οι χρήστες έχουν τη δυνατότητα επαλήθευσης με επίσημη ταυτότητα. Οι επαληθευμένοι χρήστες, φέρουν verified badge στο profile τους και έχουν προτεραιότητα στα αποτελέσματα αναζήτησης.
+                Όλοι οι χρήστες επαληθεύονται μέσω Gov.gr Wallet με επίσημη ταυτότητα. Επιπλέον, απαιτούνται references από εργασία ή πανεπιστήμιο για επιπλέον ασφάλεια.
               </AccordionContent>
             </AccordionItem>
 
@@ -643,21 +574,12 @@ const Index = () => {
             </p>
             
             <div className="flex flex-col sm:flex-row gap-4 sm:gap-5 justify-center items-center">
-              <Button
-                size="lg"
-                onClick={() => navigate('/search')}
-                className="text-base sm:text-lg px-10 py-7 min-h-[56px] rounded-full bg-white text-primary hover:bg-white/90 hover:scale-110 active:scale-95 transition-all duration-300 shadow-2xl group font-semibold"
-              >
+              <Button size="lg" onClick={() => navigate('/search')} className="text-base sm:text-lg px-10 py-7 min-h-[56px] rounded-full bg-white text-primary hover:bg-white/90 hover:scale-110 active:scale-95 transition-all duration-300 shadow-2xl group font-semibold">
                 Βρες σπίτι τώρα
                 <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-2 transition-transform" />
               </Button>
               
-              <Button
-                variant="outline"
-                size="lg"
-                onClick={handlePublishListing}
-                className="text-base sm:text-lg px-10 py-7 min-h-[56px] rounded-full border-2 border-white text-white hover:bg-white hover:text-primary hover:scale-110 active:scale-95 transition-all duration-300 font-semibold"
-              >
+              <Button variant="outline" size="lg" onClick={handlePublishListing} className="text-base sm:text-lg px-10 py-7 min-h-[56px] rounded-full border-2 border-white text-white hover:bg-white hover:text-primary hover:scale-110 active:scale-95 transition-all duration-300 font-semibold">
                 Δημοσίευσε αγγελία
                 <Plus className="ml-2 h-5 w-5" />
               </Button>
@@ -680,8 +602,6 @@ const Index = () => {
           </div>
         </div>
       </section>
-    </div>
-  );
+    </div>;
 };
-
 export default Index;
