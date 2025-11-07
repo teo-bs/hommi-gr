@@ -36,21 +36,23 @@ export const MobileActionBar = ({
             {/* Save Button */}
             <SaveRoomButton 
               roomId={roomId}
-              className="min-h-[44px] min-w-[44px] touch-manipulation active:scale-95 transition-transform"
+              className="min-h-[44px] min-w-[44px] shrink-0 touch-manipulation active:scale-95 transition-transform"
             />
 
-            {/* Share Button Wrapper */}
-            <div className="min-h-[44px] min-w-[44px]">
-              <ShareButton 
-                listingSlug={listingSlug}
-                listingTitle={listingTitle}
-              />
-            </div>
+            {/* Share Button - Icon Only */}
+            <ShareButton 
+              listingSlug={listingSlug}
+              listingTitle={listingTitle}
+              variant="outline"
+              size="icon"
+              iconOnly={true}
+              className="min-h-[44px] min-w-[44px] shrink-0 touch-manipulation active:scale-95 transition-transform"
+            />
 
             {/* Request to Chat Button */}
             <Button 
               onClick={onRequestChat}
-              className="flex-1 min-h-[44px] touch-manipulation active:scale-95 transition-transform font-semibold"
+              className="flex-1 min-h-[44px] shrink-0 touch-manipulation active:scale-95 transition-transform font-semibold"
               size="lg"
             >
               <MessageSquare className="h-4 w-4 mr-2" />

@@ -8,6 +8,7 @@ interface ShareButtonProps {
   variant?: 'default' | 'destructive' | 'outline' | 'secondary' | 'ghost' | 'link';
   size?: 'default' | 'sm' | 'lg' | 'icon';
   className?: string;
+  iconOnly?: boolean;
 }
 
 export const ShareButton = ({ 
@@ -15,7 +16,8 @@ export const ShareButton = ({
   listingTitle,
   variant = 'outline',
   size = 'sm',
-  className
+  className,
+  iconOnly = false
 }: ShareButtonProps) => {
   const [copied, setCopied] = useState(false);
   
@@ -63,22 +65,31 @@ export const ShareButton = ({
       size={size}
       onClick={handleShare}
       className={className}
+      aria-label={iconOnly ? "Κοινοποίηση αγγελίας" : undefined}
     >
-      {copied ? (
-        <>
-          <Check className="h-4 w-4 mr-2" />
-          Αντιγράφηκε!
-        </>
-      ) : navigator.share ? (
-        <>
-          <Share2 className="h-4 w-4 mr-2" />
-          Κοινοποίηση
-        </>
+      {iconOnly ? (
+        copied ? (
+          <Check className="h-4 w-4" />
+        ) : (
+          <Share2 className="h-4 w-4" />
+        )
       ) : (
-        <>
-          <Copy className="h-4 w-4 mr-2" />
-          Αντιγραφή συνδέσμου
-        </>
+        copied ? (
+          <>
+            <Check className="h-4 w-4 mr-2" />
+            Αντιγράφηκε!
+          </>
+        ) : navigator.share ? (
+          <>
+            <Share2 className="h-4 w-4 mr-2" />
+            Κοινοποίηση
+          </>
+        ) : (
+          <>
+            <Copy className="h-4 w-4 mr-2" />
+            Αντιγραφή συνδέσμου
+          </>
+        )
       )}
     </Button>
   );
