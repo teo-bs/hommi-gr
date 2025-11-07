@@ -28,6 +28,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
 import { MobileActionBar } from "@/components/room/MobileActionBar";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface RoomData {
   room: any;
@@ -51,6 +52,7 @@ const RoomPage = () => {
   const [roomData, setRoomData] = useState<RoomData | null>(null);
   const [loading, setLoading] = useState(true);
   const [isOwner, setIsOwner] = useState(false);
+  const isMobile = useIsMobile();
   
   // Message flow management
   const messageFlow = useMessageFlow();
@@ -334,20 +336,26 @@ const RoomPage = () => {
       </Helmet>
 
       <div className="container mx-auto px-4 py-3 sm:py-6 pb-20 sm:pb-24 lg:pb-8">
-        {/* Back to Search Button */}
-        {location.state?.fromSearch && (
-          <div className="mb-2 sm:mb-4 animate-fade-in">
-            <Button 
-              variant="ghost" 
-              onClick={() => navigate('/search', { state: { fromListing: true } })}
-              className="gap-2 -ml-2 min-h-[44px] touch-manipulation active:scale-95 transition-transform"
-            >
-              <ArrowLeft className="h-4 w-4" />
-              <span className="hidden sm:inline">Επιστροφή στα αποτελέσματα</span>
-              <span className="sm:hidden">Πίσω</span>
-            </Button>
-          </div>
-        )}
+        {/* Back to Search Button - Always Visible */}
+        <div className="mb-2 sm:mb-4 animate-fade-in">
+          <Button 
+            variant="ghost" 
+            onClick={() => {
+              // Mobile/Tablet: Navigate in same tab
+              if (isMobile) {
+                navigate('/search', { state: { fromListing: true } });
+              } else {
+                // Desktop: Open in new tab
+                window.open('/search', '_blank');
+              }
+            }}
+            className="gap-2 -ml-2 min-h-[44px] touch-manipulation active:scale-95 transition-transform hover:bg-accent"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            <span className="hidden sm:inline">Επιστροφή στα αποτελέσματα</span>
+            <span className="sm:hidden">Πίσω</span>
+          </Button>
+        </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8">
           {/* Main Content */}
