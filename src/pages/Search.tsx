@@ -107,8 +107,8 @@ const Search = () => {
     filters: {
       budget: { min: filters.budget[0], max: filters.budget[1] },
       flatmates: filters.flatmatesCount,
-      couplesAccepted: filters.houseRules.includes('couples'),
-      petsAllowed: filters.houseRules.includes('pets'),
+      couplesAccepted: filters.houseRules.includes('couples') ? true : undefined,
+      petsAllowed: filters.houseRules.includes('pets') ? true : undefined,
       listerType: filters.listerType !== 'any' ? filters.listerType as 'individual' | 'agency' : undefined,
       amenities: [...filters.roomAmenities, ...filters.flatAmenities],
       moveInDate: filters.moveInDate,
@@ -170,8 +170,8 @@ const Search = () => {
     filters: {
       budget: { min: filters.budget[0], max: filters.budget[1] },
       flatmates: filters.flatmatesCount,
-      couplesAccepted: filters.houseRules.includes('couples'),
-      petsAllowed: filters.houseRules.includes('pets'),
+      couplesAccepted: filters.houseRules.includes('couples') ? true : undefined,
+      petsAllowed: filters.houseRules.includes('pets') ? true : undefined,
       listerType: filters.listerType !== 'any' ? filters.listerType as 'individual' | 'agency' : undefined,
       amenities: [...filters.roomAmenities, ...filters.flatAmenities],
       moveInDate: filters.moveInDate,
