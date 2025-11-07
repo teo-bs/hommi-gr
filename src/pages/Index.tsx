@@ -97,21 +97,6 @@ const Index = () => {
                 Η πλατφόρμα συγκατοίκησης που εμπιστεύονται χιλιάδες άνθρωποι
               </p>
 
-              {/* Social Proof Badges */}
-              <div className="flex flex-wrap items-center justify-center gap-4 sm:gap-6 mb-6 sm:mb-8">
-                <Badge variant="secondary" className="px-4 py-2 text-sm bg-white/20 backdrop-blur">
-                  <CheckCircle className="h-4 w-4 mr-2" />
-                  1,500+ επαληθευμένοι χρήστες
-                </Badge>
-                <Badge variant="secondary" className="px-4 py-2 text-sm bg-white/20 backdrop-blur">
-                  <Star className="h-4 w-4 mr-2 fill-yellow-400 text-yellow-400" />
-                  4.8/5 μέση βαθμολογία
-                </Badge>
-                <Badge variant="secondary" className="px-4 py-2 text-sm bg-white/20 backdrop-blur">
-                  <Home className="h-4 w-4 mr-2" />
-                  300+ διαθέσιμα σπίτια
-                </Badge>
-              </div>
 
               {/* Search Bar with Glass-morphism */}
               <Card className="max-w-5xl mx-auto bg-white/90 backdrop-blur-2xl shadow-2xl rounded-2xl sm:rounded-3xl border-2 border-white/50 transition-all duration-300 hover:shadow-3xl hover:scale-[1.02] hover:-translate-y-0.5 md:hover:-translate-y-1 relative z-10">
@@ -148,38 +133,6 @@ const Index = () => {
         </div>
       </section>
 
-      {/* Trust Indicators */}
-      <section className="py-12 sm:py-16 bg-surface-elevated border-y border-border px-safe">
-        <div className="container mx-auto px-4 sm:px-6">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 sm:gap-12">
-            {/* Stat 1: Users */}
-            <div className="text-center">
-              <div className="text-3xl sm:text-4xl font-bold text-primary mb-2">1,500+</div>
-              <p className="text-sm text-muted-foreground">Επαληθευμένοι χρήστες</p>
-            </div>
-            
-            {/* Stat 2: Listings */}
-            <div className="text-center">
-              <div className="text-3xl sm:text-4xl font-bold text-primary mb-2">300+</div>
-              <p className="text-sm text-muted-foreground">Ενεργές αγγελίες</p>
-            </div>
-            
-            {/* Stat 3: Successful matches */}
-            <div className="text-center">
-              <div className="text-3xl sm:text-4xl font-bold text-primary mb-2">850+</div>
-              <p className="text-sm text-muted-foreground">Επιτυχημένα ταιριάσματα</p>
-            </div>
-            
-            {/* Stat 4: Gov.gr verified */}
-            <div className="text-center">
-              <div className="flex items-center justify-center mb-2">
-                <Shield className="h-10 w-10 text-success" />
-              </div>
-              <p className="text-sm text-muted-foreground">Gov.gr επαλήθευση</p>
-            </div>
-          </div>
-        </div>
-      </section>
 
       {/* Category Cards Section */}
       <section className="pt-20 sm:pt-24 md:pt-28 pb-16 sm:pb-20 md:pb-24 bg-background px-safe relative z-0">
