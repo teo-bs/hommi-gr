@@ -33,6 +33,7 @@ import ModerationPanel from "./pages/admin/ModerationPanel";
 import { AdminGuard } from "./components/admin/AdminGuard";
 import { ImpersonationBanner } from "./components/layout/ImpersonationBanner";
 import ActivityLog from "./pages/admin/ActivityLog";
+import DesignSystem from "./pages/DesignSystem";
 
 const queryClient = new QueryClient();
 
@@ -65,6 +66,7 @@ const AppContent = () => {
             <Route path="/agencies" element={<Agencies />} />
             <Route path="/inbox" element={<Inbox />} />
             <Route path="/settings" element={<Settings />} />
+            <Route path="/design-system" element={<DesignSystem />} />
             <Route path="/admin" element={<AdminGuard><AdminDashboard /></AdminGuard>} />
             <Route path="/admin/listings" element={<AdminGuard><ListingsManagement /></AdminGuard>} />
             <Route path="/admin/verifications" element={<AdminGuard><VerificationsManagement /></AdminGuard>} />
