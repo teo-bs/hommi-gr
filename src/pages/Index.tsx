@@ -3,6 +3,8 @@ import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Container } from "@/components/layout/Container";
+import { Section } from "@/components/layout/Section";
 import { DatePicker } from "@/components/search/DatePicker";
 import { DurationSelector } from "@/components/search/DurationSelector";
 import { LocationAutocomplete } from "@/components/search/LocationAutocomplete";

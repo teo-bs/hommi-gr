@@ -1,6 +1,5 @@
-import { Button } from "@/components/ui/button";
-import { X, LucideIcon } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { Chip } from "@/components/ui/chip";
+import { LucideIcon } from "lucide-react";
 
 interface FilterChipProps {
   label: string;
@@ -10,30 +9,20 @@ interface FilterChipProps {
   icon?: LucideIcon;
 }
 
-export const FilterChip = ({ label, isActive, onClick, onRemove, icon: Icon }: FilterChipProps) => {
+/**
+ * @deprecated Use Chip component directly instead
+ * Kept for backward compatibility
+ */
+export const FilterChip = ({ label, isActive, onClick, onRemove, icon }: FilterChipProps) => {
   return (
-    <Button
-      variant={isActive ? "default" : "outline"}
-      size="sm"
+    <Chip
+      variant="filter"
+      active={isActive}
       onClick={onClick}
-      className={cn(
-        "rounded-full px-4 py-2 gap-2 whitespace-nowrap transition-all",
-        isActive && "pr-2"
-      )}
+      onRemove={onRemove}
+      icon={icon}
     >
-      {Icon && <Icon className="h-4 w-4" />}
-      <span className="text-small font-medium">{label}</span>
-      {isActive && onRemove && (
-        <button
-          onClick={(e) => {
-            e.stopPropagation();
-            onRemove();
-          }}
-          className="ml-1 hover:bg-background/20 rounded-full p-0.5 transition-colors"
-        >
-          <X className="h-3 w-3" />
-        </button>
-      )}
-    </Button>
+      {label}
+    </Chip>
   );
 };
