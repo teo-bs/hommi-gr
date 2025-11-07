@@ -93,9 +93,7 @@ const Index = () => {
               </h1>
               <p className="text-lg sm:text-2xl md:text-3xl mb-8 sm:mb-10 md:mb-14 text-white/95 font-light px-4" style={{
               textShadow: '0 1px 10px rgba(0,0,0,0.2)'
-            }}>
-                Η πλατφόρμα συγκατοίκησης που εμπιστεύονται χιλιάδες άνθρωποι
-              </p>
+            }}>Η πλατφόρμα συγκατοίκησης.</p>
 
 
               {/* Search Bar with Glass-morphism */}
