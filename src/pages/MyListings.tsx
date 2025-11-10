@@ -209,21 +209,24 @@ const MyListings = () => {
         />
       </Helmet>
 
-      <div className="min-h-screen bg-background">
+      <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20">
         <div className="container mx-auto px-4 py-8">
           <div className="max-w-6xl mx-auto">
             {/* Header */}
             <div className="flex items-center justify-between mb-8">
-              <div>
-                <h1 className="text-3xl font-bold text-foreground mb-2">
+              <div className="space-y-2">
+                <h1 className="text-4xl font-bold bg-gradient-to-br from-foreground to-foreground/70 bg-clip-text text-transparent">
                   Οι Αγγελίες μου
                 </h1>
-                <p className="text-muted-foreground">
+                <p className="text-muted-foreground text-lg">
                   Διαχειριστείτε τις αγγελίες σας και παρακολουθήστε την απόδοσή τους
                 </p>
               </div>
               <Link to="/publish">
-                <Button variant="hero" className="gap-2">
+                <Button 
+                  variant="hero" 
+                  className="gap-2 shadow-lg shadow-primary/20 hover:shadow-xl hover:shadow-primary/30 transition-all duration-300 hover:scale-[1.02]"
+                >
                   <Plus className="h-4 w-4" />
                   Νέα Αγγελία
                 </Button>
@@ -270,7 +273,7 @@ const MyListings = () => {
                 {isLoading && (
                   <div className="space-y-6">
                     {[1, 2, 3].map((i) => (
-                      <Card key={i}>
+                      <Card key={i} className="border-border/50 bg-card/50 backdrop-blur-sm">
                         <CardContent className="p-6">
                           <div className="flex gap-4">
                             <Skeleton className="h-32 w-48 rounded-lg" />
@@ -298,7 +301,14 @@ const MyListings = () => {
                       const hasBrokenPhotos = brokenPhotosByListing.has(listing.id);
                       const isSelected = selectedListings.has(listing.id);
                       return (
-                      <Card key={listing.id} className={`overflow-hidden ${hasBrokenPhotos ? 'border-destructive border-2' : ''} ${isSelected ? 'ring-2 ring-primary' : ''}`}>
+                      <Card 
+                        key={listing.id} 
+                        className={`overflow-hidden border-border/50 bg-card/50 backdrop-blur-sm hover:shadow-xl transition-all duration-300 hover:scale-[1.005] ${
+                          hasBrokenPhotos ? 'border-destructive border-2' : ''
+                        } ${
+                          isSelected ? 'ring-2 ring-primary shadow-lg shadow-primary/10' : ''
+                        }`}
+                      >
                         <CardContent className="p-6">
                           <div className="flex gap-6">
                             {/* Selection Checkbox */}
@@ -306,18 +316,19 @@ const MyListings = () => {
                               <Checkbox
                                 checked={isSelected}
                                 onCheckedChange={() => toggleSelection(listing.id)}
+                                className="data-[state=checked]:bg-primary data-[state=checked]:border-primary"
                               />
                             </div>
                             {/* Image */}
-                            <div className="relative w-48 h-32 bg-muted rounded-lg overflow-hidden flex-shrink-0">
+                            <div className="relative w-48 h-32 bg-muted rounded-lg overflow-hidden flex-shrink-0 shadow-md group-hover:shadow-lg transition-shadow">
                               {listing.cover_photo_url ? (
                                 <img 
                                   src={listing.cover_photo_url} 
                                   alt={listing.title}
-                                  className="w-full h-full object-cover"
+                                  className="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
                                 />
                               ) : (
-                                <div className="w-full h-full flex items-center justify-center">
+                                <div className="w-full h-full flex items-center justify-center bg-muted">
                                   <Home className="h-8 w-8 text-muted-foreground" />
                                 </div>
                               )}
@@ -403,7 +414,7 @@ const MyListings = () => {
                                 <Button 
                                   variant={hasBrokenPhotos ? "destructive" : "outline"} 
                                   size="sm" 
-                                  className="w-full"
+                                  className="w-full transition-all duration-200 hover:scale-[1.02] shadow-sm hover:shadow-md"
                                 >
                                   <Edit className="h-4 w-4 mr-2" />
                                   {hasBrokenPhotos ? 'Διόρθωση Φωτογραφιών' : 'Επεξεργασία'}
@@ -415,6 +426,7 @@ const MyListings = () => {
                                   variant="outline" 
                                   size="sm"
                                   onClick={() => handleStatusChange(listing.id, 'published')}
+                                  className="transition-all duration-200 hover:scale-[1.02] hover:bg-primary hover:text-primary-foreground shadow-sm hover:shadow-md"
                                 >
                                   Δημοσίευση
                                 </Button>
@@ -425,6 +437,7 @@ const MyListings = () => {
                                   variant="outline" 
                                   size="sm"
                                   onClick={() => handleStatusChange(listing.id, 'archived')}
+                                  className="transition-all duration-200 hover:scale-[1.02] shadow-sm hover:shadow-md"
                                 >
                                   Αρχειοθέτηση
                                 </Button>
@@ -438,7 +451,7 @@ const MyListings = () => {
                                     setListingToDelete(listing.id);
                                     setDeleteDialogOpen(true);
                                   }}
-                                  className="gap-1"
+                                  className="gap-1 transition-all duration-200 hover:scale-[1.02] shadow-sm hover:shadow-md"
                                 >
                                   <Trash2 className="h-4 w-4" />
                                   Διαγραφή
@@ -503,21 +516,21 @@ const MyListings = () => {
 
                 {/* Empty State */}
                 {!isLoading && listings.length === 0 && (
-                  <Card className="text-center py-12">
-                    <CardContent className="space-y-6">
-                      <div className="mx-auto w-16 h-16 bg-muted rounded-full flex items-center justify-center">
-                        {activeTab === 'draft' && <FileText className="h-8 w-8 text-muted-foreground" />}
-                        {activeTab === 'published' && <Home className="h-8 w-8 text-muted-foreground" />}
-                        {activeTab === 'archived' && <Archive className="h-8 w-8 text-muted-foreground" />}
+                  <Card className="text-center py-16 border-border/50 bg-card/50 backdrop-blur-sm shadow-lg">
+                    <CardContent className="space-y-8">
+                      <div className="mx-auto w-20 h-20 bg-gradient-to-br from-primary/10 to-primary/5 rounded-2xl flex items-center justify-center">
+                        {activeTab === 'draft' && <FileText className="h-10 w-10 text-primary" />}
+                        {activeTab === 'published' && <Home className="h-10 w-10 text-primary" />}
+                        {activeTab === 'archived' && <Archive className="h-10 w-10 text-primary" />}
                       </div>
                       
-                      <div className="space-y-2">
-                        <h3 className="text-xl font-semibold text-foreground">
+                      <div className="space-y-3">
+                        <h3 className="text-2xl font-bold text-foreground">
                           {activeTab === 'draft' && 'Δεν έχετε πρόχειρες αγγελίες'}
                           {activeTab === 'published' && 'Δεν έχετε δημοσιευμένες αγγελίες'}
                           {activeTab === 'archived' && 'Δεν έχετε αρχειοθετημένες αγγελίες'}
                         </h3>
-                        <p className="text-muted-foreground max-w-md mx-auto">
+                        <p className="text-muted-foreground text-lg max-w-md mx-auto">
                           {activeTab === 'draft' && 'Ξεκινήστε τη δημιουργία μιας νέας αγγελίας για να την αποθηκεύσετε ως πρόχειρο.'}
                           {activeTab === 'published' && 'Δημιουργήστε και δημοσιεύστε την πρώτη σας αγγελία για να ξεκινήσετε.'}
                           {activeTab === 'archived' && 'Οι αρχειοθετημένες αγγελίες θα εμφανιστούν εδώ.'}
@@ -525,7 +538,10 @@ const MyListings = () => {
                       </div>
 
                       <Link to="/publish">
-                        <Button variant="hero" className="gap-2">
+                        <Button 
+                          variant="hero" 
+                          className="gap-2 shadow-lg shadow-primary/20 hover:shadow-xl hover:shadow-primary/30 transition-all duration-300 hover:scale-[1.02]"
+                        >
                           <Plus className="h-4 w-4" />
                           Δημιουργία Αγγελίας
                         </Button>
@@ -537,10 +553,11 @@ const MyListings = () => {
             </Tabs>
 
             {/* Tips Card */}
-            <Card className="mt-8">
+            <Card className="mt-8 border-border/50 bg-card/50 backdrop-blur-sm shadow-lg">
               <CardHeader>
-                <CardTitle className="text-lg">
-                  💡 Συμβουλές για Επιτυχημένες Αγγελίες
+                <CardTitle className="text-xl flex items-center gap-2">
+                  <span className="text-2xl">💡</span>
+                  Συμβουλές για Επιτυχημένες Αγγελίες
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-3">
