@@ -88,11 +88,9 @@ export const Header = () => {
   const tenantNavItems = user ? [
     { href: "/search", label: t('header.search') },
     { href: "/favourites", label: t('header.saved') },
-    { href: "/inbox", label: `${t('header.messages')}${unreadCount > 0 ? ` (${unreadCount})` : ''}` },
-    { href: "/help", label: t('common.help') }
+    { href: "/inbox", label: `${t('header.messages')}${unreadCount > 0 ? ` (${unreadCount})` : ''}` }
   ] : [
-    { href: "/search", label: t('header.search') },
-    { href: "/help", label: t('common.help') }
+    { href: "/search", label: t('header.search') }
   ];
 
   const listerNavItems = [
@@ -100,8 +98,7 @@ export const Header = () => {
       { href: "/overview", label: t('header.overview') },
       { href: "/my-listings", label: t('header.myListings') }
     ] : []),
-    { href: "/inbox", label: `${t('header.messages')}${unreadCount > 0 ? ` (${unreadCount})` : ''}` },
-    { href: "/help", label: t('common.help') }
+    { href: "/inbox", label: `${t('header.messages')}${unreadCount > 0 ? ` (${unreadCount})` : ''}` }
   ];
 
   const currentNavItems = currentRole === 'tenant' ? tenantNavItems : listerNavItems;
@@ -220,6 +217,9 @@ export const Header = () => {
                         </DropdownMenuItem>
                       )}
                       <DropdownMenuSeparator />
+                      <DropdownMenuItem onClick={() => navigate('/help')}>
+                        {t('common.help')}
+                      </DropdownMenuItem>
                       <DropdownMenuItem onClick={toggleLanguage}>
                         <Globe className="h-4 w-4 mr-2" />
                         {language === 'el' ? 'English' : 'Ελληνικά'}
@@ -237,6 +237,9 @@ export const Header = () => {
                         {t('header.login')} / {t('header.signup')}
                       </DropdownMenuItem>
                       <DropdownMenuSeparator />
+                      <DropdownMenuItem onClick={() => navigate('/help')}>
+                        {t('common.help')}
+                      </DropdownMenuItem>
                       <DropdownMenuItem onClick={toggleLanguage}>
                         <Globe className="h-4 w-4 mr-2" />
                         {language === 'el' ? 'English' : 'Ελληνικά'}
