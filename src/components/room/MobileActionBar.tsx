@@ -50,9 +50,9 @@ export const MobileActionBar = ({
             {/* Request to Chat Button - Icon Only */}
             <Button 
               onClick={onRequestChat}
-              variant="default"
+              variant="hero"
               size="icon"
-              className="min-h-[44px] min-w-[44px] shrink-0 touch-manipulation active:scale-95 transition-transform"
+              className="min-h-[44px] min-w-[44px] shrink-0 touch-manipulation"
               aria-label="Επικοινωνία με τον ιδιοκτήτη"
             >
               <MessageSquare className="h-5 w-5" />

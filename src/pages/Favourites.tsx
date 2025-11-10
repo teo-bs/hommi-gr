@@ -214,7 +214,7 @@ const Favourites = () => {
                   </p>
                 </div>
 
-                <Button asChild variant="hero" className="gap-2 shadow-lg hover:shadow-xl hover:shadow-primary/20">
+                <Button asChild variant="hero" className="gap-2">
                   <Link to="/search">
                     <Search className="h-4 w-4" />
                     Αναζήτηση Αγγελιών

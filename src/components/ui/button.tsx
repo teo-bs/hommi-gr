@@ -27,7 +27,7 @@ const buttonVariants = cva(
         link: "text-primary underline-offset-4 hover:underline",
         
         // Special variants
-        hero: "bg-gradient-hero text-primary-foreground hover:shadow-primary transform hover:scale-105 transition-all duration-300 font-semibold shadow-lg hover:shadow-xl",
+        hero: "bg-gradient-hero text-primary-foreground shadow-lg hover:shadow-xl hover:shadow-primary/30 transform hover:scale-105 transition-all duration-300 font-semibold",
         premium: "bg-gradient-to-r from-primary to-primary-hover text-primary-foreground shadow-lg hover:shadow-xl hover:shadow-primary/30 transform hover:scale-[1.02] transition-all duration-300",
       },
       size: {
