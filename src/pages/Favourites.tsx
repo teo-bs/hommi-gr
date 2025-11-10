@@ -121,16 +121,18 @@ const Favourites = () => {
           />
         </Helmet>
         
-        <div className="min-h-screen bg-background">
+        <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20">
           <div className="container mx-auto px-4 py-8">
-            <Card className="max-w-md mx-auto">
+            <Card className="max-w-md mx-auto border-border/50 bg-card/50 backdrop-blur-sm shadow-xl hover:shadow-2xl transition-all duration-300">
               <CardContent className="p-6 text-center">
-                <Heart className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+                <div className="mx-auto w-16 h-16 bg-primary/10 border border-primary/20 rounded-full flex items-center justify-center mb-4 animate-pulse">
+                  <Heart className="h-8 w-8 text-primary" />
+                </div>
                 <h2 className="text-xl font-semibold mb-2">Συνδεθείτε για να δείτε τα αγαπημένα σας</h2>
                 <p className="text-muted-foreground mb-4">
                   Αποθηκεύστε και διαχειριστείτε τα αγαπημένα σας δωμάτια
                 </p>
-                <Button asChild>
+                <Button asChild className="shadow-lg hover:shadow-xl hover:shadow-primary/20">
                   <Link to="/auth">Σύνδεση</Link>
                 </Button>
               </CardContent>
@@ -152,20 +154,20 @@ const Favourites = () => {
           />
         </Helmet>
         
-        <div className="min-h-screen bg-background">
-          <div className="container mx-auto px-4 py-8">
+        <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20">
+          <div className="container mx-auto px-4 py-8 animate-fade-in">
             <div className="mb-8">
-              <h1 className="text-3xl font-bold text-foreground mb-2">Αγαπημένα</h1>
+              <h1 className="text-3xl font-bold bg-gradient-to-br from-foreground to-foreground/70 bg-clip-text text-transparent mb-2">Αγαπημένα</h1>
               <p className="text-muted-foreground">Φόρτωση αγαπημένων δωματίων...</p>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {[...Array(6)].map((_, i) => (
-                <Card key={i} className="animate-pulse">
-                  <div className="aspect-[4/3] bg-muted" />
+                <Card key={i} className="border-border/50 bg-card/50 backdrop-blur-sm shadow-md animate-pulse">
+                  <div className="aspect-[4/3] bg-muted/50" />
                   <CardContent className="p-4">
-                    <div className="h-4 bg-muted rounded mb-2" />
-                    <div className="h-4 bg-muted rounded w-2/3 mb-2" />
-                    <div className="h-4 bg-muted rounded w-1/2" />
+                    <div className="h-4 bg-muted/50 rounded mb-2" />
+                    <div className="h-4 bg-muted/50 rounded w-2/3 mb-2" />
+                    <div className="h-4 bg-muted/50 rounded w-1/2" />
                   </CardContent>
                 </Card>
               ))}
@@ -186,20 +188,20 @@ const Favourites = () => {
         />
       </Helmet>
 
-      <div className="min-h-screen bg-background">
-        <div className="container mx-auto px-4 py-8">
+      <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20">
+        <div className="container mx-auto px-4 py-8 animate-fade-in">
           <div className="mb-8">
-            <h1 className="text-3xl font-bold text-foreground mb-2">Αγαπημένα</h1>
+            <h1 className="text-3xl font-bold bg-gradient-to-br from-foreground to-foreground/70 bg-clip-text text-transparent mb-2">Αγαπημένα</h1>
             <p className="text-muted-foreground">
               {totalCount} αποθηκευμέν{totalCount === 1 ? 'ο' : 'α'} δωμάτι{totalCount === 1 ? 'ο' : 'α'}
             </p>
           </div>
 
           {savedRoomsWithDetails.length === 0 ? (
-            <Card className="max-w-md mx-auto text-center py-12">
+            <Card className="max-w-md mx-auto text-center py-12 border-border/50 bg-card/50 backdrop-blur-sm shadow-xl hover:shadow-2xl transition-all duration-300">
               <CardContent className="space-y-6">
-                <div className="mx-auto w-16 h-16 bg-muted rounded-full flex items-center justify-center">
-                  <Heart className="h-8 w-8 text-muted-foreground" />
+                <div className="mx-auto w-16 h-16 bg-primary/10 border border-primary/20 rounded-full flex items-center justify-center animate-pulse">
+                  <Heart className="h-8 w-8 text-primary" />
                 </div>
                 
                 <div className="space-y-2">
@@ -212,7 +214,7 @@ const Favourites = () => {
                   </p>
                 </div>
 
-                <Button asChild variant="hero" className="gap-2">
+                <Button asChild variant="hero" className="gap-2 shadow-lg hover:shadow-xl hover:shadow-primary/20">
                   <Link to="/search">
                     <Search className="h-4 w-4" />
                     Αναζήτηση Αγγελιών
@@ -228,10 +230,10 @@ const Favourites = () => {
                 const firstPhoto = Array.isArray(listing.photos) ? listing.photos?.[0] : null;
 
                 return (
-                  <Card key={savedRoom.id} className="group hover:shadow-lg transition-shadow">
+                  <Card key={savedRoom.id} className="group border-border/50 bg-card/50 backdrop-blur-sm shadow-md hover:shadow-xl transition-all duration-300 hover:scale-[1.005]">
                     <div className="relative">
                       <Link to={`/listing/${room.slug}`}>
-                        <div className="aspect-[4/3] overflow-hidden rounded-t-lg">
+                        <div className="aspect-[4/3] overflow-hidden rounded-t-lg shadow-md group-hover:shadow-lg transition-shadow">
                           {firstPhoto ? (
                             <img
                               src={firstPhoto.url}
@@ -246,7 +248,7 @@ const Favourites = () => {
                         </div>
                       </Link>
                       <div className="absolute top-3 right-3">
-                        <SaveRoomButton roomId={room.id} variant="ghost" className="bg-white/80 backdrop-blur-sm hover:bg-white" />
+                        <SaveRoomButton roomId={room.id} variant="ghost" className="bg-white/90 backdrop-blur-sm hover:bg-white shadow-sm hover:shadow-md" />
                       </div>
                     </div>
                     
@@ -275,7 +277,7 @@ const Favourites = () => {
                       </div>
 
                       <div className="flex items-center justify-between mb-3">
-                        <div className="text-lg font-bold">
+                        <div className="text-lg font-bold bg-gradient-to-br from-foreground to-foreground/80 bg-clip-text text-transparent">
                           €{listing.price_month}
                           <span className="text-sm font-normal text-muted-foreground">/μήνα</span>
                         </div>
@@ -318,6 +320,7 @@ const Favourites = () => {
                 size="sm"
                 onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
                 disabled={currentPage === 1}
+                className="shadow-sm hover:shadow-md transition-shadow"
               >
                 <ChevronLeft className="h-4 w-4 mr-1" />
                 Προηγούμενη
@@ -339,6 +342,7 @@ const Favourites = () => {
                         variant={currentPage === page ? "default" : "outline"}
                         size="sm"
                         onClick={() => setCurrentPage(page)}
+                        className="shadow-sm hover:shadow-md transition-shadow"
                       >
                         {page}
                       </Button>
@@ -351,6 +355,7 @@ const Favourites = () => {
                 size="sm"
                 onClick={() => setCurrentPage(p => Math.min(Math.ceil(totalCount / pageSize), p + 1))}
                 disabled={currentPage >= Math.ceil(totalCount / pageSize)}
+                className="shadow-sm hover:shadow-md transition-shadow"
               >
                 Επόμενη
                 <ChevronRight className="h-4 w-4 ml-1" />
