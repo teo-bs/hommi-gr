@@ -50,12 +50,8 @@ export const useSavedRooms = () => {
   // Save a room (upsert with deduplication + restore if previously deleted)
   const saveRoom = async (roomId: string): Promise<{ success: boolean; error?: string }> => {
     if (!user) {
-      toast({
-        title: "Απαιτείται σύνδεση",
-        description: "Πρέπει να συνδεθείτε για να αποθηκεύσετε δωμάτια",
-        variant: "destructive"
-      });
-      return { success: false, error: 'Not authenticated' };
+      // Return error code without toast - let the flow hook handle auth modal
+      return { success: false, error: 'not_authenticated' };
     }
 
     try {

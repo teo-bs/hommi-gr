@@ -3,6 +3,8 @@ import { Heart } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { useSavedRooms } from '@/hooks/useSavedRooms';
+import { useSaveRoomFlow } from '@/hooks/useSaveRoomFlow';
+import { AuthFlowManager } from '@/components/auth/AuthFlowManager';
 
 interface SaveRoomButtonProps {
   roomId: string;
@@ -19,13 +21,14 @@ export const SaveRoomButton = ({
   size = 'md',
   showText = false 
 }: SaveRoomButtonProps) => {
-  const { isRoomSaved, toggleSaveRoom, loading } = useSavedRooms();
+  const { isRoomSaved, loading } = useSavedRooms();
+  const saveFlow = useSaveRoomFlow();
   const isSaved = isRoomSaved(roomId);
 
   const handleToggleSave = async (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    await toggleSaveRoom(roomId);
+    await saveFlow.initiateSaveFlow(roomId);
   };
 
   const buttonSizes = {
@@ -41,31 +44,40 @@ export const SaveRoomButton = ({
   };
 
   return (
-    <Button
-      onClick={handleToggleSave}
-      disabled={loading}
-      variant={variant}
-      size={showText ? undefined : 'icon'}
-      className={cn(
-        showText ? 'gap-2' : buttonSizes[size],
-        'transition-colors duration-200',
-        variant === 'ghost' && 'hover:shadow-sm',
-        isSaved && variant === 'ghost' && 'text-red-500 hover:text-red-600',
-        className
-      )}
-    >
-      <Heart
+    <>
+      <Button
+        onClick={handleToggleSave}
+        disabled={loading}
+        variant={variant}
+        size={showText ? undefined : 'icon'}
         className={cn(
-          iconSizes[size],
-          'transition-all duration-200',
-          isSaved ? 'fill-current text-red-500' : 'text-muted-foreground'
+          showText ? 'gap-2' : buttonSizes[size],
+          'transition-colors duration-200',
+          variant === 'ghost' && 'hover:shadow-sm',
+          isSaved && variant === 'ghost' && 'text-red-500 hover:text-red-600',
+          className
         )}
+      >
+        <Heart
+          className={cn(
+            iconSizes[size],
+            'transition-all duration-200',
+            isSaved ? 'fill-current text-red-500' : 'text-muted-foreground'
+          )}
+        />
+        {showText && (
+          <span className="text-sm font-medium">
+            {isSaved ? 'Αποθηκευμένο' : 'Αποθήκευση'}
+          </span>
+        )}
+      </Button>
+      
+      {/* Auth modal for unauthenticated users */}
+      <AuthFlowManager
+        isAuthOpen={saveFlow.isAuthOpen}
+        onAuthClose={saveFlow.closeAuth}
+        onAuthSuccess={saveFlow.handleAuthSuccess}
       />
-      {showText && (
-        <span className="text-sm font-medium">
-          {isSaved ? 'Αποθηκευμένο' : 'Αποθήκευση'}
-        </span>
-      )}
-    </Button>
+    </>
   );
 };
