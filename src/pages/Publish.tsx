@@ -511,7 +511,7 @@ export default function Publish() {
     if (existingDraftId) {
       navigate(`/publish?id=${existingDraftId}&step=2`);
     } else {
-      navigate('/my-listings?tab=draft');
+      navigate('/hosting/my-listings?tab=draft');
     }
   };
 

@@ -71,7 +71,6 @@ export const Footer = () => {
             <ul className="space-y-3 text-sm">
               <li><a href="/search" className="text-muted-foreground hover:text-primary transition-colors">Αναζήτηση</a></li>
               <li><a href="/publish" className="text-muted-foreground hover:text-primary transition-colors">Δημοσίευση αγγελίας</a></li>
-              <li><a href="/overview" className="text-muted-foreground hover:text-primary transition-colors">Το προφίλ μου</a></li>
               <li><a href="/inbox" className="text-muted-foreground hover:text-primary transition-colors">Μηνύματα</a></li>
             </ul>
           </div>

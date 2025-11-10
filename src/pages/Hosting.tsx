@@ -96,7 +96,7 @@ export default function Hosting() {
             {/* Quick Actions */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <Card className="hover:shadow-lg transition-shadow cursor-pointer" 
-                    onClick={() => navigate('/my-listings')}>
+                    onClick={() => navigate('/hosting/my-listings')}>
                 <CardHeader>
                   <CardTitle>Οι αγγελίες μου</CardTitle>
                   <CardDescription>
@@ -111,7 +111,7 @@ export default function Hosting() {
               </Card>
 
               <Card className="hover:shadow-lg transition-shadow cursor-pointer" 
-                    onClick={() => navigate('/inbox')}>
+                    onClick={() => navigate('/hosting/inbox')}>
                 <CardHeader>
                   <CardTitle>Μηνύματα</CardTitle>
                   <CardDescription>
@@ -126,7 +126,7 @@ export default function Hosting() {
               </Card>
 
               <Card className="hover:shadow-lg transition-shadow cursor-pointer" 
-                    onClick={() => navigate('/overview')}>
+                    onClick={() => navigate('/me')}>
                 <CardHeader>
                   <CardTitle>Το προφίλ μου</CardTitle>
                   <CardDescription>

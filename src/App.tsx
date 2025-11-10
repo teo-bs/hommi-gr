@@ -16,7 +16,6 @@ import Search from "./pages/Search";
 import RoomPage from "./pages/RoomPage";
 import NotFound from "./pages/NotFound";
 import Favourites from "./pages/Favourites";
-import Overview from "./pages/Overview";
 import MyListings from "./pages/MyListings";
 import Help from "./pages/Help";
 import SearchPreferences from "@/pages/SearchPreferences";
@@ -58,7 +57,6 @@ const AppContent = () => {
             <Route path="/listing/:slug" element={<RoomPage />} />
             <Route path="/room/:id" element={<RoomPage />} /> {/* Legacy redirect */}
             <Route path="/favourites" element={<Favourites />} />
-            <Route path="/overview" element={<Overview />} />
             <Route path="/my-listings" element={<MyListings />} />
             <Route path="/help" element={<Help />} />
             <Route path="/search-preferences" element={<SearchPreferences />} />
@@ -68,6 +66,8 @@ const AppContent = () => {
             <Route path="/inbox" element={<Inbox />} />
             <Route path="/settings" element={<Settings />} />
             <Route path="/hosting" element={<Hosting />} />
+            <Route path="/hosting/my-listings" element={<MyListings />} />
+            <Route path="/hosting/inbox" element={<Inbox />} />
             <Route path="/design-system" element={<DesignSystem />} />
             <Route path="/admin" element={<AdminGuard><AdminDashboard /></AdminGuard>} />
             <Route path="/admin/listings" element={<AdminGuard><ListingsManagement /></AdminGuard>} />

@@ -96,9 +96,9 @@ export const Header = () => {
   const listerNavItems = [
     ...(user ? [
       { href: "/hosting", label: "Hosting" },
-      { href: "/my-listings", label: t('header.myListings') }
+      { href: "/hosting/my-listings", label: t('header.myListings') }
     ] : []),
-    { href: "/inbox", label: `${t('header.messages')}${unreadCount > 0 ? ` (${unreadCount})` : ''}` }
+    { href: "/hosting/inbox", label: `${t('header.messages')}${unreadCount > 0 ? ` (${unreadCount})` : ''}` }
   ];
 
   const currentNavItems = currentRole === 'tenant' ? tenantNavItems : listerNavItems;
