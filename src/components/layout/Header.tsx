@@ -210,26 +210,26 @@ export const Header = () => {
                       
                       <DropdownMenuItem 
                         onClick={() => navigate('/me')}
-                        className="rounded-md py-2.5 px-3 cursor-pointer transition-colors"
+                        className="rounded-md py-2.5 px-3 cursor-pointer transition-all duration-200 hover:scale-[1.02] hover:bg-accent/50"
                       >
-                        <User className="h-4 w-4 mr-3 text-muted-foreground" />
+                        <User className="h-4 w-4 mr-3 text-muted-foreground transition-colors" />
                         <span className="font-medium">{t('header.profile')}</span>
                       </DropdownMenuItem>
                       
                       <DropdownMenuItem 
                         onClick={() => navigate('/settings')}
-                        className="rounded-md py-2.5 px-3 cursor-pointer transition-colors"
+                        className="rounded-md py-2.5 px-3 cursor-pointer transition-all duration-200 hover:scale-[1.02] hover:bg-accent/50"
                       >
-                        <Settings className="h-4 w-4 mr-3 text-muted-foreground" />
+                        <Settings className="h-4 w-4 mr-3 text-muted-foreground transition-colors" />
                         <span className="font-medium">{t('header.settings')}</span>
                       </DropdownMenuItem>
                       
                       {isAdmin && (
                         <DropdownMenuItem 
                           onClick={() => navigate('/admin')}
-                          className="rounded-md py-2.5 px-3 cursor-pointer transition-colors"
+                          className="rounded-md py-2.5 px-3 cursor-pointer transition-all duration-200 hover:scale-[1.02] hover:bg-accent/50"
                         >
-                          <BarChart3 className="h-4 w-4 mr-3 text-muted-foreground" />
+                          <BarChart3 className="h-4 w-4 mr-3 text-muted-foreground transition-colors" />
                           <span className="font-medium">{t('header.admin')}</span>
                         </DropdownMenuItem>
                       )}
@@ -237,9 +237,9 @@ export const Header = () => {
                       {currentRole === 'tenant' && (
                         <DropdownMenuItem 
                           onClick={() => navigate('/search-preferences')}
-                          className="rounded-md py-2.5 px-3 cursor-pointer transition-colors"
+                          className="rounded-md py-2.5 px-3 cursor-pointer transition-all duration-200 hover:scale-[1.02] hover:bg-accent/50"
                         >
-                          <SlidersHorizontal className="h-4 w-4 mr-3 text-muted-foreground" />
+                          <SlidersHorizontal className="h-4 w-4 mr-3 text-muted-foreground transition-colors" />
                           <span className="font-medium">{t('profile.preferences')}</span>
                         </DropdownMenuItem>
                       )}
@@ -248,17 +248,17 @@ export const Header = () => {
                       
                       <DropdownMenuItem 
                         onClick={() => navigate('/help')}
-                        className="rounded-md py-2.5 px-3 cursor-pointer transition-colors"
+                        className="rounded-md py-2.5 px-3 cursor-pointer transition-all duration-200 hover:scale-[1.02] hover:bg-accent/50"
                       >
-                        <HelpCircle className="h-4 w-4 mr-3 text-muted-foreground" />
+                        <HelpCircle className="h-4 w-4 mr-3 text-muted-foreground transition-colors" />
                         <span className="font-medium">Help</span>
                       </DropdownMenuItem>
                       
                       <DropdownMenuItem 
                         onClick={toggleLanguage}
-                        className="rounded-md py-2.5 px-3 cursor-pointer transition-colors"
+                        className="rounded-md py-2.5 px-3 cursor-pointer transition-all duration-200 hover:scale-[1.02] hover:bg-accent/50"
                       >
-                        <Globe className="h-4 w-4 mr-3 text-muted-foreground" />
+                        <Globe className="h-4 w-4 mr-3 text-muted-foreground transition-colors" />
                         <span className="font-medium">{language === 'el' ? 'English' : 'Ελληνικά'}</span>
                       </DropdownMenuItem>
                       
@@ -266,9 +266,9 @@ export const Header = () => {
                       
                       <DropdownMenuItem 
                         onClick={handleLogout}
-                        className="rounded-md py-2.5 px-3 cursor-pointer transition-colors text-destructive focus:text-destructive"
+                        className="rounded-md py-2.5 px-3 cursor-pointer transition-all duration-200 hover:scale-[1.02] hover:bg-destructive/10 text-destructive focus:text-destructive"
                       >
-                        <LogOut className="h-4 w-4 mr-3" />
+                        <LogOut className="h-4 w-4 mr-3 transition-colors" />
                         <span className="font-medium">{t('header.logout')}</span>
                       </DropdownMenuItem>
                     </>
@@ -276,9 +276,9 @@ export const Header = () => {
                     <>
                       <DropdownMenuItem 
                         onClick={() => handleAuthAction('login')}
-                        className="rounded-md py-2.5 px-3 cursor-pointer transition-colors"
+                        className="rounded-md py-2.5 px-3 cursor-pointer transition-all duration-200 hover:scale-[1.02] hover:bg-accent/50"
                       >
-                        <User className="h-4 w-4 mr-3 text-muted-foreground" />
+                        <User className="h-4 w-4 mr-3 text-muted-foreground transition-colors" />
                         <span className="font-medium">{t('header.login')} / {t('header.signup')}</span>
                       </DropdownMenuItem>
                       
@@ -286,17 +286,17 @@ export const Header = () => {
                       
                       <DropdownMenuItem 
                         onClick={() => navigate('/help')}
-                        className="rounded-md py-2.5 px-3 cursor-pointer transition-colors"
+                        className="rounded-md py-2.5 px-3 cursor-pointer transition-all duration-200 hover:scale-[1.02] hover:bg-accent/50"
                       >
-                        <HelpCircle className="h-4 w-4 mr-3 text-muted-foreground" />
+                        <HelpCircle className="h-4 w-4 mr-3 text-muted-foreground transition-colors" />
                         <span className="font-medium">Help</span>
                       </DropdownMenuItem>
                       
                       <DropdownMenuItem 
                         onClick={toggleLanguage}
-                        className="rounded-md py-2.5 px-3 cursor-pointer transition-colors"
+                        className="rounded-md py-2.5 px-3 cursor-pointer transition-all duration-200 hover:scale-[1.02] hover:bg-accent/50"
                       >
-                        <Globe className="h-4 w-4 mr-3 text-muted-foreground" />
+                        <Globe className="h-4 w-4 mr-3 text-muted-foreground transition-colors" />
                         <span className="font-medium">{language === 'el' ? 'English' : 'Ελληνικά'}</span>
                       </DropdownMenuItem>
                     </>
