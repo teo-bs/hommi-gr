@@ -3,7 +3,7 @@ import { Link, useNavigate, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { User, MessageSquare, Plus, Globe, Menu, X, Settings, Search, Calendar, LogOut, UserCheck, MapPin, Heart, BarChart3, List } from "lucide-react";
+import { User, Plus, Globe, Menu, X, Settings, Calendar, LogOut, UserCheck, BarChart3 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useListingFlow } from "@/hooks/useListingFlow";
 import { useListingsCount } from "@/hooks/useListingsCount";
@@ -28,100 +28,10 @@ export const Header = () => {
   const { t, language, toggleLanguage } = useTranslation();
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [searchLocation, setSearchLocation] = useState('');
-  const [locationLoading, setLocationLoading] = useState(false);
-  const [isHeaderVisible, setIsHeaderVisible] = useState(true);
-  const [lastScrollY, setLastScrollY] = useState(0);
 
   // Get current user role, default to 'tenant'
   const currentRole = profile?.role || 'tenant';
   const isPendingAgency = profile?.account_status === 'pending_qualification';
-
-  // Auto-detect location on component mount
-  useEffect(() => {
-    detectLocation();
-  }, []);
-
-  // Handle header visibility on scroll
-  useEffect(() => {
-    const handleScroll = () => {
-      const currentScrollY = window.scrollY;
-      
-      // Show header when scrolling up or at top
-      if (currentScrollY < lastScrollY || currentScrollY < 10) {
-        setIsHeaderVisible(true);
-      } 
-      // Hide header when scrolling down (after 100px)
-      else if (currentScrollY > 100 && currentScrollY > lastScrollY) {
-        setIsHeaderVisible(false);
-      }
-      
-      setLastScrollY(currentScrollY);
-    };
-
-    window.addEventListener('scroll', handleScroll, { passive: true });
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, [lastScrollY]);
-
-  const detectLocation = async () => {
-    if (!navigator.geolocation) {
-      setSearchLocation('Αθήνα'); // Default to Athens
-      return;
-    }
-
-    setLocationLoading(true);
-    
-    navigator.geolocation.getCurrentPosition(
-      async (position) => {
-        try {
-          // For now, just use coordinates to determine major Greek cities
-          const { latitude, longitude } = position.coords;
-          
-          // Simple coordinate-based city detection for Greece
-          let detectedCity = 'Αθήνα'; // Default
-          
-          // Athens area
-          if (latitude >= 37.8 && latitude <= 38.2 && longitude >= 23.5 && longitude <= 24) {
-            detectedCity = 'Αθήνα';
-          }
-          // Thessaloniki area  
-          else if (latitude >= 40.5 && latitude <= 40.8 && longitude >= 22.8 && longitude <= 23.2) {
-            detectedCity = 'Θεσσαλονίκη';
-          }
-          // Patras area
-          else if (latitude >= 38.1 && latitude <= 38.4 && longitude >= 21.6 && longitude <= 21.9) {
-            detectedCity = 'Πάτρα';
-          }
-          // Heraklion area
-          else if (latitude >= 35.2 && latitude <= 35.4 && longitude >= 25.0 && longitude <= 25.3) {
-            detectedCity = 'Ηράκλειο';
-          }
-          
-          setSearchLocation(detectedCity);
-        } catch (error) {
-          console.error('Location detection error:', error);
-          setSearchLocation('Αθήνα');
-        } finally {
-          setLocationLoading(false);
-        }
-      },
-      (error) => {
-        console.error('Geolocation error:', error);
-        setSearchLocation('Αθήνα');
-        setLocationLoading(false);
-      },
-      { timeout: 5000, enableHighAccuracy: false }
-    );
-  };
-
-  const handleSearchSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    const searchQuery = new URLSearchParams({
-      city: searchLocation || 'Αθήνα',
-      filters: ''
-    });
-    navigate(`/search?${searchQuery.toString()}`);
-  };
 
   const handleAuthAction = (action: 'login' | 'signup') => {
     if (!user) {
@@ -174,84 +84,34 @@ export const Header = () => {
     }
   };
 
-  // Determine user role - default to 'tenant' if not set
-  const userRole = profile?.role || 'tenant';
-
-  // Check if we're on the search page
-  const isSearchPage = location.pathname === '/search';
-
-  // Define navigation items based on role (hide Saved/Messages for non-logged users)
+  // Define navigation items based on role
   const tenantNavItems = user ? [
-    { 
-      href: "/search", 
-      label: t('header.search'),
-      icon: Search
-    },
-    { 
-      href: "/favourites", 
-      label: t('header.saved'),
-      icon: Heart
-    },
-    { 
-      href: "/inbox", 
-      label: `${t('header.messages')}${unreadCount > 0 ? ` (${unreadCount})` : ''}`,
-      icon: MessageSquare
-    },
-    { 
-      href: "/help", 
-      label: t('common.help'),
-      icon: MessageSquare
-    }
+    { href: "/search", label: t('header.search') },
+    { href: "/favourites", label: t('header.saved') },
+    { href: "/inbox", label: `${t('header.messages')}${unreadCount > 0 ? ` (${unreadCount})` : ''}` },
+    { href: "/help", label: t('common.help') }
   ] : [
-    { 
-      href: "/search", 
-      label: t('header.search'),
-      icon: Search
-    },
-    { 
-      href: "/help", 
-      label: t('common.help'),
-      icon: MessageSquare
-    }
+    { href: "/search", label: t('header.search') },
+    { href: "/help", label: t('common.help') }
   ];
 
   const listerNavItems = [
     ...(listingsCount > 0 ? [
-      { 
-        href: "/overview", 
-        label: t('header.overview'),
-        icon: BarChart3
-      },
-      { 
-        href: "/my-listings", 
-        label: t('header.myListings'),
-        icon: List
-      }
+      { href: "/overview", label: t('header.overview') },
+      { href: "/my-listings", label: t('header.myListings') }
     ] : []),
-    { 
-      href: "/inbox", 
-      label: `${t('header.messages')}${unreadCount > 0 ? ` (${unreadCount})` : ''}`,
-      icon: MessageSquare
-    },
-    { 
-      href: "/help", 
-      label: t('common.help'),
-      icon: MessageSquare
-    }
+    { href: "/inbox", label: `${t('header.messages')}${unreadCount > 0 ? ` (${unreadCount})` : ''}` },
+    { href: "/help", label: t('common.help') }
   ];
 
   const currentNavItems = currentRole === 'tenant' ? tenantNavItems : listerNavItems;
 
   return (
     <>
-      <header 
-        className={`sticky top-0 z-50 w-full border-b-2 border-border/20 bg-background/80 backdrop-blur-xl supports-[backdrop-filter]:bg-background/70 transition-all duration-300 px-safe ${
-          isHeaderVisible ? 'translate-y-0' : '-translate-y-full'
-        } ${lastScrollY > 10 ? 'shadow-lg' : 'shadow-none'}`}
-      >
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex h-16 sm:h-20 items-center justify-between pt-safe">
-            {/* Logo */}
+      <header className="sticky top-0 z-50 w-full border-b border-border bg-background">
+        <div className="container mx-auto px-6">
+          <div className="flex h-20 items-center justify-between">
+            {/* Logo - unchanged */}
             <Link to="/" className="flex items-center space-x-3">
               <img 
                 src={hommiLogo} 
@@ -263,227 +123,164 @@ export const Header = () => {
               </span>
             </Link>
 
-            {/* Desktop Navigation */}
-            {user ? (
-              <nav className="hidden lg:flex items-center space-x-6">
-                {/* Search Box - Only for tenants and NOT on search page */}
-                {currentRole === 'tenant' && !isSearchPage && (
-                  <form onSubmit={handleSearchSubmit} className="relative">
-                    <div className="relative">
-                      <MapPin className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                      <Input
-                        type="text"
-                        placeholder={locationLoading ? t('common.loading') : t('header.searchPlaceholder')}
-                        value={searchLocation}
-                        onChange={(e) => setSearchLocation(e.target.value)}
-                        className="pl-10 pr-4 w-80 bg-background border-border"
-                        disabled={locationLoading}
-                      />
-                    </div>
-                  </form>
-                )}
-
-                {/* Navigation Items */}
-                {currentNavItems.map((item) => (
+            {/* Centered Desktop Navigation */}
+            <nav className="hidden lg:flex absolute left-1/2 -translate-x-1/2 items-center space-x-8">
+              {currentNavItems.map((item) => {
+                const isActive = location.pathname === item.href;
+                return (
                   <Link
                     key={item.href}
                     to={item.href}
-                    className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors flex items-center space-x-1"
+                    className={`text-sm font-medium transition-colors relative py-6 ${
+                      isActive 
+                        ? 'text-foreground' 
+                        : 'text-muted-foreground hover:text-foreground'
+                    }`}
                   >
-                    <item.icon className="h-4 w-4" />
-                    <span>{item.label}</span>
+                    {item.label}
+                    {isActive && (
+                      <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-foreground" />
+                    )}
                   </Link>
-                ))}
+                );
+              })}
+            </nav>
 
-                {/* Publish Listing Button - Only show for listers who are not pending */}
-                {currentRole === 'lister' && !isPendingAgency && (
-                  <Button 
-                    variant="outline" 
-                    size="sm" 
-                    className="border-foreground/20 rounded-full hover:scale-105 active:scale-95 transition-transform duration-200"
-                    onClick={handlePublishListing}
-                    data-testid="publish-listing-btn"
-                  >
-                    <Plus className="h-4 w-4 mr-2" />
-                    {t('header.publishListing')}
-                  </Button>
-                )}
-              </nav>
-            ) : (
-              /* Logged-out Navigation */
-              <nav className="hidden lg:flex items-center space-x-6">
+            {/* Desktop Right Actions */}
+            <div className="hidden lg:flex items-center space-x-4">
+              {/* Role switch text link - only show if user can switch */}
+              {user && profile?.can_switch_roles && (
+                <button
+                  onClick={() => handleRoleSwitch(currentRole === 'tenant' ? 'lister' : 'tenant')}
+                  className="text-sm font-medium text-foreground hover:bg-muted px-3 py-2 rounded-full transition-colors"
+                >
+                  {currentRole === 'tenant' ? t('header.switchToLister') : t('header.switchToTenant')}
+                </button>
+              )}
+
+              {/* Publish listing button - for listers or logged out */}
+              {((currentRole === 'lister' && !isPendingAgency) || !user) && (
                 <Button 
-                  variant="outline" 
+                  variant="ghost"
                   size="sm" 
-                  className="border-foreground/20 rounded-full hover:scale-105 active:scale-95 transition-transform duration-200"
+                  className="text-sm font-medium"
                   onClick={handlePublishListing}
+                  data-testid="publish-listing-btn"
                 >
                   {t('header.publishListing')}
                 </Button>
-              </nav>
-            )}
+              )}
 
-            {/* Desktop Actions */}
-            <div className="hidden lg:flex items-center space-x-4">
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={toggleLanguage}
-                className="flex items-center space-x-1"
-              >
-                <Globe className="h-4 w-4" />
-                <span className="text-xs font-medium">
-                  {language.toUpperCase()}
-                </span>
-              </Button>
-
-              {user ? (
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" size="sm" className="rounded-full w-10 h-10 p-0 overflow-visible">
+              {/* Menu button with avatar */}
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button 
+                    variant="ghost" 
+                    className="rounded-full border border-border hover:shadow-md transition-shadow px-3 py-2 h-auto space-x-3"
+                  >
+                    <Menu className="h-4 w-4" />
+                    {user ? (
                       <AvatarWithBadge
                         src={profile?.avatar_url}
                         alt={profile?.display_name || 'User'}
                         fallback={profile?.display_name?.[0]?.toUpperCase() || user?.email?.[0]?.toUpperCase() || 'U'}
                         verificationsJson={profile?.verifications_json as any}
-                        className="h-10 w-10"
+                        className="h-8 w-8"
                       />
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent 
-                    align="end" 
-                    className="w-56 bg-background border border-border shadow-lg z-50"
-                  >
-                   <DropdownMenuItem onClick={() => navigate('/me')}>
-                       <User className="h-4 w-4 mr-2" />
-                       {t('header.profile')}
-                     </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => navigate('/settings')}>
-                      <Settings className="h-4 w-4 mr-2" />
-                      {t('header.settings')}
-                    </DropdownMenuItem>
-                    
-                    {/* Admin Link */}
-                    {isAdmin && (
-                      <DropdownMenuItem onClick={() => navigate('/admin')}>
-                        <BarChart3 className="h-4 w-4 mr-2" />
-                        {t('header.admin')}
-                      </DropdownMenuItem>
-                    )}
-                    
-                    {/* Role-specific menu items */}
-                    {currentRole === 'tenant' ? (
-                      <DropdownMenuItem onClick={() => navigate('/search-preferences')}>
-                        <Search className="h-4 w-4 mr-2" />
-                        {t('profile.preferences')}
-                      </DropdownMenuItem>
                     ) : (
-                      <DropdownMenuItem onClick={() => navigate('/booking-settings')}>
-                        <Calendar className="h-4 w-4 mr-2" />
-                        {t('owner.settings')}
-                      </DropdownMenuItem>
+                      <User className="h-5 w-5 text-muted-foreground" />
                     )}
-                    
-                    <DropdownMenuSeparator />
-                    
-                    {/* Role Switch - Hide for agencies */}
-                    {profile?.can_switch_roles && (
-                      <DropdownMenuItem onClick={() => handleRoleSwitch(currentRole === 'tenant' ? 'lister' : 'tenant')}>
-                        <UserCheck className="h-4 w-4 mr-2" />
-                        {currentRole === 'tenant' ? t('header.switchToLister') : t('header.switchToTenant')}
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-56">
+                  {user ? (
+                    <>
+                      <DropdownMenuItem onClick={() => navigate('/me')}>
+                        <User className="h-4 w-4 mr-2" />
+                        {t('header.profile')}
                       </DropdownMenuItem>
-                    )}
-                    
-                    <DropdownMenuSeparator />
-                    
-                    <DropdownMenuItem onClick={handleLogout}>
-                      <LogOut className="h-4 w-4 mr-2" />
-                      {t('header.logout')}
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              ) : (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => handleAuthAction('login')}
-                  className="rounded-full w-10 h-10 p-0"
-                >
-                  <User className="h-5 w-5" />
-                </Button>
-              )}
+                      <DropdownMenuItem onClick={() => navigate('/settings')}>
+                        <Settings className="h-4 w-4 mr-2" />
+                        {t('header.settings')}
+                      </DropdownMenuItem>
+                      {isAdmin && (
+                        <DropdownMenuItem onClick={() => navigate('/admin')}>
+                          <BarChart3 className="h-4 w-4 mr-2" />
+                          {t('header.admin')}
+                        </DropdownMenuItem>
+                      )}
+                      {currentRole === 'tenant' && (
+                        <DropdownMenuItem onClick={() => navigate('/search-preferences')}>
+                          {t('profile.preferences')}
+                        </DropdownMenuItem>
+                      )}
+                      {currentRole === 'lister' && (
+                        <DropdownMenuItem onClick={() => navigate('/booking-settings')}>
+                          {t('owner.settings')}
+                        </DropdownMenuItem>
+                      )}
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem onClick={toggleLanguage}>
+                        <Globe className="h-4 w-4 mr-2" />
+                        {language === 'el' ? 'English' : 'Ελληνικά'}
+                      </DropdownMenuItem>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem onClick={handleLogout}>
+                        <LogOut className="h-4 w-4 mr-2" />
+                        {t('header.logout')}
+                      </DropdownMenuItem>
+                    </>
+                  ) : (
+                    <>
+                      <DropdownMenuItem onClick={() => handleAuthAction('login')}>
+                        <User className="h-4 w-4 mr-2" />
+                        {t('header.login')} / {t('header.signup')}
+                      </DropdownMenuItem>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem onClick={toggleLanguage}>
+                        <Globe className="h-4 w-4 mr-2" />
+                        {language === 'el' ? 'English' : 'Ελληνικά'}
+                      </DropdownMenuItem>
+                    </>
+                  )}
+                </DropdownMenuContent>
+              </DropdownMenu>
             </div>
 
             {/* Mobile Menu Button */}
             <Button
               variant="ghost"
               size="sm"
-              className="lg:hidden min-h-[44px] min-w-[44px] touch-manipulation active:scale-95 transition-transform"
+              className="lg:hidden"
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
               data-testid="mobile-menu-btn"
-              aria-label={mobileMenuOpen ? t('common.close') : t('common.menu')}
             >
-              {mobileMenuOpen ? (
-                <X className="h-5 w-5" />
-              ) : (
-                <Menu className="h-5 w-5" />
-              )}
+              {mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
             </Button>
           </div>
 
           {/* Mobile Menu */}
           {mobileMenuOpen && (
-            <div className="lg:hidden border-t border-border py-4 animate-slide-in-right">
-              {/* Mobile Search - Only for tenants */}
-              {currentRole === 'tenant' && (
-                <div className="px-4 mb-4">
-                  <form onSubmit={handleSearchSubmit} className="relative">
-                    <div className="relative">
-                      <MapPin className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                      <Input
-                        type="text"
-                        placeholder={locationLoading ? t('common.loading') : t('header.searchPlaceholder')}
-                        value={searchLocation}
-                        onChange={(e) => setSearchLocation(e.target.value)}
-                        className="pl-10 pr-4 w-full min-h-[44px]"
-                        disabled={locationLoading}
-                      />
-                    </div>
-                  </form>
-                </div>
-              )}
-
-              <nav className="space-y-1 px-4">
+            <div className="lg:hidden border-t border-border py-4">
+              <nav className="space-y-1">
                 {currentNavItems.map((item) => (
                   <Link
                     key={item.href}
                     to={item.href}
-                    className="block px-3 py-3 text-base font-medium text-muted-foreground hover:text-foreground hover:bg-muted rounded-lg transition-all duration-200 flex items-center space-x-3 min-h-[44px] touch-manipulation active:scale-95"
+                    className="block px-3 py-3 text-base font-medium text-muted-foreground hover:text-foreground hover:bg-muted rounded-lg"
                     onClick={() => setMobileMenuOpen(false)}
                   >
-                    <item.icon className="h-5 w-5" />
-                    <span>{item.label}</span>
+                    {item.label}
                   </Link>
                 ))}
               </nav>
               
-              <div className="mt-4 pt-4 border-t border-border space-y-2 px-4">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={toggleLanguage}
-                  className="w-full justify-start min-h-[44px] touch-manipulation active:scale-95 transition-transform"
-                >
-                  <Globe className="h-4 w-4 mr-2" />
-                  {language === 'el' ? 'English' : 'Ελληνικά'}
-                </Button>
-                
-                {/* Publish listing button - Only show for listers (non-pending) or logged out users */}
+              <div className="mt-4 pt-4 border-t border-border space-y-2">
                 {((currentRole === 'lister' && !isPendingAgency) || !user) && (
                   <Button 
                     variant="outline" 
                     size="sm" 
-                    className="w-full justify-start border-foreground/20 min-h-[44px] touch-manipulation active:scale-95 transition-transform"
+                    className="w-full justify-start"
                     onClick={() => {
                       handlePublishListing();
                       setMobileMenuOpen(false);
@@ -495,45 +292,41 @@ export const Header = () => {
                 )}
 
                 {user ? (
-                 <>
-                     <Link to="/me" onClick={() => setMobileMenuOpen(false)}>
-                       <Button variant="ghost" size="sm" className="w-full justify-start">
-                         <User className="h-4 w-4 mr-2" />
-                         {t('header.profile')}
-                       </Button>
-                     </Link>
+                  <>
+                    <Link to="/me" onClick={() => setMobileMenuOpen(false)}>
+                      <Button variant="ghost" size="sm" className="w-full justify-start">
+                        <User className="h-4 w-4 mr-2" />
+                        {t('header.profile')}
+                      </Button>
+                    </Link>
                     <Link to="/settings" onClick={() => setMobileMenuOpen(false)}>
                       <Button variant="ghost" size="sm" className="w-full justify-start">
                         <Settings className="h-4 w-4 mr-2" />
                         {t('header.settings')}
                       </Button>
                     </Link>
-                    {currentRole === 'tenant' ? (
-                      <Link to="/search-preferences" onClick={() => setMobileMenuOpen(false)}>
-                        <Button variant="ghost" size="sm" className="w-full justify-start">
-                          <Search className="h-4 w-4 mr-2" />
-                          {t('profile.preferences')}
-                        </Button>
-                      </Link>
-                    ) : (
-                      <Link to="/booking-settings" onClick={() => setMobileMenuOpen(false)}>
-                        <Button variant="ghost" size="sm" className="w-full justify-start">
-                          <Calendar className="h-4 w-4 mr-2" />
-                          {t('owner.settings')}
-                        </Button>
-                      </Link>
+                    {profile?.can_switch_roles && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="w-full justify-start"
+                        onClick={() => {
+                          handleRoleSwitch(currentRole === 'tenant' ? 'lister' : 'tenant');
+                          setMobileMenuOpen(false);
+                        }}
+                      >
+                        <UserCheck className="h-4 w-4 mr-2" />
+                        {currentRole === 'tenant' ? t('header.switchToLister') : t('header.switchToTenant')}
+                      </Button>
                     )}
                     <Button
                       variant="ghost"
                       size="sm"
                       className="w-full justify-start"
-                      onClick={() => {
-                        handleRoleSwitch(currentRole === 'tenant' ? 'lister' : 'tenant');
-                        setMobileMenuOpen(false);
-                      }}
+                      onClick={toggleLanguage}
                     >
-                      <UserCheck className="h-4 w-4 mr-2" />
-                      {currentRole === 'tenant' ? t('header.switchToLister') : t('header.switchToTenant')}
+                      <Globe className="h-4 w-4 mr-2" />
+                      {language === 'el' ? 'English' : 'Ελληνικά'}
                     </Button>
                     <Button
                       variant="ghost"
@@ -549,18 +342,29 @@ export const Header = () => {
                     </Button>
                   </>
                 ) : (
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="w-full justify-start"
-                    onClick={() => {
-                      handleAuthAction('login');
-                      setMobileMenuOpen(false);
-                    }}
-                  >
-                    <User className="h-4 w-4 mr-2" />
-                    {t('header.login')} / {t('header.signup')}
-                  </Button>
+                  <>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="w-full justify-start"
+                      onClick={() => {
+                        handleAuthAction('login');
+                        setMobileMenuOpen(false);
+                      }}
+                    >
+                      <User className="h-4 w-4 mr-2" />
+                      {t('header.login')} / {t('header.signup')}
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="w-full justify-start"
+                      onClick={toggleLanguage}
+                    >
+                      <Globe className="h-4 w-4 mr-2" />
+                      {language === 'el' ? 'English' : 'Ελληνικά'}
+                    </Button>
+                  </>
                 )}
               </div>
             </div>
