@@ -109,7 +109,10 @@ export const Header = () => {
         <div className="container mx-auto px-6">
           <div className="flex h-20 items-center justify-between">
             {/* Logo - unchanged */}
-            <Link to="/" className="flex items-center space-x-3">
+            <Link 
+              to={user && currentRole === 'lister' ? '/hosting' : '/'} 
+              className="flex items-center space-x-3"
+            >
               <img 
                 src={hommiLogo} 
                 alt="Hommi" 
@@ -211,14 +214,9 @@ export const Header = () => {
                           {t('profile.preferences')}
                         </DropdownMenuItem>
                       )}
-                      {currentRole === 'lister' && (
-                        <DropdownMenuItem onClick={() => navigate('/booking-settings')}>
-                          {t('owner.settings')}
-                        </DropdownMenuItem>
-                      )}
                       <DropdownMenuSeparator />
                       <DropdownMenuItem onClick={() => navigate('/help')}>
-                        {t('common.help')}
+                        Help
                       </DropdownMenuItem>
                       <DropdownMenuItem onClick={toggleLanguage}>
                         <Globe className="h-4 w-4 mr-2" />
@@ -238,7 +236,7 @@ export const Header = () => {
                       </DropdownMenuItem>
                       <DropdownMenuSeparator />
                       <DropdownMenuItem onClick={() => navigate('/help')}>
-                        {t('common.help')}
+                        Help
                       </DropdownMenuItem>
                       <DropdownMenuItem onClick={toggleLanguage}>
                         <Globe className="h-4 w-4 mr-2" />
