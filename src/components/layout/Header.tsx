@@ -155,8 +155,8 @@ export const Header = () => {
                 </button>
               )}
 
-              {/* Publish listing button - for listers or logged out */}
-              {((currentRole === 'lister' && !isPendingAgency) || !user) && (
+              {/* Publish listing button - only for logged out users */}
+              {!user && (
                 <Button 
                   variant="ghost"
                   size="sm" 
@@ -279,7 +279,7 @@ export const Header = () => {
               </nav>
               
               <div className="mt-4 pt-4 border-t border-border space-y-2">
-                {((currentRole === 'lister' && !isPendingAgency) || !user) && (
+                {!user && (
                   <Button 
                     variant="outline" 
                     size="sm" 
