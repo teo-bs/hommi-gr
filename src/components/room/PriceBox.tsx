@@ -15,36 +15,36 @@ export const PriceBox = ({ price, deposit, depositRequired, billsIncluded, bills
   const totalMoveIn = hasPrice && hasDeposit ? price + deposit : null;
   
   return (
-    <Card className="border-2">
+    <Card className="border-border/50 bg-card/50 backdrop-blur-sm shadow-lg hover:shadow-xl transition-all duration-300">
       <CardHeader className="pb-3">
-        <div className="flex items-baseline space-x-1">
-          <span className="text-3xl font-bold">
+        <div className="flex items-baseline space-x-2">
+          <span className="text-4xl font-bold bg-gradient-to-br from-foreground to-foreground/70 bg-clip-text text-transparent">
             {hasPrice ? `€${price}` : 'Δεν έχει καθοριστεί'}
           </span>
-          {hasPrice && <span className="text-muted-foreground">/μήνα</span>}
+          {hasPrice && <span className="text-muted-foreground text-lg">/μήνα</span>}
         </div>
       </CardHeader>
       
-      <CardContent className="space-y-3">
-        <div className="space-y-2 text-sm">
-          <div className="flex justify-between">
+      <CardContent className="space-y-4">
+        <div className="space-y-3 text-sm">
+          <div className="flex justify-between items-center py-2 border-b border-border/50">
             <span className="text-muted-foreground">Μηνιαίο ενοίκιο</span>
-            <span className="font-medium">
+            <span className="font-semibold text-base">
               {hasPrice ? `€${price}` : 'Δεν έχει καθοριστεί'}
             </span>
           </div>
           
-          <div className="flex justify-between">
+          <div className="flex justify-between items-center py-2 border-b border-border/50">
             <span className="text-muted-foreground">Εγγύηση</span>
-            <span className="font-medium">
+            <span className="font-semibold text-base">
               {depositRequired === false ? 'Δεν απαιτείται' : hasDeposit ? `€${deposit}` : 'Δεν έχει καθοριστεί'}
             </span>
           </div>
           
-          <div className="flex justify-between items-start">
+          <div className="flex justify-between items-start py-2">
             <span className="text-muted-foreground">Λογαριασμοί</span>
             <div className="text-right">
-              <span className={`font-medium ${billsIncluded === true ? 'text-success' : billsIncluded === false ? 'text-warning' : ''}`}>
+              <span className={`font-semibold text-base ${billsIncluded === true ? 'text-success' : billsIncluded === false ? 'text-warning' : ''}`}>
                 {billsIncluded === true ? 'Συμπεριλαμβάνονται' : billsIncluded === false ? 'Δεν συμπεριλαμβάνονται' : 'Δεν έχει καθοριστεί'}
               </span>
               {billsNote && (
@@ -54,10 +54,10 @@ export const PriceBox = ({ price, deposit, depositRequired, billsIncluded, bills
           </div>
         </div>
         
-        <div className="border-t pt-3">
-          <div className="flex justify-between font-semibold">
-            <span>Σύνολο αρχικό κόστος</span>
-            <span>{totalMoveIn != null ? `€${totalMoveIn}` : '-'}</span>
+        <div className="border-t border-border/50 pt-4 mt-4 bg-accent/20 -mx-6 -mb-6 px-6 py-4 rounded-b-lg">
+          <div className="flex justify-between items-center">
+            <span className="font-semibold text-base">Σύνολο αρχικό κόστος</span>
+            <span className="text-2xl font-bold text-primary">{totalMoveIn != null ? `€${totalMoveIn}` : '-'}</span>
           </div>
         </div>
       </CardContent>

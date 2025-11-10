@@ -9,7 +9,7 @@ export const CTAStack = ({ onRequestChat }: CTAStackProps) => {
   return (
     <div className="hidden lg:block space-y-2">
       <Button 
-        className="w-full h-12 text-base font-semibold animate-pulse hover:animate-none" 
+        className="w-full h-14 text-lg font-semibold shadow-lg shadow-primary/20 hover:shadow-xl hover:shadow-primary/30 transition-all duration-300 hover:scale-[1.02]" 
         variant="hero"
         onClick={onRequestChat}
       >

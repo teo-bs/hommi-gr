@@ -279,25 +279,27 @@ const RoomPage = () => {
 
   if (loading) {
     return (
-      <div className="container mx-auto px-4 py-4 sm:py-8">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 sm:gap-8">
-          <div className="lg:col-span-2 space-y-4 sm:space-y-6">
-            <Skeleton className="h-64 sm:h-80 md:h-96 w-full rounded-2xl animate-pulse" />
-            <div className="space-y-3 sm:space-y-4 animate-fade-in">
-              <Skeleton className="h-8 sm:h-10 w-3/4 rounded-lg" />
-              <Skeleton className="h-4 w-full rounded" />
-              <Skeleton className="h-4 w-full rounded" />
-              <Skeleton className="h-4 w-2/3 rounded" />
+      <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20">
+        <div className="container mx-auto px-4 py-4 sm:py-8">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 sm:gap-8">
+            <div className="lg:col-span-2 space-y-4 sm:space-y-6">
+              <Skeleton className="h-64 sm:h-80 md:h-[500px] w-full rounded-2xl" />
+              <div className="space-y-3 sm:space-y-4">
+                <Skeleton className="h-10 sm:h-12 w-3/4 rounded-lg" />
+                <Skeleton className="h-5 w-full rounded" />
+                <Skeleton className="h-5 w-full rounded" />
+                <Skeleton className="h-5 w-2/3 rounded" />
+              </div>
+              <div className="grid grid-cols-2 gap-3 sm:gap-4">
+                <Skeleton className="h-28 sm:h-36 w-full rounded-xl" />
+                <Skeleton className="h-28 sm:h-36 w-full rounded-xl" />
+              </div>
             </div>
-            <div className="grid grid-cols-2 gap-3 sm:gap-4">
-              <Skeleton className="h-24 sm:h-32 w-full rounded-xl" />
-              <Skeleton className="h-24 sm:h-32 w-full rounded-xl" />
+            <div className="space-y-3 sm:space-y-4">
+              <Skeleton className="h-64 sm:h-80 w-full rounded-2xl" />
+              <Skeleton className="h-32 sm:h-40 w-full rounded-xl" />
+              <Skeleton className="h-20 sm:h-24 w-full rounded-xl" />
             </div>
-          </div>
-          <div className="space-y-3 sm:space-y-4">
-            <Skeleton className="h-48 sm:h-64 w-full rounded-2xl" />
-            <Skeleton className="h-24 sm:h-32 w-full rounded-xl" />
-            <Skeleton className="h-16 sm:h-20 w-full rounded-xl" />
           </div>
         </div>
       </div>
@@ -335,27 +337,28 @@ const RoomPage = () => {
         <meta name="twitter:image" content={photos?.[0]?.photo_url || 'https://hommi.gr/og-image.png'} />
       </Helmet>
 
-      <div className="container mx-auto px-4 py-3 sm:py-6 pb-20 sm:pb-24 lg:pb-8">
-        {/* Back to Search Button - Always Visible */}
-        <div className="mb-2 sm:mb-4 animate-fade-in">
-          <Button 
-            variant="ghost" 
-            onClick={() => {
-              // Mobile/Tablet: Navigate in same tab
-              if (isMobile) {
-                navigate('/search', { state: { fromListing: true } });
-              } else {
-                // Desktop: Open in new tab
-                window.open('/search', '_blank');
-              }
-            }}
-            className="gap-2 -ml-2 min-h-[44px] touch-manipulation active:scale-95 transition-transform hover:bg-accent"
-          >
-            <ArrowLeft className="h-4 w-4" />
-            <span className="hidden sm:inline">Επιστροφή στα αποτελέσματα</span>
-            <span className="sm:hidden">Πίσω</span>
-          </Button>
-        </div>
+      <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20">
+        <div className="container mx-auto px-4 py-3 sm:py-6 pb-20 sm:pb-24 lg:pb-8">
+          {/* Back to Search Button - Always Visible */}
+          <div className="mb-2 sm:mb-4 animate-fade-in">
+            <Button 
+              variant="ghost" 
+              onClick={() => {
+                // Mobile/Tablet: Navigate in same tab
+                if (isMobile) {
+                  navigate('/search', { state: { fromListing: true } });
+                } else {
+                  // Desktop: Open in new tab
+                  window.open('/search', '_blank');
+                }
+              }}
+              className="gap-2 -ml-2 min-h-[44px] touch-manipulation transition-all duration-200 hover:scale-[1.02] hover:bg-accent/50"
+            >
+              <ArrowLeft className="h-4 w-4" />
+              <span className="hidden sm:inline">Επιστροφή στα αποτελέσματα</span>
+              <span className="sm:hidden">Πίσω</span>
+            </Button>
+          </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8">
           {/* Main Content */}
@@ -436,7 +439,7 @@ const RoomPage = () => {
           {/* Right Sidebar - Sticky on desktop, natural flow on mobile */}
           <div className="lg:col-span-1">
             {/* Lister Card - Not Sticky */}
-            <div className="mb-3 sm:mb-4 animate-scale-in">
+            <div className="mb-3 sm:mb-4 animate-fade-in">
               <ListerCard 
                 lister={listerProfile}
                 verificationBadge={listerProfile?.kyc_status === 'approved'}
@@ -448,7 +451,7 @@ const RoomPage = () => {
             </div>
             
             {/* Sticky Section on desktop, fixed bottom bar on mobile */}
-            <div className="lg:sticky lg:top-4 space-y-3 sm:space-y-4">
+            <div className="lg:sticky lg:top-4 space-y-3 sm:space-y-4 animate-scale-in">
               <PriceBox 
                 price={listing.price_month}
                 deposit={listing.deposit}
@@ -466,6 +469,7 @@ const RoomPage = () => {
               />
           </div>
         </div>
+      </div>
 
         {/* Mobile Action Bar - Fixed at bottom */}
         <MobileActionBar 

@@ -115,10 +115,10 @@ export const Gallery = ({
       </div>
 
       {/* Gallery grid - responsive: swipeable carousel on mobile, grid on desktop */}
-      <div className="lg:grid lg:grid-cols-4 lg:grid-rows-2 lg:gap-2 lg:h-96">
+      <div className="lg:grid lg:grid-cols-4 lg:grid-rows-2 lg:gap-3 lg:h-[500px]">
         {/* Main image - full width carousel on mobile */}
         <div 
-          className="lg:col-span-2 lg:row-span-2 cursor-pointer relative group overflow-hidden rounded-xl lg:rounded-2xl aspect-[4/3] lg:aspect-auto lg:h-full"
+          className="lg:col-span-2 lg:row-span-2 cursor-pointer relative group overflow-hidden rounded-xl lg:rounded-2xl aspect-[4/3] lg:aspect-auto lg:h-full shadow-lg hover:shadow-2xl transition-all duration-300"
           onClick={() => {
             setLightboxIndex(0);
             setLightboxOpen(true);
@@ -127,16 +127,17 @@ export const Gallery = ({
           <img
             src={displayPhotos[0]?.large_url || displayPhotos[0]?.medium_url || displayPhotos[0]?.url}
             alt={displayPhotos[0]?.alt_text || title}
-            className="w-full h-full object-cover transition-transform group-hover:scale-105"
+            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
             onError={() => handleImageError(displayPhotos[0]?.url)}
           />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
         </div>
 
         {/* Thumbnail grid - hidden on mobile, shown on desktop */}
         {displayPhotos.slice(1, 5).map((photo, index) => (
           <div
             key={photo.id || index}
-            className="hidden lg:block cursor-pointer relative group overflow-hidden rounded-xl"
+            className="hidden lg:block cursor-pointer relative group overflow-hidden rounded-xl shadow-md hover:shadow-xl transition-all duration-300"
             onClick={(e) => {
               if ((e.target as HTMLElement).closest('button')) return;
               setLightboxIndex(index + 1);
@@ -146,9 +147,10 @@ export const Gallery = ({
             <img
               src={photo.thumbnail_url || photo.medium_url || photo.url}
               alt={photo.alt_text || `${title} photo ${index + 2}`}
-              className="w-full h-full object-cover transition-transform group-hover:scale-105"
+              className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
               onError={() => handleImageError(photo.url)}
             />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
             {isOwner && photo.id && parentId && onPhotosUpdate && (
               <OwnerGalleryActions
                 photoId={photo.id}
@@ -159,11 +161,11 @@ export const Gallery = ({
               />
             )}
             {index === 3 && totalPhotos > 5 && (
-              <div className="absolute inset-0 bg-black/60 flex items-center justify-center">
+              <div className="absolute inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center transition-all duration-300 group-hover:bg-black/80">
                 <div className="text-white text-center">
-                  <Camera className="h-6 w-6 mx-auto mb-1" />
-                  <span className="text-sm font-medium">
-                    See {totalPhotos} photos
+                  <Camera className="h-8 w-8 mx-auto mb-2" />
+                  <span className="text-base font-semibold">
+                    Δες όλες τις {totalPhotos} φωτογραφίες
                   </span>
                 </div>
               </div>
@@ -174,16 +176,16 @@ export const Gallery = ({
 
       {/* Room type badge and title - mobile */}
       <div className="lg:hidden space-y-2">
-        <span className="text-xs text-muted-foreground uppercase tracking-wide">
+        <span className="text-xs text-muted-foreground uppercase tracking-wide font-medium">
           {roomType && getRoomTypeLabel(roomType)}
           {flatmatesCount && flatmatesCount > 0 && ` • ${flatmatesCount} Συγκάτοικοι`}
         </span>
-        <h1 className="text-2xl sm:text-3xl font-bold">{title}</h1>
+        <h1 className="text-3xl font-bold bg-gradient-to-br from-foreground to-foreground/70 bg-clip-text text-transparent">{title}</h1>
       </div>
 
       {/* Title - desktop */}
       <div className="hidden lg:block">
-        <h1 className="text-3xl font-bold mb-2">{title}</h1>
+        <h1 className="text-4xl font-bold bg-gradient-to-br from-foreground to-foreground/70 bg-clip-text text-transparent mb-2">{title}</h1>
       </div>
 
       {/* Photo Lightbox */}
