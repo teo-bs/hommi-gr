@@ -54,22 +54,34 @@ export const ListingCard = ({
   const [isHovered, setIsHovered] = useState(false);
   const [imageLoaded, setImageLoaded] = useState(false);
   const [lqipLoaded, setLqipLoaded] = useState(false);
-  const [imageError, setImageError] = useState(false);
   const [currentPhotoIndex, setCurrentPhotoIndex] = useState(0);
+  const [failedPhotos, setFailedPhotos] = useState<Set<string>>(new Set());
   const carouselIntervalRef = useRef<NodeJS.Timeout | null>(null);
   
   // Use cover photo or fallback, and get all photos
   const imageUrl = coverPhoto || listing.cover_photo_url || '/placeholder.svg';
-  const photos = listing.photos && listing.photos.length > 0 
+  const allPhotos = listing.photos && listing.photos.length > 0 
     ? listing.photos 
     : [imageUrl];
+  
+  // Filter out failed photos
+  const photos = allPhotos.filter(photo => !failedPhotos.has(photo));
   const hasMultiplePhotos = photos.length > 1;
+  
+  // Handle photo load error
+  const handlePhotoError = (photoUrl: string) => {
+    setFailedPhotos(prev => new Set(prev).add(photoUrl));
+    // If current photo fails and there are more photos, move to next
+    if (currentPhotoIndex >= photos.length - 1 && photos.length > 1) {
+      setCurrentPhotoIndex(0);
+    }
+  };
   
   // Reset image state when cover photo changes
   useEffect(() => {
     setImageLoaded(false);
     setLqipLoaded(false);
-    setImageError(false);
+    setFailedPhotos(new Set());
   }, [imageUrl]);
 
   // Auto-advance photos on hover
@@ -155,24 +167,22 @@ export const ListingCard = ({
               />
               
               {/* Full quality image - loads in background */}
-              {!imageError && (
-                <img
-                  src={getOptimizedImageUrl(photo, 720)}
-                  srcSet={getImageSrcSet(photo)}
-                  sizes="(min-width: 1024px) 320px, (min-width: 768px) 50vw, 100vw"
-                  alt={`${listing.title} - Photo ${index + 1}`}
-                  loading="lazy"
-                  decoding="async"
-                  className={cn(
-                    "absolute inset-0 w-full h-full object-cover transition-all duration-700",
-                    index === currentPhotoIndex ? 'opacity-100' : 'opacity-0',
-                    isHovered && index === currentPhotoIndex ? 'scale-105' : 'scale-100',
-                    imageLoaded ? 'opacity-100' : 'opacity-0'
-                  )}
-                  onLoad={() => index === 0 && setImageLoaded(true)}
-                  onError={() => index === 0 && setImageError(true)}
-                />
-              )}
+              <img
+                src={getOptimizedImageUrl(photo, 720)}
+                srcSet={getImageSrcSet(photo)}
+                sizes="(min-width: 1024px) 320px, (min-width: 768px) 50vw, 100vw"
+                alt={`${listing.title} - Photo ${index + 1}`}
+                loading="lazy"
+                decoding="async"
+                className={cn(
+                  "absolute inset-0 w-full h-full object-cover transition-all duration-700",
+                  index === currentPhotoIndex ? 'opacity-100' : 'opacity-0',
+                  isHovered && index === currentPhotoIndex ? 'scale-105' : 'scale-100',
+                  imageLoaded ? 'opacity-100' : 'opacity-0'
+                )}
+                onLoad={() => index === 0 && setImageLoaded(true)}
+                onError={() => handlePhotoError(photo)}
+              />
             </div>
           ))}
           
