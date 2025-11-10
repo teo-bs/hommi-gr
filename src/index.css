@@ -29,6 +29,16 @@
 /* Hommi.gr Design System - Mediterranean-inspired colors and modern aesthetics */
 
 @layer base {
+  /* Shimmer loading animation */
+  @keyframes shimmer {
+    0% {
+      background-position: -1000px 0;
+    }
+    100% {
+      background-position: 1000px 0;
+    }
+  }
+
   /* Map hover popup animations */
   @keyframes fadeIn {
     from {

@@ -273,20 +273,28 @@ const MyListings = () => {
                 {isLoading && (
                   <div className="space-y-6">
                     {[1, 2, 3].map((i) => (
-                      <Card key={i} className="border-border/50 bg-card/50 backdrop-blur-sm">
+                      <Card key={i} className="border-border/50 bg-card/50 backdrop-blur-sm overflow-hidden">
                         <CardContent className="p-6">
-                          <div className="flex gap-4">
-                            <Skeleton className="h-32 w-48 rounded-lg" />
+                          <div className="flex gap-6">
+                            <Skeleton className="h-32 w-48 rounded-lg flex-shrink-0" />
                             <div className="flex-1 space-y-4">
-                              <Skeleton className="h-6 w-3/4" />
-                              <Skeleton className="h-4 w-1/2" />
+                              <Skeleton className="h-7 w-3/4" />
+                              <Skeleton className="h-5 w-1/2" />
                               <div className="flex gap-2">
-                                <Skeleton className="h-6 w-16" />
-                                <Skeleton className="h-6 w-16" />
+                                <Skeleton className="h-6 w-20" />
+                                <Skeleton className="h-6 w-24" />
                               </div>
                               <Skeleton className="h-4 w-full" />
+                              <div className="flex gap-2 mt-2">
+                                <Skeleton className="h-8 w-8 rounded-full" />
+                                <Skeleton className="h-8 w-8 rounded-full" />
+                                <Skeleton className="h-8 w-8 rounded-full" />
+                              </div>
                             </div>
-                            <Skeleton className="h-10 w-24" />
+                            <div className="flex flex-col gap-2 flex-shrink-0">
+                              <Skeleton className="h-10 w-32" />
+                              <Skeleton className="h-10 w-32" />
+                            </div>
                           </div>
                         </CardContent>
                       </Card>

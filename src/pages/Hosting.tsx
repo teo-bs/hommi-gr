@@ -60,13 +60,18 @@ export default function Hosting() {
                 </CardHeader>
                 <CardContent>
                   {listingsLoading ? (
-                    <Skeleton className="h-10 w-20" />
+                    <div className="space-y-2">
+                      <Skeleton className="h-10 w-20" />
+                      <Skeleton className="h-4 w-24" />
+                    </div>
                   ) : (
-                    <div className="text-3xl font-bold">{activeListings.length}</div>
+                    <>
+                      <div className="text-3xl font-bold">{activeListings.length}</div>
+                      <p className="text-xs text-muted-foreground mt-2">
+                        {draftListings.length > 0 && `${draftListings.length} σχέδια`}
+                      </p>
+                    </>
                   )}
-                  <p className="text-xs text-muted-foreground mt-2">
-                    {draftListings.length > 0 && `${draftListings.length} σχέδια`}
-                  </p>
                 </CardContent>
               </Card>
 
@@ -79,11 +84,16 @@ export default function Hosting() {
                 </CardHeader>
                 <CardContent>
                   {statsLoading ? (
-                    <Skeleton className="h-10 w-20" />
+                    <div className="space-y-2">
+                      <Skeleton className="h-10 w-20" />
+                      <Skeleton className="h-4 w-32" />
+                    </div>
                   ) : (
-                    <div className="text-3xl font-bold">{stats?.newMessages || 0}</div>
+                    <>
+                      <div className="text-3xl font-bold">{stats?.newMessages || 0}</div>
+                      <p className="text-xs text-muted-foreground mt-2">Νέα μηνύματα</p>
+                    </>
                   )}
-                  <p className="text-xs text-muted-foreground mt-2">Νέα μηνύματα</p>
                 </CardContent>
               </Card>
 
@@ -96,11 +106,16 @@ export default function Hosting() {
                 </CardHeader>
                 <CardContent>
                   {statsLoading ? (
-                    <Skeleton className="h-10 w-20" />
+                    <div className="space-y-2">
+                      <Skeleton className="h-10 w-20" />
+                      <Skeleton className="h-4 w-20" />
+                    </div>
                   ) : (
-                    <div className="text-3xl font-bold">{stats?.totalViews || 0}</div>
+                    <>
+                      <div className="text-3xl font-bold">{stats?.totalViews || 0}</div>
+                      <p className="text-xs text-muted-foreground mt-2">Συνολικά</p>
+                    </>
                   )}
-                  <p className="text-xs text-muted-foreground mt-2">Συνολικά</p>
                 </CardContent>
               </Card>
             </div>
