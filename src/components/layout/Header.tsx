@@ -245,108 +245,88 @@ export const Header = () => {
   return (
     <>
       <header 
-        className={`sticky top-0 z-50 w-full border-b-2 border-border/20 bg-background/80 backdrop-blur-xl supports-[backdrop-filter]:bg-background/70 transition-all duration-300 px-safe ${
+        className={`sticky top-0 z-50 w-full border-b border-border/40 bg-background transition-all duration-300 px-safe ${
           isHeaderVisible ? 'translate-y-0' : '-translate-y-full'
-        } ${lastScrollY > 10 ? 'shadow-lg' : 'shadow-none'}`}
+        }`}
       >
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex h-16 sm:h-20 items-center justify-between pt-safe">
+          <div className="flex h-20 items-center justify-between pt-safe">
             {/* Logo */}
-            <Link to="/" className="flex items-center space-x-3">
+            <Link to="/" className="flex items-center space-x-2">
               <img 
                 src={hommiLogo} 
                 alt="Hommi" 
-                className="h-10 w-10 sm:h-12 sm:w-12 rounded-xl"
+                className="h-8 w-8"
               />
-              <span className="text-xl sm:text-2xl font-bold text-foreground tracking-tight">
-                Hommi
+              <span className="text-lg font-semibold text-primary">
+                hommi
               </span>
             </Link>
 
-            {/* Desktop Navigation */}
-            {user ? (
-              <nav className="hidden lg:flex items-center space-x-6">
-                {/* Search Box - Only for tenants and NOT on search page */}
-                {currentRole === 'tenant' && !isSearchPage && (
-                  <form onSubmit={handleSearchSubmit} className="relative">
-                    <div className="relative">
-                      <MapPin className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                      <Input
-                        type="text"
-                        placeholder={locationLoading ? t('common.loading') : t('header.searchPlaceholder')}
-                        value={searchLocation}
-                        onChange={(e) => setSearchLocation(e.target.value)}
-                        className="pl-10 pr-4 w-80 bg-background border-border"
-                        disabled={locationLoading}
-                      />
-                    </div>
-                  </form>
-                )}
-
-                {/* Navigation Items */}
-                {currentNavItems.map((item) => (
+            {/* Desktop Navigation - Centered */}
+            <nav className="hidden lg:flex items-center justify-center flex-1 space-x-8">
+              {currentNavItems.map((item) => {
+                const isActive = location.pathname === item.href;
+                return (
                   <Link
                     key={item.href}
                     to={item.href}
-                    className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors flex items-center space-x-1"
+                    className={`text-sm font-medium transition-colors relative pb-3 ${
+                      isActive 
+                        ? 'text-foreground' 
+                        : 'text-muted-foreground hover:text-foreground'
+                    }`}
                   >
-                    <item.icon className="h-4 w-4" />
-                    <span>{item.label}</span>
+                    {item.label}
+                    {isActive && (
+                      <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-foreground rounded-full" />
+                    )}
                   </Link>
-                ))}
+                );
+              })}
+            </nav>
 
-                {/* Publish Listing Button - Only show for listers who are not pending */}
-                {currentRole === 'lister' && !isPendingAgency && (
-                  <Button 
-                    variant="outline" 
-                    size="sm" 
-                    className="border-foreground/20 rounded-full hover:scale-105 active:scale-95 transition-transform duration-200"
-                    onClick={handlePublishListing}
-                    data-testid="publish-listing-btn"
-                  >
-                    <Plus className="h-4 w-4 mr-2" />
-                    {t('header.publishListing')}
-                  </Button>
-                )}
-              </nav>
-            ) : (
-              /* Logged-out Navigation */
-              <nav className="hidden lg:flex items-center space-x-6">
+            {/* Desktop Actions - Right Side */}
+            <div className="hidden lg:flex items-center space-x-3">
+              {/* Role Switch Link */}
+              {user && profile?.can_switch_roles && (
+                <button
+                  onClick={() => handleRoleSwitch(currentRole === 'tenant' ? 'lister' : 'tenant')}
+                  className="text-sm font-medium text-foreground hover:bg-muted px-3 py-2 rounded-full transition-colors"
+                >
+                  {currentRole === 'tenant' ? t('header.switchToLister') : t('header.switchToTenant')}
+                </button>
+              )}
+
+              {/* Publish Listing Button - Only show for listers who are not pending */}
+              {currentRole === 'lister' && !isPendingAgency && (
                 <Button 
-                  variant="outline" 
+                  variant="ghost"
                   size="sm" 
-                  className="border-foreground/20 rounded-full hover:scale-105 active:scale-95 transition-transform duration-200"
+                  className="text-sm font-medium"
                   onClick={handlePublishListing}
+                  data-testid="publish-listing-btn"
                 >
                   {t('header.publishListing')}
                 </Button>
-              </nav>
-            )}
+              )}
 
-            {/* Desktop Actions */}
-            <div className="hidden lg:flex items-center space-x-4">
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={toggleLanguage}
-                className="flex items-center space-x-1"
-              >
-                <Globe className="h-4 w-4" />
-                <span className="text-xs font-medium">
-                  {language.toUpperCase()}
-                </span>
-              </Button>
-
+              {/* User Profile & Menu Button Combined */}
               {user ? (
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" size="sm" className="rounded-full w-10 h-10 p-0 overflow-visible">
+                    <Button 
+                      variant="ghost" 
+                      size="sm" 
+                      className="flex items-center space-x-2 border border-border/40 rounded-full px-2 py-1 hover:shadow-md transition-all"
+                    >
+                      <Menu className="h-4 w-4" />
                       <AvatarWithBadge
                         src={profile?.avatar_url}
                         alt={profile?.display_name || 'User'}
                         fallback={profile?.display_name?.[0]?.toUpperCase() || user?.email?.[0]?.toUpperCase() || 'U'}
                         verificationsJson={profile?.verifications_json as any}
-                        className="h-10 w-10"
+                        className="h-8 w-8"
                       />
                     </Button>
                   </DropdownMenuTrigger>
@@ -386,13 +366,10 @@ export const Header = () => {
                     
                     <DropdownMenuSeparator />
                     
-                    {/* Role Switch - Hide for agencies */}
-                    {profile?.can_switch_roles && (
-                      <DropdownMenuItem onClick={() => handleRoleSwitch(currentRole === 'tenant' ? 'lister' : 'tenant')}>
-                        <UserCheck className="h-4 w-4 mr-2" />
-                        {currentRole === 'tenant' ? t('header.switchToLister') : t('header.switchToTenant')}
-                      </DropdownMenuItem>
-                    )}
+                    <DropdownMenuItem onClick={toggleLanguage}>
+                      <Globe className="h-4 w-4 mr-2" />
+                      {language === 'el' ? 'English' : 'Ελληνικά'}
+                    </DropdownMenuItem>
                     
                     <DropdownMenuSeparator />
                     
@@ -407,8 +384,9 @@ export const Header = () => {
                   variant="ghost"
                   size="sm"
                   onClick={() => handleAuthAction('login')}
-                  className="rounded-full w-10 h-10 p-0"
+                  className="flex items-center space-x-2 border border-border/40 rounded-full px-3 py-2 hover:shadow-md transition-all"
                 >
+                  <Menu className="h-4 w-4" />
                   <User className="h-5 w-5" />
                 </Button>
               )}
@@ -418,16 +396,12 @@ export const Header = () => {
             <Button
               variant="ghost"
               size="sm"
-              className="lg:hidden min-h-[44px] min-w-[44px] touch-manipulation active:scale-95 transition-transform"
+              className="lg:hidden border border-border/40 rounded-full px-2 py-2"
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
               data-testid="mobile-menu-btn"
               aria-label={mobileMenuOpen ? t('common.close') : t('common.menu')}
             >
-              {mobileMenuOpen ? (
-                <X className="h-5 w-5" />
-              ) : (
-                <Menu className="h-5 w-5" />
-              )}
+              <Menu className="h-5 w-5" />
             </Button>
           </div>
 
