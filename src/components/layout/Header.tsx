@@ -28,6 +28,7 @@ export const Header = () => {
   const { t, language, toggleLanguage } = useTranslation();
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
   // Get current user role, default to 'tenant'
   const currentRole = profile?.role || 'tenant';
@@ -172,11 +173,15 @@ export const Header = () => {
               )}
 
               {/* Menu button with avatar */}
-              <DropdownMenu>
+              <DropdownMenu onOpenChange={setIsDropdownOpen}>
                 <DropdownMenuTrigger asChild>
                   <Button 
                     variant="ghost" 
-                    className="rounded-full border border-border hover:shadow-md transition-all duration-200 px-3 py-2 h-auto space-x-3"
+                    className={`rounded-full border transition-all duration-300 px-3 py-2 h-auto space-x-3 ${
+                      isDropdownOpen 
+                        ? 'border-primary shadow-lg shadow-primary/20 ring-2 ring-primary/10' 
+                        : 'border-border hover:shadow-md'
+                    }`}
                   >
                     <Menu className="h-4 w-4" />
                     {user ? (
