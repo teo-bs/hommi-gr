@@ -4,8 +4,51 @@ import hommiLogo from "@/assets/hommi-logo-new.png";
 
 export const Footer = () => {
   return (
-    <footer className="bg-surface-elevated border-t border-border py-12 sm:py-16 px-safe pb-safe mt-auto">
+    <footer className="bg-surface-elevated border-t border-border px-safe pb-safe mt-auto">
       <div className="container mx-auto px-4 sm:px-6">
+        {/* Mobile Footer - Simplified */}
+        <div className="lg:hidden py-8">
+          <div className="flex flex-col items-center space-y-6">
+            {/* Logo */}
+            <div className="flex items-center gap-2">
+              <img src={hommiLogo} alt="Hommi" className="h-6 w-6" />
+              <span className="text-lg font-bold">Hommi</span>
+            </div>
+
+            {/* Essential Links */}
+            <nav className="flex flex-wrap justify-center gap-x-6 gap-y-3 text-sm">
+              <a href="/search" className="text-muted-foreground hover:text-primary transition-colors">
+                Αναζήτηση
+              </a>
+              <a href="/publish" className="text-muted-foreground hover:text-primary transition-colors">
+                Δημοσίευση
+              </a>
+              <a href="/help" className="text-muted-foreground hover:text-primary transition-colors">
+                Βοήθεια
+              </a>
+              <a href="/agencies" className="text-muted-foreground hover:text-primary transition-colors">
+                Agencies
+              </a>
+            </nav>
+
+            {/* Legal Links */}
+            <div className="flex gap-4 text-xs text-muted-foreground">
+              <a href="/legal/terms" className="hover:text-primary transition-colors">Όροι</a>
+              <span>•</span>
+              <a href="/legal/privacy" className="hover:text-primary transition-colors">Απόρρητο</a>
+              <span>•</span>
+              <a href="/legal/cookies" className="hover:text-primary transition-colors">Cookies</a>
+            </div>
+
+            {/* Copyright */}
+            <p className="text-xs text-muted-foreground text-center">
+              © 2025 Hommi. Με την επιφύλαξη παντός δικαιώματος.
+            </p>
+          </div>
+        </div>
+
+        {/* Desktop Footer - Full Version */}
+        <div className="hidden lg:block py-12 sm:py-16">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 sm:gap-10 mb-10">
           {/* Logo & Description */}
           <div className="col-span-1 sm:col-span-2 lg:col-span-1">
@@ -71,6 +114,7 @@ export const Footer = () => {
             <a href="/legal/privacy" className="hover:text-primary transition-colors">Απόρρητο</a>
             <a href="/legal/cookies" className="hover:text-primary transition-colors">Cookies</a>
           </div>
+        </div>
         </div>
       </div>
     </footer>
