@@ -159,10 +159,10 @@ export default function PublishStepOne({
 
       {/* Navigation */}
       <div className="flex justify-between pt-6">
-        <Button variant="outline" onClick={onPrev}>
+        <Button variant="outline" onClick={onPrev} className="shadow-sm hover:shadow-md">
           Πίσω
         </Button>
-        <Button onClick={onNext} disabled={!isValid}>
+        <Button onClick={onNext} disabled={!isValid} className="shadow-md hover:shadow-lg">
           Συνέχεια
         </Button>
       </div>

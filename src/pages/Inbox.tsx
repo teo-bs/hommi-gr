@@ -145,7 +145,7 @@ const Inbox = () => {
                 threads.map((thread) => (
                    <Card 
                     key={thread.id} 
-                    className="cursor-pointer hover:shadow-md transition-shadow touch-manipulation active:scale-[0.98]"
+                    className="cursor-pointer shadow-md hover:shadow-lg transition-all duration-200 touch-manipulation active:scale-[0.98]"
                     onClick={() => setSelectedThread(thread)}
                   >
                      <CardContent className="p-3 sm:p-4">
@@ -199,6 +199,7 @@ const Inbox = () => {
                     size="sm"
                     onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
                     disabled={currentPage === 1}
+                    className="shadow-sm hover:shadow-md transition-shadow"
                   >
                     <ChevronLeft className="h-4 w-4" />
                   </Button>
@@ -210,6 +211,7 @@ const Inbox = () => {
                     size="sm"
                     onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
                     disabled={currentPage === totalPages}
+                    className="shadow-sm hover:shadow-md transition-shadow"
                   >
                     <ChevronRight className="h-4 w-4" />
                   </Button>
@@ -249,7 +251,7 @@ const Inbox = () => {
             threads.map((thread) => (
               <Card 
                 key={thread.id} 
-                className="cursor-pointer hover:shadow-md transition-shadow touch-manipulation active:scale-[0.98]"
+                className="cursor-pointer shadow-md hover:shadow-lg transition-all duration-200 touch-manipulation active:scale-[0.98]"
                 onClick={() => setSelectedThread(thread)}
               >
                 <CardContent className="p-3 sm:p-4">
@@ -303,6 +305,7 @@ const Inbox = () => {
                 size="sm"
                 onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
                 disabled={currentPage === 1}
+                className="shadow-sm hover:shadow-md transition-shadow"
               >
                 <ChevronLeft className="h-4 w-4" />
               </Button>
@@ -314,6 +317,7 @@ const Inbox = () => {
                 size="sm"
                 onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
                 disabled={currentPage === totalPages}
+                className="shadow-sm hover:shadow-md transition-shadow"
               >
                 <ChevronRight className="h-4 w-4" />
               </Button>

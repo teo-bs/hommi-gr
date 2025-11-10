@@ -225,19 +225,19 @@ export default function Profile() {
               <TabsList className="w-full justify-start h-auto p-0 bg-transparent gap-0 sm:gap-1">
                 <TabsTrigger 
                   value="overview"
-                  className="flex-1 sm:flex-initial min-h-[48px] sm:min-h-[44px] px-4 sm:px-6 data-[state=active]:bg-primary/5 data-[state=active]:shadow-sm rounded-none sm:rounded-md border-b-3 sm:border-b-2 border-transparent data-[state=active]:border-primary transition-all duration-200 font-medium text-sm"
+                  className="flex-1 sm:flex-initial min-h-[48px] sm:min-h-[44px] px-4 sm:px-6 data-[state=active]:bg-primary/5 data-[state=active]:shadow-sm hover:shadow-sm rounded-none sm:rounded-md border-b-3 sm:border-b-2 border-transparent data-[state=active]:border-primary transition-all duration-200 font-medium text-sm"
                 >
                   Επισκόπηση
                 </TabsTrigger>
                 <TabsTrigger 
                   value="verifications"
-                  className="flex-1 sm:flex-initial min-h-[48px] sm:min-h-[44px] px-4 sm:px-6 data-[state=active]:bg-primary/5 data-[state=active]:shadow-sm rounded-none sm:rounded-md border-b-3 sm:border-b-2 border-transparent data-[state=active]:border-primary transition-all duration-200 font-medium text-sm"
+                  className="flex-1 sm:flex-initial min-h-[48px] sm:min-h-[44px] px-4 sm:px-6 data-[state=active]:bg-primary/5 data-[state=active]:shadow-sm hover:shadow-sm rounded-none sm:rounded-md border-b-3 sm:border-b-2 border-transparent data-[state=active]:border-primary transition-all duration-200 font-medium text-sm"
                 >
                   Επαληθεύσεις
                 </TabsTrigger>
                 <TabsTrigger 
                   value="settings"
-                  className="flex-1 sm:flex-initial min-h-[48px] sm:min-h-[44px] px-4 sm:px-6 data-[state=active]:bg-primary/5 data-[state=active]:shadow-sm rounded-none sm:rounded-md border-b-3 sm:border-b-2 border-transparent data-[state=active]:border-primary transition-all duration-200 font-medium text-sm"
+                  className="flex-1 sm:flex-initial min-h-[48px] sm:min-h-[44px] px-4 sm:px-6 data-[state=active]:bg-primary/5 data-[state=active]:shadow-sm hover:shadow-sm rounded-none sm:rounded-md border-b-3 sm:border-b-2 border-transparent data-[state=active]:border-primary transition-all duration-200 font-medium text-sm"
                 >
                   Ρυθμίσεις
                 </TabsTrigger>

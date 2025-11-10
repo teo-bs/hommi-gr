@@ -273,6 +273,10 @@
     --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
     --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
     --shadow-elevated: 0 12px 32px rgba(0, 0, 0, 0.12);
+    --shadow-button-rest: 0 2px 4px -1px rgba(0, 0, 0, 0.08);
+    --shadow-button-hover: 0 4px 8px -2px rgba(0, 0, 0, 0.12);
+    --shadow-button-premium: 0 8px 16px -4px rgba(0, 0, 0, 0.15);
+    --shadow-primary-glow: 0 4px 16px hsl(var(--primary) / 0.2);
 
     /* Border radius */
     --radius: 0.5rem;

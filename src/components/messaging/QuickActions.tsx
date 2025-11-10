@@ -44,7 +44,7 @@ export const QuickActions = ({ onActionClick, listingTitle }: QuickActionsProps)
             variant="outline"
             size="sm"
             onClick={() => onActionClick(action.template.replace('{title}', listingTitle))}
-            className="rounded-full text-xs hover:scale-105 transition-transform"
+            className="rounded-full text-xs hover:scale-105 transition-transform shadow-sm hover:shadow-md"
           >
             <Icon className="h-3 w-3 mr-1.5" />
             {action.label}

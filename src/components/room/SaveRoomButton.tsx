@@ -49,6 +49,7 @@ export const SaveRoomButton = ({
       className={cn(
         showText ? 'gap-2' : buttonSizes[size],
         'transition-colors duration-200',
+        variant === 'ghost' && 'hover:shadow-sm',
         isSaved && variant === 'ghost' && 'text-red-500 hover:text-red-600',
         className
       )}

@@ -290,7 +290,7 @@ export const AuthModal = ({ isOpen, onClose, onSuccess }: AuthModalProps) => {
           variant="outline"
           onClick={handleGoogleAuth}
           disabled={loading}
-          className="w-full"
+          className="w-full shadow-sm hover:shadow-md"
         >
           <Chrome className="w-4 h-4 mr-2" />
           Google

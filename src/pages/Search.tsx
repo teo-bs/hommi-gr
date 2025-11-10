@@ -442,7 +442,7 @@ const Search = () => {
                               e.preventDefault();
                               if (currentPage > 1) setCurrentPage(currentPage - 1);
                             }}
-                            className={currentPage === 1 ? 'pointer-events-none opacity-50' : ''}
+                            className={currentPage === 1 ? 'pointer-events-none opacity-50' : 'shadow-sm hover:shadow-md transition-shadow'}
                           />
                         </PaginationItem>
                         
@@ -458,6 +458,7 @@ const Search = () => {
                                   setCurrentPage(page);
                                 }}
                                 isActive={currentPage === page}
+                                className="shadow-sm hover:shadow-md transition-shadow"
                               >
                                 {page}
                               </PaginationLink>
@@ -472,7 +473,7 @@ const Search = () => {
                               e.preventDefault();
                               if (currentPage < totalPages) setCurrentPage(currentPage + 1);
                             }}
-                            className={currentPage === totalPages ? 'pointer-events-none opacity-50' : ''}
+                            className={currentPage === totalPages ? 'pointer-events-none opacity-50' : 'shadow-sm hover:shadow-md transition-shadow'}
                           />
                         </PaginationItem>
                       </PaginationContent>

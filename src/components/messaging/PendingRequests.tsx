@@ -137,7 +137,7 @@ export const PendingRequests = () => {
                 variant="default"
                 onClick={() => handleResponse(request.id, 'accepted')}
                 disabled={responding === request.id}
-                className="flex-1"
+                className="flex-1 shadow-lg hover:shadow-xl"
               >
                 <CheckCircle className="h-4 w-4 mr-1" />
                 Accept
@@ -147,7 +147,7 @@ export const PendingRequests = () => {
                 variant="outline"
                 onClick={() => handleResponse(request.id, 'declined')}
                 disabled={responding === request.id}
-                className="flex-1"
+                className="flex-1 shadow-sm hover:shadow-md"
               >
                 <XCircle className="h-4 w-4 mr-1" />
                 Decline

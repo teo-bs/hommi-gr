@@ -38,7 +38,7 @@ export const MapControls = ({
       {!autoSearch && hasUserMoved && (
         <Button
           onClick={onManualSearch}
-          className="shadow-lg touch-target text-sm sm:text-base px-4 sm:px-6"
+          className="shadow-lg hover:shadow-xl touch-target text-sm sm:text-base px-4 sm:px-6"
           size="default"
         >
           <Search className="h-4 w-4 mr-2" />

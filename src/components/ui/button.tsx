@@ -11,23 +11,24 @@ const buttonVariants = cva(
       variant: {
         // Core variants (use these for consistency)
         // Primary - main CTAs, high emphasis
-        default: "bg-primary text-primary-foreground hover:bg-primary-hover shadow-sm hover:shadow-md",
+        default: "bg-primary text-primary-foreground hover:bg-primary-hover shadow-md hover:shadow-lg transition-shadow",
         
         // Secondary - secondary actions
-        secondary: "bg-secondary text-secondary-foreground hover:bg-secondary-hover shadow-sm",
+        secondary: "bg-secondary text-secondary-foreground hover:bg-secondary-hover shadow-sm hover:shadow-md transition-shadow",
         
         // Outline - low emphasis, borders
-        outline: "border-2 border-input bg-background hover:bg-accent hover:text-accent-foreground hover:border-accent",
+        outline: "border-2 border-input bg-background hover:bg-accent hover:text-accent-foreground hover:border-accent shadow-sm hover:shadow-md transition-shadow",
         
         // Ghost - tertiary actions, minimal styling
-        ghost: "hover:bg-accent hover:text-accent-foreground",
+        ghost: "hover:bg-accent hover:text-accent-foreground hover:shadow-sm transition-shadow",
         
         // Utility variants
-        destructive: "bg-destructive text-destructive-foreground hover:bg-destructive/90 shadow-sm",
+        destructive: "bg-destructive text-destructive-foreground hover:bg-destructive/90 shadow-md hover:shadow-lg transition-shadow",
         link: "text-primary underline-offset-4 hover:underline",
         
-        // Special variants (convenience, consider using default + className for custom designs)
-        hero: "bg-gradient-hero text-primary-foreground hover:shadow-primary transform hover:scale-105 transition-all duration-300 font-semibold shadow-md",
+        // Special variants
+        hero: "bg-gradient-hero text-primary-foreground hover:shadow-primary transform hover:scale-105 transition-all duration-300 font-semibold shadow-lg hover:shadow-xl",
+        premium: "bg-gradient-to-r from-primary to-primary-hover text-primary-foreground shadow-lg hover:shadow-xl hover:shadow-primary/30 transform hover:scale-[1.02] transition-all duration-300",
       },
       size: {
         sm: "h-10 rounded-lg px-3 text-small min-h-[40px]",
