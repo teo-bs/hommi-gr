@@ -3,7 +3,7 @@ import { Link, useNavigate, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { User, Plus, Globe, Menu, X, Settings, Calendar, LogOut, UserCheck, BarChart3 } from "lucide-react";
+import { User, Plus, Globe, Menu, X, Settings, Calendar, LogOut, UserCheck, BarChart3, HelpCircle, SlidersHorizontal } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useListingFlow } from "@/hooks/useListingFlow";
 import { useListingsCount } from "@/hooks/useListingsCount";
@@ -176,7 +176,7 @@ export const Header = () => {
                 <DropdownMenuTrigger asChild>
                   <Button 
                     variant="ghost" 
-                    className="rounded-full border border-border hover:shadow-md transition-shadow px-3 py-2 h-auto space-x-3"
+                    className="rounded-full border border-border hover:shadow-md transition-all duration-200 px-3 py-2 h-auto space-x-3"
                   >
                     <Menu className="h-4 w-4" />
                     {user ? (
@@ -192,55 +192,112 @@ export const Header = () => {
                     )}
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-56">
+                <DropdownMenuContent 
+                  align="end" 
+                  className="w-64 p-2 bg-background/95 backdrop-blur-xl border-border/50 shadow-2xl"
+                >
                   {user ? (
                     <>
-                      <DropdownMenuItem onClick={() => navigate('/me')}>
-                        <User className="h-4 w-4 mr-2" />
-                        {t('header.profile')}
+                      <div className="px-2 py-2 mb-1">
+                        <p className="text-sm font-semibold text-foreground">
+                          {profile?.display_name || profile?.first_name || 'User'}
+                        </p>
+                        <p className="text-xs text-muted-foreground truncate">
+                          {user?.email}
+                        </p>
+                      </div>
+                      <DropdownMenuSeparator className="my-2" />
+                      
+                      <DropdownMenuItem 
+                        onClick={() => navigate('/me')}
+                        className="rounded-md py-2.5 px-3 cursor-pointer transition-colors"
+                      >
+                        <User className="h-4 w-4 mr-3 text-muted-foreground" />
+                        <span className="font-medium">{t('header.profile')}</span>
                       </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => navigate('/settings')}>
-                        <Settings className="h-4 w-4 mr-2" />
-                        {t('header.settings')}
+                      
+                      <DropdownMenuItem 
+                        onClick={() => navigate('/settings')}
+                        className="rounded-md py-2.5 px-3 cursor-pointer transition-colors"
+                      >
+                        <Settings className="h-4 w-4 mr-3 text-muted-foreground" />
+                        <span className="font-medium">{t('header.settings')}</span>
                       </DropdownMenuItem>
+                      
                       {isAdmin && (
-                        <DropdownMenuItem onClick={() => navigate('/admin')}>
-                          <BarChart3 className="h-4 w-4 mr-2" />
-                          {t('header.admin')}
+                        <DropdownMenuItem 
+                          onClick={() => navigate('/admin')}
+                          className="rounded-md py-2.5 px-3 cursor-pointer transition-colors"
+                        >
+                          <BarChart3 className="h-4 w-4 mr-3 text-muted-foreground" />
+                          <span className="font-medium">{t('header.admin')}</span>
                         </DropdownMenuItem>
                       )}
+                      
                       {currentRole === 'tenant' && (
-                        <DropdownMenuItem onClick={() => navigate('/search-preferences')}>
-                          {t('profile.preferences')}
+                        <DropdownMenuItem 
+                          onClick={() => navigate('/search-preferences')}
+                          className="rounded-md py-2.5 px-3 cursor-pointer transition-colors"
+                        >
+                          <SlidersHorizontal className="h-4 w-4 mr-3 text-muted-foreground" />
+                          <span className="font-medium">{t('profile.preferences')}</span>
                         </DropdownMenuItem>
                       )}
-                      <DropdownMenuSeparator />
-                      <DropdownMenuItem onClick={() => navigate('/help')}>
-                        Help
+                      
+                      <DropdownMenuSeparator className="my-2" />
+                      
+                      <DropdownMenuItem 
+                        onClick={() => navigate('/help')}
+                        className="rounded-md py-2.5 px-3 cursor-pointer transition-colors"
+                      >
+                        <HelpCircle className="h-4 w-4 mr-3 text-muted-foreground" />
+                        <span className="font-medium">Help</span>
                       </DropdownMenuItem>
-                      <DropdownMenuItem onClick={toggleLanguage}>
-                        <Globe className="h-4 w-4 mr-2" />
-                        {language === 'el' ? 'English' : 'Ελληνικά'}
+                      
+                      <DropdownMenuItem 
+                        onClick={toggleLanguage}
+                        className="rounded-md py-2.5 px-3 cursor-pointer transition-colors"
+                      >
+                        <Globe className="h-4 w-4 mr-3 text-muted-foreground" />
+                        <span className="font-medium">{language === 'el' ? 'English' : 'Ελληνικά'}</span>
                       </DropdownMenuItem>
-                      <DropdownMenuSeparator />
-                      <DropdownMenuItem onClick={handleLogout}>
-                        <LogOut className="h-4 w-4 mr-2" />
-                        {t('header.logout')}
+                      
+                      <DropdownMenuSeparator className="my-2" />
+                      
+                      <DropdownMenuItem 
+                        onClick={handleLogout}
+                        className="rounded-md py-2.5 px-3 cursor-pointer transition-colors text-destructive focus:text-destructive"
+                      >
+                        <LogOut className="h-4 w-4 mr-3" />
+                        <span className="font-medium">{t('header.logout')}</span>
                       </DropdownMenuItem>
                     </>
                   ) : (
                     <>
-                      <DropdownMenuItem onClick={() => handleAuthAction('login')}>
-                        <User className="h-4 w-4 mr-2" />
-                        {t('header.login')} / {t('header.signup')}
+                      <DropdownMenuItem 
+                        onClick={() => handleAuthAction('login')}
+                        className="rounded-md py-2.5 px-3 cursor-pointer transition-colors"
+                      >
+                        <User className="h-4 w-4 mr-3 text-muted-foreground" />
+                        <span className="font-medium">{t('header.login')} / {t('header.signup')}</span>
                       </DropdownMenuItem>
-                      <DropdownMenuSeparator />
-                      <DropdownMenuItem onClick={() => navigate('/help')}>
-                        Help
+                      
+                      <DropdownMenuSeparator className="my-2" />
+                      
+                      <DropdownMenuItem 
+                        onClick={() => navigate('/help')}
+                        className="rounded-md py-2.5 px-3 cursor-pointer transition-colors"
+                      >
+                        <HelpCircle className="h-4 w-4 mr-3 text-muted-foreground" />
+                        <span className="font-medium">Help</span>
                       </DropdownMenuItem>
-                      <DropdownMenuItem onClick={toggleLanguage}>
-                        <Globe className="h-4 w-4 mr-2" />
-                        {language === 'el' ? 'English' : 'Ελληνικά'}
+                      
+                      <DropdownMenuItem 
+                        onClick={toggleLanguage}
+                        className="rounded-md py-2.5 px-3 cursor-pointer transition-colors"
+                      >
+                        <Globe className="h-4 w-4 mr-3 text-muted-foreground" />
+                        <span className="font-medium">{language === 'el' ? 'English' : 'Ελληνικά'}</span>
                       </DropdownMenuItem>
                     </>
                   )}
