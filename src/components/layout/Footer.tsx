@@ -4,7 +4,7 @@ import hommiLogo from "@/assets/hommi-logo-new.png";
 
 export const Footer = () => {
   return (
-    <footer className="hidden lg:block bg-surface-elevated border-t border-border py-12 sm:py-16 px-safe pb-safe">
+    <footer className="bg-surface-elevated border-t border-border py-12 sm:py-16 px-safe pb-safe mt-auto">
       <div className="container mx-auto px-4 sm:px-6">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 sm:gap-10 mb-10">
           {/* Logo & Description */}

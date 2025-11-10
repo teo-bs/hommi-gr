@@ -71,7 +71,7 @@ export const Header = () => {
       
       // Redirect to appropriate page based on new role
       if (newRole === 'lister') {
-        navigate('/');
+        navigate('/hosting');
       } else {
         navigate('/search');
       }
@@ -94,8 +94,8 @@ export const Header = () => {
   ];
 
   const listerNavItems = [
-    ...(listingsCount > 0 ? [
-      { href: "/overview", label: t('header.overview') },
+    ...(user ? [
+      { href: "/hosting", label: "Hosting" },
       { href: "/my-listings", label: t('header.myListings') }
     ] : []),
     { href: "/inbox", label: `${t('header.messages')}${unreadCount > 0 ? ` (${unreadCount})` : ''}` }

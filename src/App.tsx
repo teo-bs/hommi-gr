@@ -34,6 +34,7 @@ import { AdminGuard } from "./components/admin/AdminGuard";
 import { ImpersonationBanner } from "./components/layout/ImpersonationBanner";
 import ActivityLog from "./pages/admin/ActivityLog";
 import DesignSystem from "./pages/DesignSystem";
+import Hosting from "./pages/Hosting";
 
 const queryClient = new QueryClient();
 
@@ -46,11 +47,11 @@ const AppContent = () => {
 
   return (
     <BrowserRouter>
-      <div className="min-h-screen bg-background font-sans antialiased">
+      <div className="flex flex-col min-h-screen bg-background font-sans antialiased">
         <ImpersonationBanner />
         <Header />
         <GlobalTermsHandler />
-        <main>
+        <main className="flex-1">
           <Routes>
             <Route path="/" element={<Index />} />
             <Route path="/search" element={<Search />} />
@@ -66,6 +67,7 @@ const AppContent = () => {
             <Route path="/agencies" element={<Agencies />} />
             <Route path="/inbox" element={<Inbox />} />
             <Route path="/settings" element={<Settings />} />
+            <Route path="/hosting" element={<Hosting />} />
             <Route path="/design-system" element={<DesignSystem />} />
             <Route path="/admin" element={<AdminGuard><AdminDashboard /></AdminGuard>} />
             <Route path="/admin/listings" element={<AdminGuard><ListingsManagement /></AdminGuard>} />
