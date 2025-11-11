@@ -2,8 +2,9 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
 import { AuthProvider } from "@/hooks/useAuth";
+import { useIsMobile } from "@/hooks/use-mobile";
 import { useRealtimeNotifications } from "@/hooks/useRealtimeNotifications";
 import { useUnreadCount } from "@/hooks/useUnreadCount";
 import { Header } from "@/components/layout/Header";
@@ -38,11 +39,16 @@ import Hosting from "./pages/Hosting";
 const queryClient = new QueryClient();
 
 const AppContent = () => {
+  const location = useLocation();
+  const isMobile = useIsMobile();
   const { refetch: refetchUnreadCount } = useUnreadCount();
   
   useRealtimeNotifications({
     onNewMessage: refetchUnreadCount
   });
+
+  const isListingPage = location.pathname.startsWith('/listing/') || location.pathname.startsWith('/room/');
+  const shouldHideFooter = isMobile && isListingPage;
 
   return (
     <BrowserRouter>
@@ -78,7 +84,7 @@ const AppContent = () => {
             <Route path="*" element={<NotFound />} />
           </Routes>
         </main>
-        <Footer />
+        {!shouldHideFooter && <Footer />}
       </div>
     </BrowserRouter>
   );
