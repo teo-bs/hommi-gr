@@ -38,20 +38,14 @@ import Hosting from "./pages/Hosting";
 
 const queryClient = new QueryClient();
 
-const AppContent = () => {
+const RouterContent = () => {
   const location = useLocation();
   const isMobile = useIsMobile();
-  const { refetch: refetchUnreadCount } = useUnreadCount();
-  
-  useRealtimeNotifications({
-    onNewMessage: refetchUnreadCount
-  });
-
   const isListingPage = location.pathname.startsWith('/listing/') || location.pathname.startsWith('/room/');
   const shouldHideFooter = isMobile && isListingPage;
 
   return (
-    <BrowserRouter>
+    <>
       <div className="flex flex-col min-h-screen bg-background font-sans antialiased">
         <ImpersonationBanner />
         <Header />
@@ -86,6 +80,20 @@ const AppContent = () => {
         </main>
         {!shouldHideFooter && <Footer />}
       </div>
+    </>
+  );
+};
+
+const AppContent = () => {
+  const { refetch: refetchUnreadCount } = useUnreadCount();
+  
+  useRealtimeNotifications({
+    onNewMessage: refetchUnreadCount
+  });
+
+  return (
+    <BrowserRouter>
+      <RouterContent />
     </BrowserRouter>
   );
 };
