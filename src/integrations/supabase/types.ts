@@ -2809,12 +2809,7 @@ export type Database = {
         Args: { p_target_user_id: string; p_user_id: string }
         Returns: boolean
       }
-      publish_listing_atomic:
-        | { Args: { p_listing_id: string }; Returns: Json }
-        | {
-            Args: { p_listing_id: string; p_room_slug?: string }
-            Returns: Json
-          }
+      publish_listing_atomic: { Args: { p_listing_id: string }; Returns: Json }
       refresh_listing_amenity_facets: { Args: never; Returns: undefined }
       refresh_room_search_cache: { Args: never; Returns: undefined }
       reset_unread_count: {
