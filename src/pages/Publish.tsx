@@ -824,12 +824,11 @@ export default function Publish() {
       setPublishProgress(60);
       console.log('📝 Using atomic publish function with transaction safety...');
       
-      // Use atomic publishing function with transaction safety and Greek slug support
+      // Use atomic publishing function with transaction safety
       const { data: result, error: atomicError } = await supabase.rpc(
         'publish_listing_atomic',
         {
-          p_listing_id: draft.id!,
-          p_room_slug: null // Let function generate Greek-safe slug
+          p_listing_id: draft.id!
         }
       );
 
@@ -845,13 +844,28 @@ export default function Publish() {
 
       console.log('✅ Listing published atomically:', result);
       
-      const atomicResult = result as { success: boolean; room_id: string; slug: string; listing_id: string; error?: string };
+      const atomicResult = result as { success: boolean; listing_id: string; error?: string };
+
+      // Fetch room_id for photo uploads
+      const { data: roomData, error: roomError } = await supabase
+        .from('rooms')
+        .select('id, slug')
+        .eq('listing_id', atomicResult.listing_id)
+        .single();
+
+      if (roomError || !roomData) {
+        console.error('Error fetching room:', roomError);
+        throw new Error('Failed to fetch room details');
+      }
+
+      const roomId = roomData.id;
+      const roomSlug = roomData.slug;
 
       // Insert photos into room_photos table with validation
-      if (draft.photos && draft.photos.length > 0 && atomicResult.room_id) {
+      if (draft.photos && draft.photos.length > 0 && roomId) {
         console.log('📸 Inserting photos into room_photos...', { 
           photoCount: draft.photos.length, 
-          roomId: atomicResult.room_id,
+          roomId: roomId,
           photos: draft.photos
         });
         
@@ -860,7 +874,7 @@ export default function Publish() {
           const { error: deleteError } = await supabase
             .from('room_photos')
             .delete()
-            .eq('room_id', atomicResult.room_id);
+            .eq('room_id', roomId);
           
           if (deleteError) {
             console.error('Error deleting old room photos:', deleteError);
@@ -869,7 +883,7 @@ export default function Publish() {
           const roomPhotos = draft.photos
             .filter(photo => typeof photo === 'string' && photo.length > 0 && photo.includes('http'))
             .map((photo, index) => ({
-              room_id: atomicResult.room_id,
+              room_id: roomId,
               url: photo as string,
               sort_order: index,
               is_cover: index === 0, // Mark first photo as cover
@@ -929,7 +943,7 @@ export default function Publish() {
         console.warn('⚠️ No photos to insert:', { 
           hasPhotos: !!draft.photos, 
           photoCount: draft.photos?.length,
-          hasRoomId: !!atomicResult.room_id 
+          hasRoomId: !!roomId 
         });
       }
 
@@ -962,7 +976,7 @@ export default function Publish() {
 
       // Small delay to show completion before navigating
       setTimeout(() => {
-        navigate(`/listing/${atomicResult.slug}`);
+        navigate(`/listing/${roomSlug}`);
       }, 1500);
       
     } catch (error) {
